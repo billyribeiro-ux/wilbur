@@ -8,3 +8,4 @@ export { roomStore } from './room.svelte';
 export { toastStore, type Toast, type ToastType } from './toast.svelte';
 export { spotifyStore } from './spotify.svelte';
 export { themeStore, type ThemeConfig } from './theme.svelte';
+export { presenceStore, type UserPresence, type TypingUser } from './presence.svelte';

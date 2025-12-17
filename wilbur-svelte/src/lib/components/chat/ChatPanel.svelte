@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { roomStore, authStore, toastStore } from '$lib/stores';
+	import { presenceStore } from '$lib/stores/presence.svelte';
 	import { Send, Image, Paperclip, Smile, Pin, Trash2, MoreHorizontal } from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import DOMPurify from 'dompurify';
+	import TypingIndicator from './TypingIndicator.svelte';
 
 	let messageInput = $state('');
 	let isSubmitting = $state(false);
 	let messagesContainer = $state<HTMLDivElement | null>(null);
+	let optimisticMessages = $state<Array<{ id: string; content: string; pending: boolean }>>([]);
 
 	// Auto-scroll to bottom when new messages arrive
 	$effect(() => {
@@ -14,6 +17,17 @@
 			messagesContainer.scrollTop = messagesContainer.scrollHeight;
 		}
 	});
+
+	// Handle typing indicator
+	function handleTyping() {
+		if (roomStore.currentRoomId && authStore.user) {
+			presenceStore.startTyping(
+				roomStore.currentRoomId,
+				authStore.user.id,
+				authStore.user.displayName
+			);
+		}
+	}
 
 	async function handleSendMessage(e: Event) {
 		e.preventDefault();
@@ -23,7 +37,20 @@
 		const content = messageInput.trim();
 		messageInput = '';
 
+		// Stop typing indicator
+		if (roomStore.currentRoomId && authStore.user) {
+			presenceStore.stopTyping(roomStore.currentRoomId, authStore.user.id);
+		}
+
+		// Optimistic update - show message immediately
+		const optimisticId = `optimistic-${Date.now()}`;
+		optimisticMessages = [...optimisticMessages, { id: optimisticId, content, pending: true }];
+
 		const success = await roomStore.sendMessage(content);
+
+		// Remove optimistic message (real one will come from subscription)
+		optimisticMessages = optimisticMessages.filter(m => m.id !== optimisticId);
+
 		if (!success) {
 			toastStore.error('Failed to send message');
 			messageInput = content; // Restore message
@@ -37,6 +64,10 @@
 			e.preventDefault();
 			handleSendMessage(e);
 		}
+	}
+
+	function handleInput() {
+		handleTyping();
 	}
 
 	async function handlePinMessage(messageId: string) {
@@ -182,6 +213,9 @@
 		{/if}
 	</div>
 
+	<!-- Typing Indicator -->
+	<TypingIndicator />
+
 	<!-- Input -->
 	<form
 		onsubmit={handleSendMessage}
@@ -216,6 +250,7 @@
 				<textarea
 					bind:value={messageInput}
 					onkeydown={handleKeyDown}
+					oninput={handleInput}
 					placeholder="Type a message..."
 					rows="1"
 					class="w-full resize-none rounded-xl border border-surface-600 bg-surface-800 px-4 py-3 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none"
