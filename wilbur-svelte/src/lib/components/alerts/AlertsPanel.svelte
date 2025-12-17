@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { roomStore, authStore, toastStore } from '$lib/stores';
-	import { Bell, Plus, TrendingUp, TrendingDown, Minus, AlertTriangle, X } from 'lucide-svelte';
+	import { Bell, Plus, TrendUp, TrendDown, Minus, Warning, X } from 'phosphor-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 
 	let showCreateModal = $state(false);
@@ -136,7 +136,7 @@
 
 							{#if alert.hasLegalDisclosure && alert.legalDisclosureText}
 								<div class="mt-3 flex items-start gap-2 rounded-lg bg-yellow-500/10 p-3 text-sm">
-									<AlertTriangle class="h-4 w-4 flex-shrink-0 text-yellow-400 mt-0.5" />
+									<Warning class="h-4 w-4 flex-shrink-0 text-yellow-400 mt-0.5" />
 									<p class="text-yellow-300">{alert.legalDisclosureText}</p>
 								</div>
 							{/if}

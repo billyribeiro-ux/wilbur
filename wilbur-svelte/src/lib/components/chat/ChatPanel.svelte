@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { roomStore, authStore, toastStore } from '$lib/stores';
 	import { presenceStore } from '$lib/stores/presence.svelte';
-	import { Send, Image, Paperclip, Smile, Pin, Trash2, MoreHorizontal } from 'lucide-svelte';
+	import { PaperPlaneRight, Image, Paperclip, Smiley, PushPin, Trash, DotsThree } from 'phosphor-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import DOMPurify from 'dompurify';
 	import TypingIndicator from './TypingIndicator.svelte';
@@ -107,7 +107,7 @@
 	{#if roomStore.pinnedMessages.length > 0}
 		<div class="border-b border-surface-700 bg-primary-500/5 px-4 py-3">
 			<div class="flex items-center gap-2 text-sm text-primary-400">
-				<Pin class="h-4 w-4" />
+				<PushPin class="h-4 w-4" />
 				<span class="font-medium">Pinned</span>
 			</div>
 			<div class="mt-2 space-y-2">
@@ -129,7 +129,7 @@
 		{#if roomStore.messages.length === 0}
 			<div class="flex h-full flex-col items-center justify-center text-center">
 				<div class="rounded-full bg-surface-800 p-4">
-					<Send class="h-8 w-8 text-surface-500" />
+					<PaperPlaneRight class="h-8 w-8 text-surface-500" />
 				</div>
 				<h3 class="mt-4 font-medium">No messages yet</h3>
 				<p class="mt-1 text-sm text-surface-400">Be the first to say something!</p>
@@ -194,7 +194,7 @@
 									class="rounded p-1 text-surface-500 hover:bg-surface-700 hover:text-surface-300"
 									title="Pin message"
 								>
-									<Pin class="h-3.5 w-3.5" />
+									<PushPin class="h-3.5 w-3.5" />
 								</button>
 							{/if}
 							{#if isOwn || canModerate()}
@@ -203,7 +203,7 @@
 									class="rounded p-1 text-surface-500 hover:bg-red-500/20 hover:text-red-400"
 									title="Delete message"
 								>
-									<Trash2 class="h-3.5 w-3.5" />
+									<Trash class="h-3.5 w-3.5" />
 								</button>
 							{/if}
 						</div>
@@ -262,7 +262,7 @@
 				disabled={!messageInput.trim() || isSubmitting}
 				class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
 			>
-				<Send class="h-5 w-5" />
+				<PaperPlaneRight class="h-5 w-5" />
 			</button>
 		</div>
 	</form>

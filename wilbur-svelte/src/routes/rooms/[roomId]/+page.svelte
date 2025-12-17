@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import { authStore, roomStore, toastStore } from '$lib/stores';
-	import { ArrowLeft, Users, Bell, Settings, MessageSquare, TrendingUp, Menu, X } from 'lucide-svelte';
+	import { ArrowLeft, Users, Bell, Gear, ChatCircle, TrendUp, List, X } from 'phosphor-svelte';
 	import ChatPanel from '$lib/components/chat/ChatPanel.svelte';
 	import AlertsPanel from '$lib/components/alerts/AlertsPanel.svelte';
 	import MembersPanel from '$lib/components/rooms/MembersPanel.svelte';
@@ -59,7 +59,7 @@
 					{#if roomStore.currentRoom?.iconUrl}
 						<img src={roomStore.currentRoom.iconUrl} alt="" class="h-6 w-6 rounded" />
 					{:else}
-						<TrendingUp class="h-5 w-5 text-primary-400" />
+						<TrendUp class="h-5 w-5 text-primary-400" weight="duotone" />
 					{/if}
 				</div>
 				<div>
@@ -78,7 +78,7 @@
 					onclick={() => (activePanel = 'chat')}
 					class="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition {activePanel === 'chat' ? 'bg-primary-500 text-white' : 'text-surface-400 hover:text-white'}"
 				>
-					<MessageSquare class="h-4 w-4" />
+					<ChatCircle class="h-4 w-4" />
 					Chat
 				</button>
 				<button
@@ -104,7 +104,7 @@
 
 			<!-- Settings -->
 			<button class="rounded-lg p-2 text-surface-400 hover:bg-surface-800 hover:text-white transition">
-				<Settings class="h-5 w-5" />
+				<Gear class="h-5 w-5" />
 			</button>
 
 			<!-- Mobile Menu Toggle -->
@@ -115,7 +115,7 @@
 				{#if showMobileMenu}
 					<X class="h-5 w-5" />
 				{:else}
-					<Menu class="h-5 w-5" />
+					<List class="h-5 w-5" />
 				{/if}
 			</button>
 		</div>
@@ -129,7 +129,7 @@
 					onclick={() => { activePanel = 'chat'; showMobileMenu = false; }}
 					class="flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-sm transition {activePanel === 'chat' ? 'bg-primary-500 text-white' : 'bg-surface-700 text-surface-300'}"
 				>
-					<MessageSquare class="h-4 w-4" />
+					<ChatCircle class="h-4 w-4" />
 					Chat
 				</button>
 				<button

@@ -13,10 +13,9 @@ const config = {
 			$services: './src/lib/services',
 			$types: './src/lib/types'
 		}
-	},
-	compilerOptions: {
-		runes: true
 	}
+	// Note: Not setting runes: true globally to allow legacy libraries (lucide-svelte, svelte-sonner)
+	// Our components use runes syntax which works in default mode
 };
 
 export default config;

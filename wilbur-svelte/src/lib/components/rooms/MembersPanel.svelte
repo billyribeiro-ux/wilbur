@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { roomStore, authStore, toastStore } from '$lib/stores';
-	import { Users, Crown, Shield, User, MoreHorizontal, Ban, MessageSquare, UserMinus } from 'lucide-svelte';
+	import { Users, Crown, Shield, User, DotsThree, Prohibit, ChatCircle, UserMinus } from 'phosphor-svelte';
 
 	let showActionsFor = $state<string | null>(null);
 
@@ -180,7 +180,7 @@
 					onclick={() => (showActionsFor = showActionsFor === member.id ? null : member.id)}
 					class="rounded-lg p-1.5 text-surface-500 opacity-0 group-hover:opacity-100 hover:bg-surface-700 hover:text-white transition"
 				>
-					<MoreHorizontal class="h-4 w-4" />
+					<DotsThree class="h-4 w-4" />
 				</button>
 
 				{#if showActionsFor === member.id}
@@ -189,7 +189,7 @@
 							onclick={() => props.handleDirectMessage(member.userId)}
 							class="flex w-full items-center gap-2 px-3 py-2 text-sm text-surface-300 hover:bg-surface-700"
 						>
-							<MessageSquare class="h-4 w-4" />
+							<ChatCircle class="h-4 w-4" />
 							Message
 						</button>
 						{#if props.canModerate() && member.role === 'member'}
@@ -204,7 +204,7 @@
 								onclick={() => props.handleBanUser(member.userId, member.user?.displayName || 'User')}
 								class="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-surface-700"
 							>
-								<Ban class="h-4 w-4" />
+								<Prohibit class="h-4 w-4" />
 								Ban
 							</button>
 						{/if}
