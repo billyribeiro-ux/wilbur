@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { authStore, roomStore, toastStore } from '$lib/stores';
-	import { Plus, Search, Users, MessageSquare, Bell, Settings, LogOut, TrendingUp, User } from 'lucide-svelte';
+	import { Plus, MagnifyingGlass, Users, ChatCircle, Bell, Gear, SignOut, TrendUp, User } from 'phosphor-svelte';
 	import CreateRoomModal from '$lib/components/rooms/CreateRoomModal.svelte';
 
 	let searchQuery = $state('');
@@ -51,7 +51,7 @@
 			<div class="flex items-center gap-4">
 				<a href="/" class="flex items-center gap-2">
 					<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-500">
-						<TrendingUp class="h-6 w-6 text-white" />
+						<TrendUp class="h-6 w-6 text-white" weight="bold" />
 					</div>
 					<span class="text-xl font-bold">Wilbur</span>
 				</a>
@@ -60,7 +60,7 @@
 			<div class="flex items-center gap-4">
 				<!-- Search -->
 				<div class="relative hidden sm:block">
-					<Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-surface-500" />
+					<MagnifyingGlass class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-surface-500" />
 					<input
 						type="text"
 						bind:value={searchQuery}
@@ -89,14 +89,14 @@
 
 					<div class="absolute right-0 mt-2 w-48 rounded-lg border border-surface-600 bg-surface-800 py-1 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
 						<a href="/settings" class="flex items-center gap-2 px-4 py-2 text-sm text-surface-300 hover:bg-surface-700">
-							<Settings class="h-4 w-4" />
+							<Gear class="h-4 w-4" />
 							Settings
 						</a>
 						<button
 							onclick={handleLogout}
 							class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-surface-700"
 						>
-							<LogOut class="h-4 w-4" />
+							<SignOut class="h-4 w-4" />
 							Sign out
 						</button>
 					</div>
@@ -115,7 +115,7 @@
 		<!-- Mobile Search -->
 		<div class="mb-6 sm:hidden">
 			<div class="relative">
-				<Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-surface-500" />
+				<MagnifyingGlass class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-surface-500" />
 				<input
 					type="text"
 					bind:value={searchQuery}
@@ -144,7 +144,7 @@
 			<!-- Empty State -->
 			<div class="flex flex-col items-center justify-center py-16 text-center">
 				<div class="flex h-20 w-20 items-center justify-center rounded-full bg-surface-800">
-					<MessageSquare class="h-10 w-10 text-surface-500" />
+					<ChatCircle class="h-10 w-10 text-surface-500" />
 				</div>
 				<h3 class="mt-4 text-xl font-semibold">No rooms found</h3>
 				<p class="mt-2 text-surface-400">
@@ -176,7 +176,7 @@
 								{#if room.iconUrl}
 									<img src={room.iconUrl} alt={room.name} class="h-8 w-8 rounded" />
 								{:else}
-									<TrendingUp class="h-6 w-6 text-primary-400" />
+									<TrendUp class="h-6 w-6 text-primary-400" weight="duotone" />
 								{/if}
 							</div>
 							<div class="flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-1 text-xs text-green-400">

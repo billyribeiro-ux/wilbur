@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { toastStore, type Toast } from '$lib/stores';
-	import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-svelte';
+	import { X, CheckCircle, XCircle, Warning, Info } from 'phosphor-svelte';
 	import { fly } from 'svelte/transition';
 
 	function getIcon(type: Toast['type']) {
@@ -8,9 +8,9 @@
 			case 'success':
 				return { icon: CheckCircle, class: 'text-green-400' };
 			case 'error':
-				return { icon: AlertCircle, class: 'text-red-400' };
+				return { icon: XCircle, class: 'text-red-400' };
 			case 'warning':
-				return { icon: AlertTriangle, class: 'text-yellow-400' };
+				return { icon: Warning, class: 'text-yellow-400' };
 			case 'info':
 			default:
 				return { icon: Info, class: 'text-blue-400' };

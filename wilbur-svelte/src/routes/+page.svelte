@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { authStore, roomStore } from '$lib/stores';
-	import { TrendingUp, Users, Bell, Shield, Zap, MessageSquare } from 'lucide-svelte';
+	import { TrendUp, Users, Bell, Shield, Lightning, ChatCircle } from 'phosphor-svelte';
 
 	// Fetch rooms on mount
 	$effect(() => {
@@ -20,7 +20,7 @@
 
 	const features = [
 		{
-			icon: MessageSquare,
+			icon: ChatCircle,
 			title: 'Real-time Chat',
 			description: 'Instant messaging with support for images, files, and rich text'
 		},
@@ -40,12 +40,12 @@
 			description: 'Full suite of moderation features including bans, mutes, and reports'
 		},
 		{
-			icon: TrendingUp,
+			icon: TrendUp,
 			title: 'Edge Performance',
 			description: 'Global edge database for sub-10ms response times worldwide'
 		},
 		{
-			icon: Zap,
+			icon: Lightning,
 			title: 'Svelte 5 Powered',
 			description: 'Built with Svelte 5 Runes for blazing fast reactivity'
 		}
@@ -62,7 +62,7 @@
 			<div class="mx-auto flex max-w-7xl items-center justify-between">
 				<div class="flex items-center gap-2">
 					<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-500">
-						<TrendingUp class="h-6 w-6 text-white" />
+						<TrendUp class="h-6 w-6 text-white" weight="bold" />
 					</div>
 					<span class="text-xl font-bold">Wilbur</span>
 				</div>
@@ -215,7 +215,7 @@
 		<div class="mx-auto max-w-7xl flex flex-col items-center justify-between gap-4 sm:flex-row">
 			<div class="flex items-center gap-2">
 				<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500">
-					<TrendingUp class="h-4 w-4 text-white" />
+					<TrendUp class="h-4 w-4 text-white" weight="bold" />
 				</div>
 				<span class="font-semibold">Wilbur Trading Room</span>
 			</div>

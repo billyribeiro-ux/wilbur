@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { authStore, toastStore } from '$lib/stores';
-	import { Mail, Lock, Eye, EyeOff, TrendingUp } from 'lucide-svelte';
+	import { Envelope, Lock, Eye, EyeSlash, TrendUp } from 'phosphor-svelte';
 
 	let email = $state('');
 	let password = $state('');
@@ -31,7 +31,7 @@
 		<div class="mx-auto w-full max-w-md">
 			<a href="/" class="flex items-center gap-2 text-surface-400 hover:text-white transition mb-8">
 				<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-500">
-					<TrendingUp class="h-6 w-6 text-white" />
+					<TrendUp class="h-6 w-6 text-white" weight="bold" />
 				</div>
 				<span class="text-xl font-bold text-white">Wilbur</span>
 			</a>
@@ -45,7 +45,7 @@
 						Email address
 					</label>
 					<div class="relative mt-2">
-						<Mail class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-surface-500" />
+						<Envelope class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-surface-500" />
 						<input
 							id="email"
 							type="email"
@@ -77,7 +77,7 @@
 							class="absolute right-3 top-1/2 -translate-y-1/2 text-surface-500 hover:text-surface-300"
 						>
 							{#if showPassword}
-								<EyeOff class="h-5 w-5" />
+								<EyeSlash class="h-5 w-5" />
 							{:else}
 								<Eye class="h-5 w-5" />
 							{/if}
@@ -121,7 +121,7 @@
 		<div class="max-w-lg text-center px-12">
 			<div class="flex justify-center mb-8">
 				<div class="flex h-24 w-24 items-center justify-center rounded-2xl bg-primary-500/20 backdrop-blur">
-					<TrendingUp class="h-12 w-12 text-primary-400" />
+					<TrendUp class="h-12 w-12 text-primary-400" weight="duotone" />
 				</div>
 			</div>
 			<h2 class="text-3xl font-bold">Trade together, grow together</h2>

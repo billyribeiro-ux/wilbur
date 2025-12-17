@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { roomStore, toastStore } from '$lib/stores';
-	import { X, TrendingUp } from 'lucide-svelte';
+	import { X, TrendUp } from 'phosphor-svelte';
 	import { goto } from '$app/navigation';
 
 	interface Props {
@@ -81,7 +81,7 @@
 		<div class="flex items-center justify-between border-b border-surface-700 px-6 py-4">
 			<div class="flex items-center gap-3">
 				<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-500/20">
-					<TrendingUp class="h-5 w-5 text-primary-400" />
+					<TrendUp class="h-5 w-5 text-primary-400" weight="duotone" />
 				</div>
 				<h2 class="text-lg font-semibold">Create Trading Room</h2>
 			</div>
@@ -161,7 +161,7 @@
 				<p class="text-xs text-surface-500 mb-2">Preview</p>
 				<div class="flex items-center gap-3">
 					<div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-500/20">
-						<TrendingUp class="h-6 w-6 text-primary-400" />
+						<TrendUp class="h-6 w-6 text-primary-400" weight="duotone" />
 					</div>
 					<div>
 						<h3 class="font-semibold">{title || 'Room Title'}</h3>

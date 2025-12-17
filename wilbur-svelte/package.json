@@ -33,7 +33,7 @@
     "date-fns": "^4.1.0",
     "dompurify": "^3.3.0",
     "livekit-client": "^2.15.13",
-    "lucide-svelte": "^0.468.0",
+    "phosphor-svelte": "^3.0.1",
     "pocketbase": "^0.26.5",
     "svelte-sonner": "^0.3.28",
     "zod": "^3.24.1"
