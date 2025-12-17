@@ -1,0 +1,933 @@
+[
+	{
+		"name": "users",
+		"type": "auth",
+		"schema": [
+			{
+				"name": "displayName",
+				"type": "text",
+				"required": true,
+				"options": {
+					"min": 2,
+					"max": 100
+				}
+			},
+			{
+				"name": "avatarUrl",
+				"type": "file",
+				"options": {
+					"maxSelect": 1,
+					"maxSize": 5242880,
+					"mimeTypes": ["image/jpeg", "image/png", "image/gif", "image/webp"]
+				}
+			},
+			{
+				"name": "role",
+				"type": "select",
+				"required": true,
+				"options": {
+					"maxSelect": 1,
+					"values": ["admin", "host", "moderator", "member"]
+				}
+			},
+			{
+				"name": "bio",
+				"type": "text",
+				"options": {
+					"max": 500
+				}
+			},
+			{
+				"name": "location",
+				"type": "text",
+				"options": {
+					"max": 100
+				}
+			},
+			{
+				"name": "timezone",
+				"type": "text",
+				"options": {
+					"max": 50
+				}
+			},
+			{
+				"name": "preferences",
+				"type": "json"
+			}
+		],
+		"options": {
+			"allowEmailAuth": true,
+			"allowOAuth2Auth": true,
+			"allowUsernameAuth": false,
+			"minPasswordLength": 8,
+			"requireEmail": true,
+			"onlyVerified": false
+		}
+	},
+	{
+		"name": "tenants",
+		"type": "base",
+		"schema": [
+			{
+				"name": "businessName",
+				"type": "text",
+				"required": true
+			},
+			{
+				"name": "logoUrl",
+				"type": "file",
+				"options": {
+					"maxSelect": 1,
+					"maxSize": 5242880,
+					"mimeTypes": ["image/jpeg", "image/png", "image/svg+xml"]
+				}
+			},
+			{
+				"name": "primaryColor",
+				"type": "text"
+			},
+			{
+				"name": "secondaryColor",
+				"type": "text"
+			},
+			{
+				"name": "accentColor",
+				"type": "text"
+			},
+			{
+				"name": "backgroundColor",
+				"type": "text"
+			},
+			{
+				"name": "textColorPrimary",
+				"type": "text"
+			},
+			{
+				"name": "textColorSecondary",
+				"type": "text"
+			},
+			{
+				"name": "fontFamily",
+				"type": "text"
+			}
+		]
+	},
+	{
+		"name": "rooms",
+		"type": "base",
+		"schema": [
+			{
+				"name": "name",
+				"type": "text",
+				"required": true,
+				"options": {
+					"min": 2,
+					"max": 100
+				}
+			},
+			{
+				"name": "title",
+				"type": "text",
+				"required": true,
+				"options": {
+					"max": 200
+				}
+			},
+			{
+				"name": "description",
+				"type": "text",
+				"options": {
+					"max": 1000
+				}
+			},
+			{
+				"name": "tenant",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "tenants",
+					"cascadeDelete": false,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "createdBy",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": false,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "isActive",
+				"type": "bool",
+				"options": {
+					"default": true
+				}
+			},
+			{
+				"name": "tags",
+				"type": "json"
+			},
+			{
+				"name": "iconUrl",
+				"type": "file",
+				"options": {
+					"maxSelect": 1,
+					"maxSize": 2097152,
+					"mimeTypes": ["image/jpeg", "image/png", "image/gif", "image/webp"]
+				}
+			},
+			{
+				"name": "branding",
+				"type": "json"
+			}
+		]
+	},
+	{
+		"name": "room_memberships",
+		"type": "base",
+		"schema": [
+			{
+				"name": "room",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "rooms",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "user",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "role",
+				"type": "select",
+				"required": true,
+				"options": {
+					"maxSelect": 1,
+					"values": ["admin", "host", "moderator", "member"]
+				}
+			},
+			{
+				"name": "location",
+				"type": "json"
+			}
+		],
+		"indexes": [
+			"CREATE UNIQUE INDEX idx_room_membership ON room_memberships (room, user)"
+		]
+	},
+	{
+		"name": "chat_messages",
+		"type": "base",
+		"schema": [
+			{
+				"name": "room",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "rooms",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "user",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": false,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "content",
+				"type": "text",
+				"required": true,
+				"options": {
+					"max": 5000
+				}
+			},
+			{
+				"name": "contentType",
+				"type": "select",
+				"required": true,
+				"options": {
+					"maxSelect": 1,
+					"values": ["text", "image", "file"]
+				}
+			},
+			{
+				"name": "fileUrl",
+				"type": "file",
+				"options": {
+					"maxSelect": 1,
+					"maxSize": 10485760
+				}
+			},
+			{
+				"name": "isDeleted",
+				"type": "bool",
+				"options": {
+					"default": false
+				}
+			},
+			{
+				"name": "isOffTopic",
+				"type": "bool",
+				"options": {
+					"default": false
+				}
+			},
+			{
+				"name": "isPinned",
+				"type": "bool",
+				"options": {
+					"default": false
+				}
+			},
+			{
+				"name": "pinnedBy",
+				"type": "relation",
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": false,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "pinnedAt",
+				"type": "date"
+			},
+			{
+				"name": "deletedBy",
+				"type": "relation",
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": false,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "deletedAt",
+				"type": "date"
+			}
+		],
+		"indexes": [
+			"CREATE INDEX idx_chat_messages_room ON chat_messages (room)",
+			"CREATE INDEX idx_chat_messages_user ON chat_messages (user)",
+			"CREATE INDEX idx_chat_messages_created ON chat_messages (created)"
+		]
+	},
+	{
+		"name": "alerts",
+		"type": "base",
+		"schema": [
+			{
+				"name": "room",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "rooms",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "author",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": false,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "title",
+				"type": "text",
+				"options": {
+					"max": 200
+				}
+			},
+			{
+				"name": "body",
+				"type": "text",
+				"options": {
+					"max": 5000
+				}
+			},
+			{
+				"name": "type",
+				"type": "select",
+				"options": {
+					"maxSelect": 1,
+					"values": ["text", "url", "media"]
+				}
+			},
+			{
+				"name": "isNonTrade",
+				"type": "bool",
+				"options": {
+					"default": false
+				}
+			},
+			{
+				"name": "hasLegalDisclosure",
+				"type": "bool",
+				"options": {
+					"default": false
+				}
+			},
+			{
+				"name": "legalDisclosureText",
+				"type": "text",
+				"options": {
+					"max": 2000
+				}
+			},
+			{
+				"name": "mediaUrl",
+				"type": "file",
+				"options": {
+					"maxSelect": 1,
+					"maxSize": 10485760
+				}
+			}
+		],
+		"indexes": [
+			"CREATE INDEX idx_alerts_room ON alerts (room)",
+			"CREATE INDEX idx_alerts_author ON alerts (author)",
+			"CREATE INDEX idx_alerts_created ON alerts (created)"
+		]
+	},
+	{
+		"name": "polls",
+		"type": "base",
+		"schema": [
+			{
+				"name": "room",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "rooms",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "createdBy",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": false,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "title",
+				"type": "text",
+				"required": true,
+				"options": {
+					"max": 200
+				}
+			},
+			{
+				"name": "description",
+				"type": "text",
+				"options": {
+					"max": 1000
+				}
+			},
+			{
+				"name": "options",
+				"type": "json",
+				"required": true
+			},
+			{
+				"name": "isActive",
+				"type": "bool",
+				"options": {
+					"default": true
+				}
+			},
+			{
+				"name": "expiresAt",
+				"type": "date"
+			}
+		]
+	},
+	{
+		"name": "poll_votes",
+		"type": "base",
+		"schema": [
+			{
+				"name": "poll",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "polls",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "user",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "optionIndex",
+				"type": "number",
+				"required": true
+			}
+		],
+		"indexes": [
+			"CREATE UNIQUE INDEX idx_poll_vote ON poll_votes (poll, user)"
+		]
+	},
+	{
+		"name": "notifications",
+		"type": "base",
+		"schema": [
+			{
+				"name": "user",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "type",
+				"type": "select",
+				"required": true,
+				"options": {
+					"maxSelect": 1,
+					"values": ["mention", "reply", "broadcast_alert", "room_invite", "system"]
+				}
+			},
+			{
+				"name": "title",
+				"type": "text",
+				"required": true,
+				"options": {
+					"max": 200
+				}
+			},
+			{
+				"name": "message",
+				"type": "text",
+				"required": true,
+				"options": {
+					"max": 1000
+				}
+			},
+			{
+				"name": "room",
+				"type": "relation",
+				"options": {
+					"collectionId": "rooms",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "alert",
+				"type": "relation",
+				"options": {
+					"collectionId": "alerts",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "link",
+				"type": "url"
+			},
+			{
+				"name": "metadata",
+				"type": "json"
+			}
+		],
+		"indexes": [
+			"CREATE INDEX idx_notifications_user ON notifications (user)"
+		]
+	},
+	{
+		"name": "private_chats",
+		"type": "base",
+		"schema": [
+			{
+				"name": "user1",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "user2",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			}
+		]
+	},
+	{
+		"name": "private_messages",
+		"type": "base",
+		"schema": [
+			{
+				"name": "chat",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "private_chats",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "sender",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": false,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "content",
+				"type": "text",
+				"required": true,
+				"options": {
+					"max": 5000
+				}
+			}
+		]
+	},
+	{
+		"name": "moderation_logs",
+		"type": "base",
+		"schema": [
+			{
+				"name": "room",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "rooms",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "moderator",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": false,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "targetUser",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": false,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "action",
+				"type": "select",
+				"required": true,
+				"options": {
+					"maxSelect": 1,
+					"values": ["kick", "ban", "mute", "warn", "unban", "unmute"]
+				}
+			},
+			{
+				"name": "reason",
+				"type": "text",
+				"options": {
+					"max": 1000
+				}
+			},
+			{
+				"name": "metadata",
+				"type": "json"
+			}
+		]
+	},
+	{
+		"name": "banned_users",
+		"type": "base",
+		"schema": [
+			{
+				"name": "user",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "room",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "rooms",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "bannedBy",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": false,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "reason",
+				"type": "text",
+				"required": true,
+				"options": {
+					"max": 1000
+				}
+			},
+			{
+				"name": "expiresAt",
+				"type": "date"
+			}
+		],
+		"indexes": [
+			"CREATE UNIQUE INDEX idx_banned_user ON banned_users (user, room)"
+		]
+	},
+	{
+		"name": "reported_content",
+		"type": "base",
+		"schema": [
+			{
+				"name": "contentType",
+				"type": "select",
+				"required": true,
+				"options": {
+					"maxSelect": 1,
+					"values": ["message", "alert", "user", "room"]
+				}
+			},
+			{
+				"name": "contentId",
+				"type": "text",
+				"required": true
+			},
+			{
+				"name": "room",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "rooms",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "reportedBy",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": false,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "reason",
+				"type": "text",
+				"required": true,
+				"options": {
+					"max": 1000
+				}
+			},
+			{
+				"name": "status",
+				"type": "select",
+				"required": true,
+				"options": {
+					"maxSelect": 1,
+					"values": ["pending", "reviewing", "resolved", "dismissed"]
+				}
+			},
+			{
+				"name": "reviewedBy",
+				"type": "relation",
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": false,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "reviewedAt",
+				"type": "date"
+			},
+			{
+				"name": "resolutionNotes",
+				"type": "text",
+				"options": {
+					"max": 2000
+				}
+			}
+		]
+	},
+	{
+		"name": "user_integrations",
+		"type": "base",
+		"schema": [
+			{
+				"name": "user",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "type",
+				"type": "select",
+				"required": true,
+				"options": {
+					"maxSelect": 1,
+					"values": ["spotify", "x", "linkedin"]
+				}
+			},
+			{
+				"name": "accessToken",
+				"type": "text",
+				"required": true
+			},
+			{
+				"name": "refreshToken",
+				"type": "text"
+			},
+			{
+				"name": "expiresAt",
+				"type": "date"
+			},
+			{
+				"name": "metadata",
+				"type": "json"
+			},
+			{
+				"name": "isActive",
+				"type": "bool",
+				"options": {
+					"default": true
+				}
+			}
+		],
+		"indexes": [
+			"CREATE UNIQUE INDEX idx_user_integration ON user_integrations (user, type)"
+		]
+	},
+	{
+		"name": "room_files",
+		"type": "base",
+		"schema": [
+			{
+				"name": "room",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "rooms",
+					"cascadeDelete": true,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "user",
+				"type": "relation",
+				"required": true,
+				"options": {
+					"collectionId": "users",
+					"cascadeDelete": false,
+					"maxSelect": 1
+				}
+			},
+			{
+				"name": "filename",
+				"type": "text",
+				"required": true
+			},
+			{
+				"name": "file",
+				"type": "file",
+				"required": true,
+				"options": {
+					"maxSelect": 1,
+					"maxSize": 52428800
+				}
+			},
+			{
+				"name": "fileType",
+				"type": "text"
+			},
+			{
+				"name": "fileSize",
+				"type": "number",
+				"required": true
+			},
+			{
+				"name": "mimeType",
+				"type": "text",
+				"required": true
+			},
+			{
+				"name": "folderName",
+				"type": "text",
+				"required": true
+			}
+		]
+	}
+]
