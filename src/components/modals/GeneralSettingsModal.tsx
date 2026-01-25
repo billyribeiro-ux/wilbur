@@ -1,15 +1,31 @@
+/**
+ * ============================================================================
+ * GENERAL SETTINGS MODAL - Apple HIG & Microsoft Enterprise Standards
+ * ============================================================================
+ *
+ * Application settings with tabs for app, alert, chat, and presenter settings.
+ * Implements WCAG 2.1 AA accessibility compliance.
+ *
+ * @version 2.0.0
+ * @updated 2026-01-24
+ */
+
+import { useState, useEffect, useCallback } from 'react';
+
+import { ModalBase } from './ModalBase';
+
 // ============================================================================
-// GENERAL SETTINGS MODAL - Microsoft Enterprise Standard
+// TYPES
 // ============================================================================
-import { X } from 'lucide-react';
-import { useState, useEffect } from 'react';
 
 interface GeneralSettingsModalProps {
   onClose: () => void;
+  isOpen?: boolean;
 }
 
 type ColorTheme = 'light' | 'dark';
 type RoomLayout = 'left' | 'top' | 'right' | 'bottom';
+type TabId = 'app' | 'alert' | 'chat' | 'presenter';
 
 interface SettingsState {
   colorTheme: ColorTheme;
@@ -27,6 +43,15 @@ interface SettingsState {
   videoEnabled: boolean;
 }
 
+interface Tab {
+  id: TabId;
+  label: string;
+}
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
 const DEFAULT_SETTINGS: SettingsState = {
   colorTheme: 'light',
   roomLayout: 'left',
@@ -43,8 +68,112 @@ const DEFAULT_SETTINGS: SettingsState = {
   videoEnabled: true,
 };
 
-export function GeneralSettingsModal({ onClose }: GeneralSettingsModalProps) {
-  const [activeTab, setActiveTab] = useState<'app' | 'alert' | 'chat' | 'presenter'>('app');
+const TABS: Tab[] = [
+  { id: 'app', label: 'App Settings' },
+  { id: 'alert', label: 'Alert Settings' },
+  { id: 'chat', label: 'Chat Settings' },
+  { id: 'presenter', label: 'Presenter Settings' },
+];
+
+const ROOM_LAYOUTS: { value: RoomLayout; label: string }[] = [
+  { value: 'left', label: 'Chat and Alerts left' },
+  { value: 'top', label: 'Chat and Alerts top' },
+  { value: 'right', label: 'Chat and Alerts right' },
+  { value: 'bottom', label: 'Chat and Alerts bottom' },
+];
+
+// ============================================================================
+// SUB-COMPONENTS
+// ============================================================================
+
+interface TabButtonProps {
+  tab: Tab;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+function TabButton({ tab, isActive, onClick }: TabButtonProps) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={isActive}
+      aria-controls={`panel-${tab.id}`}
+      id={`tab-${tab.id}`}
+      onClick={onClick}
+      className={`
+        px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+        ${isActive
+          ? 'bg-emerald-600 text-white'
+          : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+        }
+      `}
+    >
+      {tab.label}
+    </button>
+  );
+}
+
+interface ColorInputProps {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function ColorInput({ id, label, value, onChange }: ColorInputProps) {
+  return (
+    <div className="flex items-center gap-3">
+      <input
+        id={id}
+        type="color"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-12 h-8 rounded border-2 border-slate-600 cursor-pointer bg-transparent"
+        aria-label={label}
+      />
+      <label htmlFor={id} className="text-slate-300 cursor-pointer">
+        {label}
+      </label>
+    </div>
+  );
+}
+
+interface CheckboxSettingProps {
+  id: string;
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  highlight?: boolean;
+}
+
+function CheckboxSetting({ id, label, checked, onChange, highlight = false }: CheckboxSettingProps) {
+  return (
+    <label htmlFor={id} className="flex items-center gap-3 cursor-pointer">
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className={`
+          w-5 h-5 rounded cursor-pointer
+          ${highlight ? 'accent-emerald-600' : 'accent-slate-400'}
+        `}
+      />
+      <span className={highlight ? 'text-white font-medium' : 'text-slate-300'}>
+        {label}
+      </span>
+    </label>
+  );
+}
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
+export function GeneralSettingsModal({ onClose, isOpen = true }: GeneralSettingsModalProps) {
+  const [activeTab, setActiveTab] = useState<TabId>('app');
   const [settings, setSettings] = useState<SettingsState>(DEFAULT_SETTINGS);
 
   // Load settings from localStorage on mount
@@ -55,375 +184,380 @@ export function GeneralSettingsModal({ onClose }: GeneralSettingsModalProps) {
         setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) });
       }
     } catch (error) {
-      console.error('Failed to load settings:', error);
+      console.error('[GeneralSettingsModal] Failed to load settings:', error);
     }
   }, []);
 
-  const handleSave = () => {
+  // Handlers
+  const updateSetting = useCallback(<K extends keyof SettingsState>(
+    key: K,
+    value: SettingsState[K]
+  ) => {
+    setSettings((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleSave = useCallback(() => {
     try {
       localStorage.setItem('general_settings', JSON.stringify(settings));
       window.dispatchEvent(new CustomEvent('settings-updated', { detail: settings }));
       onClose();
     } catch (error) {
-      console.error('Failed to save settings:', error);
+      console.error('[GeneralSettingsModal] Failed to save settings:', error);
     }
-  };
+  }, [settings, onClose]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setSettings(DEFAULT_SETTINGS);
-  };
+  }, []);
 
-  const handleRemoveWindows = () => {
-    console.log('Removing webcam/screen preview windows');
-  };
+  const handleKeyDown = useCallback((e: React.KeyboardEvent, tabIndex: number) => {
+    const tabCount = TABS.length;
+    let newIndex = tabIndex;
 
-  const handleEditInfo = () => {
-    console.log('Edit my info and avatar');
-  };
+    switch (e.key) {
+      case 'ArrowLeft':
+        e.preventDefault();
+        newIndex = tabIndex === 0 ? tabCount - 1 : tabIndex - 1;
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        newIndex = tabIndex === tabCount - 1 ? 0 : tabIndex + 1;
+        break;
+      default:
+        return;
+    }
 
-  const handleGetToken = () => {
-    console.log('Get my token');
-  };
+    setActiveTab(TABS[newIndex].id);
+    document.getElementById(`tab-${TABS[newIndex].id}`)?.focus();
+  }, []);
 
-  return (
-    <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-slate-800 rounded-xl shadow-2xl w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+  // Footer
+  const footer = (
+    <div className="flex items-center justify-end gap-3">
+      <button
+        type="button"
+        onClick={handleReset}
+        className="
+          px-6 py-2 border-2 border-red-600 text-red-500
+          hover:bg-red-600 hover:text-white
+          font-semibold rounded-lg transition-all duration-200
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500
+        "
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-700">
-          <h2 className="text-lg sm:text-xl font-bold text-white">General Settings</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex flex-wrap gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 border-b border-slate-700 bg-slate-900/50">
-          <button
-            onClick={() => setActiveTab('app')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === 'app'
-                ? 'bg-green-600 text-white'
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-            }`}
-          >
-            App Settings
-          </button>
-          <button
-            onClick={() => setActiveTab('alert')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === 'alert'
-                ? 'bg-green-600 text-white'
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-            }`}
-          >
-            Alert Settings
-          </button>
-          <button
-            onClick={() => setActiveTab('chat')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === 'chat'
-                ? 'bg-green-600 text-white'
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-            }`}
-          >
-            Chat Settings
-          </button>
-          <button
-            onClick={() => setActiveTab('presenter')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === 'presenter'
-                ? 'bg-green-600 text-white'
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-            }`}
-          >
-            Presenter Settings
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
-          {/* Color Theme */}
-          <div>
-            <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-              🎨 Choose Color Theme:
-            </h3>
-            <div className="space-y-2">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="colorTheme"
-                  checked={settings.colorTheme === 'light'}
-                  onChange={() => setSettings({ ...settings, colorTheme: 'light' })}
-                  className="w-5 h-5 text-green-600 accent-green-600"
-                />
-                <span className="text-white font-medium">LIGHT THEME</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="colorTheme"
-                  checked={settings.colorTheme === 'dark'}
-                  onChange={() => setSettings({ ...settings, colorTheme: 'dark' })}
-                  className="w-5 h-5 text-slate-400 accent-slate-400"
-                />
-                <span className="text-slate-300">Dark Theme</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Room Layout */}
-          <div>
-            <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-              📐 Room Layout:
-            </h3>
-            <div className="space-y-2">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="roomLayout"
-                  checked={settings.roomLayout === 'left'}
-                  onChange={() => setSettings({ ...settings, roomLayout: 'left' })}
-                  className="w-5 h-5 text-green-600 accent-green-600"
-                />
-                <span className="text-white font-medium">CHAT AND ALERTS LEFT</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="roomLayout"
-                  checked={settings.roomLayout === 'top'}
-                  onChange={() => setSettings({ ...settings, roomLayout: 'top' })}
-                  className="w-5 h-5 text-slate-400 accent-slate-400"
-                />
-                <span className="text-slate-300">Chat and Alerts top</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="roomLayout"
-                  checked={settings.roomLayout === 'right'}
-                  onChange={() => setSettings({ ...settings, roomLayout: 'right' })}
-                  className="w-5 h-5 text-slate-400 accent-slate-400"
-                />
-                <span className="text-slate-300">Chat and Alerts right</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="roomLayout"
-                  checked={settings.roomLayout === 'bottom'}
-                  onChange={() => setSettings({ ...settings, roomLayout: 'bottom' })}
-                  className="w-5 h-5 text-slate-400 accent-slate-400"
-                />
-                <span className="text-slate-300">Chat and Alerts bottom</span>
-              </label>
-            </div>
-          </div>
-
-          {/* PM Logs */}
-          <div>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="radio"
-                checked={settings.pmLogsRight}
-                onChange={() => setSettings({ ...settings, pmLogsRight: !settings.pmLogsRight })}
-                className="w-5 h-5 text-slate-400 accent-slate-400"
-              />
-              <span className="text-slate-300">PM logs on the right</span>
-            </label>
-          </div>
-
-          {/* Colors & Size */}
-          <div>
-            <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-              🎨 Colors & Size:
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <input
-                  id="text-color"
-                  name="text-color"
-                  type="color"
-                  value={settings.textColor}
-                  onChange={(e) => setSettings({ ...settings, textColor: e.target.value })}
-                  className="w-12 h-8 rounded border-2 border-slate-600 cursor-pointer"
-                  aria-label="Text color"
-                />
-                <span className="text-slate-300">Text Color</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  id="username-color"
-                  name="username-color"
-                  type="color"
-                  value={settings.usernameColor}
-                  onChange={(e) => setSettings({ ...settings, usernameColor: e.target.value })}
-                  className="w-12 h-8 rounded border-2 border-slate-600 cursor-pointer"
-                  aria-label="Username color"
-                />
-                <span className="text-slate-300">Username Color</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  id="background-color"
-                  name="background-color"
-                  type="color"
-                  value={settings.backgroundColor}
-                  onChange={(e) => setSettings({ ...settings, backgroundColor: e.target.value })}
-                  className="w-12 h-8 rounded border-2 border-slate-600 cursor-pointer"
-                  aria-label="Background color"
-                />
-                <span className="text-slate-300">Background Color</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  id="ticker-color"
-                  name="ticker-color"
-                  type="color"
-                  value={settings.tickerColor}
-                  onChange={(e) => setSettings({ ...settings, tickerColor: e.target.value })}
-                  className="w-12 h-8 rounded border-2 border-slate-600 cursor-pointer"
-                  aria-label="Ticker color"
-                />
-                <span className="text-slate-300">Ticker Color</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  id="text-size"
-                  name="text-size"
-                  type="number"
-                  value={settings.textSize}
-                  onChange={(e) => setSettings({ ...settings, textSize: parseInt(e.target.value) || 13 })}
-                  min="8"
-                  max="24"
-                  className="w-16 px-2 py-1 bg-slate-700 border border-slate-600 rounded text-white"
-                  aria-label="Text size"
-                />
-                <span className="text-slate-300">Text Size</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Do Not Disturb */}
-          <div>
-            <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-              🔕 Do not disturb:
-            </h3>
-            <div className="space-y-2">
-              <label htmlFor="dont-disturb" className="flex items-center gap-3 cursor-pointer">
-                <input
-                  id="dont-disturb"
-                  name="dont-disturb"
-                  type="checkbox"
-                  checked={settings.dontDisturb}
-                  onChange={(e) => setSettings({ ...settings, dontDisturb: e.target.checked })}
-                  className="w-5 h-5 rounded accent-slate-400"
-                />
-                <span className="text-slate-300">Don't Disturb</span>
-              </label>
-              <label htmlFor="start-recording-sound" className="flex items-center gap-3 cursor-pointer">
-                <input
-                  id="start-recording-sound"
-                  name="start-recording-sound"
-                  type="checkbox"
-                  checked={settings.startRecordingSound}
-                  onChange={(e) => setSettings({ ...settings, startRecordingSound: e.target.checked })}
-                  className="w-5 h-5 rounded accent-green-600"
-                />
-                <span className="text-white font-medium">START RECORDING SOUND ON</span>
-              </label>
-              <label htmlFor="stop-recording-sound" className="flex items-center gap-3 cursor-pointer">
-                <input
-                  id="stop-recording-sound"
-                  name="stop-recording-sound"
-                  type="checkbox"
-                  checked={settings.stopRecordingSound}
-                  onChange={(e) => setSettings({ ...settings, stopRecordingSound: e.target.checked })}
-                  className="w-5 h-5 rounded accent-green-600"
-                />
-                <span className="text-white font-medium">STOP RECORDING SOUND ON</span>
-              </label>
-              <label htmlFor="recording-preview" className="flex items-center gap-3 cursor-pointer">
-                <input
-                  id="recording-preview"
-                  name="recording-preview"
-                  type="checkbox"
-                  checked={settings.recordingPreview}
-                  onChange={(e) => setSettings({ ...settings, recordingPreview: e.target.checked })}
-                  className="w-5 h-5 rounded accent-green-600"
-                />
-                <span className="text-white font-medium">RECORDING PREVIEW ON</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Video */}
-          <div>
-            <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-              💬 Disable/Enable Video:
-            </h3>
-            <label htmlFor="video-enabled" className="flex items-center gap-3 cursor-pointer">
-              <input
-                id="video-enabled"
-                name="video-enabled"
-                type="checkbox"
-                checked={settings.videoEnabled}
-                onChange={(e) => setSettings({ ...settings, videoEnabled: e.target.checked })}
-                className="w-5 h-5 rounded accent-green-600"
-              />
-              <span className="text-white font-medium">VIDEO ENABLED</span>
-            </label>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="space-y-3 pt-4">
-            <button
-              onClick={handleRemoveWindows}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
-            >
-              Remove webcam/screenpreview windows
-            </button>
-            <button
-              onClick={handleEditInfo}
-              className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              👤 Edit my Info and Avatar
-            </button>
-            <button
-              onClick={handleGetToken}
-              className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              👤 Get my token
-            </button>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-700 bg-slate-900/50">
-          <button
-            onClick={handleReset}
-            className="px-6 py-2 border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white font-semibold rounded-lg transition-colors"
-          >
-            Reset
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors"
-          >
-            Save changes
-          </button>
-        </div>
-      </div>
+        Reset
+      </button>
+      <button
+        type="button"
+        onClick={handleSave}
+        className="
+          px-6 py-2 bg-emerald-600 hover:bg-emerald-700
+          text-white font-semibold rounded-lg transition-all duration-200
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500
+        "
+      >
+        Save changes
+      </button>
     </div>
   );
+
+  return (
+    <ModalBase
+      isOpen={isOpen}
+      onClose={onClose}
+      title="General Settings"
+      size="lg"
+      footer={footer}
+      testId="general-settings-modal"
+    >
+      {/* Tabs */}
+      <div className="px-4 sm:px-6 py-3 border-b border-slate-700/50 bg-slate-900/50">
+        <div
+          role="tablist"
+          aria-label="Settings categories"
+          className="flex flex-wrap gap-1 sm:gap-2"
+        >
+          {TABS.map((tab, index) => (
+            <div
+              key={tab.id}
+              onKeyDown={(e) => handleKeyDown(e, index)}
+            >
+              <TabButton
+                tab={tab}
+                isActive={activeTab === tab.id}
+                onClick={() => setActiveTab(tab.id)}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4 sm:p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+        {/* App Settings Panel */}
+        <div
+          id="panel-app"
+          role="tabpanel"
+          aria-labelledby="tab-app"
+          hidden={activeTab !== 'app'}
+        >
+          {activeTab === 'app' && (
+            <div className="space-y-6">
+              {/* Color Theme */}
+              <fieldset>
+                <legend className="text-white font-semibold mb-3">
+                  Choose Color Theme
+                </legend>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="colorTheme"
+                      checked={settings.colorTheme === 'light'}
+                      onChange={() => updateSetting('colorTheme', 'light')}
+                      className="w-5 h-5 accent-emerald-600"
+                    />
+                    <span className={settings.colorTheme === 'light' ? 'text-white font-medium' : 'text-slate-300'}>
+                      Light Theme
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="colorTheme"
+                      checked={settings.colorTheme === 'dark'}
+                      onChange={() => updateSetting('colorTheme', 'dark')}
+                      className="w-5 h-5 accent-slate-400"
+                    />
+                    <span className={settings.colorTheme === 'dark' ? 'text-white font-medium' : 'text-slate-300'}>
+                      Dark Theme
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
+
+              {/* Room Layout */}
+              <fieldset>
+                <legend className="text-white font-semibold mb-3">
+                  Room Layout
+                </legend>
+                <div className="space-y-2">
+                  {ROOM_LAYOUTS.map((layout) => (
+                    <label
+                      key={layout.value}
+                      className="flex items-center gap-3 cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        name="roomLayout"
+                        checked={settings.roomLayout === layout.value}
+                        onChange={() => updateSetting('roomLayout', layout.value)}
+                        className={`w-5 h-5 ${settings.roomLayout === layout.value ? 'accent-emerald-600' : 'accent-slate-400'}`}
+                      />
+                      <span className={settings.roomLayout === layout.value ? 'text-white font-medium' : 'text-slate-300'}>
+                        {layout.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              {/* PM Logs */}
+              <CheckboxSetting
+                id="pm-logs"
+                label="PM logs on the right"
+                checked={settings.pmLogsRight}
+                onChange={(v) => updateSetting('pmLogsRight', v)}
+              />
+
+              {/* Colors & Size */}
+              <fieldset>
+                <legend className="text-white font-semibold mb-3">
+                  Colors & Size
+                </legend>
+                <div className="space-y-3">
+                  <ColorInput
+                    id="text-color"
+                    label="Text Color"
+                    value={settings.textColor}
+                    onChange={(v) => updateSetting('textColor', v)}
+                  />
+                  <ColorInput
+                    id="username-color"
+                    label="Username Color"
+                    value={settings.usernameColor}
+                    onChange={(v) => updateSetting('usernameColor', v)}
+                  />
+                  <ColorInput
+                    id="background-color"
+                    label="Background Color"
+                    value={settings.backgroundColor}
+                    onChange={(v) => updateSetting('backgroundColor', v)}
+                  />
+                  <ColorInput
+                    id="ticker-color"
+                    label="Ticker Color"
+                    value={settings.tickerColor}
+                    onChange={(v) => updateSetting('tickerColor', v)}
+                  />
+                  <div className="flex items-center gap-3">
+                    <input
+                      id="text-size"
+                      type="number"
+                      value={settings.textSize}
+                      onChange={(e) => updateSetting('textSize', parseInt(e.target.value, 10) || 13)}
+                      min="8"
+                      max="24"
+                      className="
+                        w-16 px-2 py-1 bg-slate-700 border border-slate-600 rounded
+                        text-white focus:outline-none focus:ring-2 focus:ring-blue-500
+                      "
+                      aria-label="Text size"
+                    />
+                    <label htmlFor="text-size" className="text-slate-300 cursor-pointer">
+                      Text Size
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
+
+              {/* Do Not Disturb */}
+              <fieldset>
+                <legend className="text-white font-semibold mb-3">
+                  Notifications
+                </legend>
+                <div className="space-y-2">
+                  <CheckboxSetting
+                    id="dont-disturb"
+                    label="Do Not Disturb"
+                    checked={settings.dontDisturb}
+                    onChange={(v) => updateSetting('dontDisturb', v)}
+                  />
+                  <CheckboxSetting
+                    id="start-recording-sound"
+                    label="Start Recording Sound"
+                    checked={settings.startRecordingSound}
+                    onChange={(v) => updateSetting('startRecordingSound', v)}
+                    highlight={settings.startRecordingSound}
+                  />
+                  <CheckboxSetting
+                    id="stop-recording-sound"
+                    label="Stop Recording Sound"
+                    checked={settings.stopRecordingSound}
+                    onChange={(v) => updateSetting('stopRecordingSound', v)}
+                    highlight={settings.stopRecordingSound}
+                  />
+                  <CheckboxSetting
+                    id="recording-preview"
+                    label="Recording Preview"
+                    checked={settings.recordingPreview}
+                    onChange={(v) => updateSetting('recordingPreview', v)}
+                    highlight={settings.recordingPreview}
+                  />
+                </div>
+              </fieldset>
+
+              {/* Video */}
+              <fieldset>
+                <legend className="text-white font-semibold mb-3">
+                  Video
+                </legend>
+                <CheckboxSetting
+                  id="video-enabled"
+                  label="Video Enabled"
+                  checked={settings.videoEnabled}
+                  onChange={(v) => updateSetting('videoEnabled', v)}
+                  highlight={settings.videoEnabled}
+                />
+              </fieldset>
+
+              {/* Action Buttons */}
+              <div className="space-y-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => console.log('Remove webcam/screen preview windows')}
+                  className="
+                    w-full bg-red-600 hover:bg-red-700 text-white
+                    font-semibold py-3 px-4 rounded-lg transition-colors
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500
+                  "
+                >
+                  Remove webcam/screen preview windows
+                </button>
+                <button
+                  type="button"
+                  onClick={() => console.log('Edit my Info and Avatar')}
+                  className="
+                    w-full bg-amber-600 hover:bg-amber-700 text-white
+                    font-semibold py-3 px-4 rounded-lg transition-colors
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500
+                  "
+                >
+                  Edit my Info and Avatar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => console.log('Get my token')}
+                  className="
+                    w-full bg-amber-600 hover:bg-amber-700 text-white
+                    font-semibold py-3 px-4 rounded-lg transition-colors
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500
+                  "
+                >
+                  Get my token
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Alert Settings Panel */}
+        <div
+          id="panel-alert"
+          role="tabpanel"
+          aria-labelledby="tab-alert"
+          hidden={activeTab !== 'alert'}
+        >
+          {activeTab === 'alert' && (
+            <div className="text-slate-400 text-center py-8">
+              <p>Alert settings coming soon...</p>
+            </div>
+          )}
+        </div>
+
+        {/* Chat Settings Panel */}
+        <div
+          id="panel-chat"
+          role="tabpanel"
+          aria-labelledby="tab-chat"
+          hidden={activeTab !== 'chat'}
+        >
+          {activeTab === 'chat' && (
+            <div className="text-slate-400 text-center py-8">
+              <p>Chat settings coming soon...</p>
+            </div>
+          )}
+        </div>
+
+        {/* Presenter Settings Panel */}
+        <div
+          id="panel-presenter"
+          role="tabpanel"
+          aria-labelledby="tab-presenter"
+          hidden={activeTab !== 'presenter'}
+        >
+          {activeTab === 'presenter' && (
+            <div className="text-slate-400 text-center py-8">
+              <p>Presenter settings coming soon...</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </ModalBase>
+  );
 }
+
+// ============================================================================
+// EXPORTS
+// ============================================================================
+
+export default GeneralSettingsModal;
