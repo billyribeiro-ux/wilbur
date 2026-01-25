@@ -1,7 +1,8 @@
 /** Component tests for AdvancedBrandingSettings (SSOT) */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import * as RTL from '@testing-library/react';
+const { render, screen, waitFor, fireEvent } = RTL;
 import { AdvancedBrandingSettings } from '../AdvancedBrandingSettings';
 import { mockThemeStore, mockAuthStore, mockRoomStore, mockToastStore, createMockSupabase } from '../../../test-utils/test-helpers';
 

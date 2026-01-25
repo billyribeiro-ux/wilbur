@@ -6,9 +6,8 @@ import { configure } from '@testing-library/react';
 // but for simplicity, we'll rely on Vitest's default timeout
 
 // Configure test environment
-configure({
-  asyncUtilTimeout: 5000,
-});
+// Note: asyncUtilTimeout was deprecated in @testing-library/react v16
+// Timeout can be configured via waitFor options directly
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
