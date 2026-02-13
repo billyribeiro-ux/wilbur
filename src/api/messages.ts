@@ -1,5 +1,5 @@
 /**
- * Messages API — Replaces supabase.from('chatmessages').* calls.
+ * Messages API module.
  */
 
 import { api } from './client';

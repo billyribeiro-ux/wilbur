@@ -1,7 +1,7 @@
 /** Admin verification hook with caching and concurrency control */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '../lib/supabase';
+import { roomsApi } from '../api/rooms';
 
 interface UseAdminVerificationParams {
   userId: string | undefined;
@@ -30,13 +30,13 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 /**
  * Hook for verifying admin status with caching and concurrency control.
- * 
+ *
  * Features:
  * - In-memory caching (5 min TTL)
  * - Prevents duplicate concurrent verification calls
  * - Re-verifies when userId or roomId changes
  * - Exposes verification status and errors
- * 
+ *
  * @param params - User ID and room ID
  * @returns Admin status, verification state, and verify function
  */
@@ -47,7 +47,7 @@ export function useAdminVerification({
   const [isAdmin, setIsAdmin] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [lastError, setLastError] = useState<string | undefined>();
-  
+
   // Concurrency control
   const verifyReqId = useRef(0);
   const isVerifyingRef = useRef(false);
@@ -65,7 +65,7 @@ export function useAdminVerification({
     }
 
     const cacheKey = `${userId}:${roomId}`;
-    
+
     // Check cache
     const cached = cache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -81,31 +81,28 @@ export function useAdminVerification({
     setLastError(undefined);
 
     try {
-      const { data, error } = await supabase
-        .from('room_memberships')
-        .select('id, room_id, user_id, role, joined_at')
-        .eq('room_id', roomId)
-        .eq('user_id', userId)
-        .single();
+      // Use roomsApi to get members and find this user's membership
+      const members = await roomsApi.listMembers(roomId);
 
       // Check if this is still the latest request
       if (reqId !== verifyReqId.current) {
         return isAdmin; // Superseded
       }
 
-      if (error || !data) {
+      const membership = members.find(m => m.user_id === userId);
+
+      if (!membership) {
         setLastError('No membership found');
         setIsAdmin(false);
         return false;
       }
 
-      const membershipData = data as { role: string; joined_at: string };
-      const isAdminRole = membershipData.role === 'admin';
+      const isAdminRole = membership.role === 'admin';
 
       // Verify account age (1 hour minimum)
-      const joinedAt = new Date(membershipData.joined_at).getTime();
+      const joinedAt = new Date(membership.created_at).getTime();
       const accountAge = Date.now() - joinedAt;
-      
+
       if (Number.isFinite(joinedAt) && accountAge < 60 * 60 * 1000) {
         setLastError('Admin account must be at least 1 hour old');
         setIsAdmin(false);

@@ -1,16 +1,10 @@
-// Added: 2025-01-24 - Comprehensive room service with enhanced error handling and retry logic
-import { supabase } from '../lib/supabase';
+// Room service using roomsApi
+import { roomsApi } from '../api/rooms';
 import type { Room } from '../types/database.types';
 
 import { reportError, ErrorSeverity } from './authService';
-// Fixed: 2025-01-24 - Enhanced null eradication - Microsoft TypeScript standards
-// Replaced null with undefined, removed unnecessary null checks, used optional types
 
-// Fixed: 2025-01-24 - Eradicated 4 null usage(s) - Microsoft TypeScript standards
-// Replaced null with undefined, removed unnecessary null checks, used optional types
-
-
-// Added: 2025-01-24 - Type definitions for room operations
+// Type definitions for room operations
 export interface InsertRoom {
   tenant_id: string;
   name: string;
@@ -41,7 +35,7 @@ export interface RoomsResponse {
   error: Error | undefined;
 }
 
-// Added: 2025-01-24 - Retry utility for transient failures
+// Retry utility for transient failures
 async function retryOperation<T>(
   operation: () => Promise<T>,
   maxRetries: number = 3,
@@ -54,13 +48,13 @@ async function retryOperation<T>(
       return await operation();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error('Operation failed');
-      
+
       if (attempt === maxRetries) {
         throw lastError;
       }
-      
+
       const delay = baseDelayMs * Math.pow(2, attempt - 1);
-      
+
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -69,21 +63,19 @@ async function retryOperation<T>(
 }
 
 class RoomService {
-  // Added: 2025-01-24 - Create room with retry logic and error reporting
+  // Create room with retry logic and error reporting
   async createRoom(roomData: InsertRoom): Promise<RoomResponse> {
     try {
-      const { data, error } = await retryOperation(async () => {
-        const result = await supabase
-          .from('rooms')
-          .insert(roomData)
-          .select()
-          .single();
-        if (result.error) throw result.error;
-        return result;
+      const data = await retryOperation(async () => {
+        return await roomsApi.create({
+          name: roomData.name,
+          title: roomData.title,
+          description: roomData.description,
+          tenant_id: roomData.tenant_id,
+        });
       });
 
-      if (error) throw error;
-      return { data, error: undefined };
+      return { data: data as unknown as Room, error: undefined };
     } catch (error) {
       reportError(error instanceof Error ? error : new Error(String(error)), ErrorSeverity.HIGH, {
         component: 'RoomService',
@@ -97,22 +89,14 @@ class RoomService {
     }
   }
 
-  // Added: 2025-01-24 - Get rooms by tenant with error handling
+  // Get rooms by tenant with error handling
   async getRoomsByTenant(tenantId: string): Promise<RoomsResponse> {
     try {
-      const { data, error } = await retryOperation(async () => {
-        const result = await supabase
-          .from('rooms')
-          .select('*')
-          .eq('tenant_id', tenantId)
-          .eq('is_active', true)
-          .order('created_at', { ascending: false });
-        if (result.error) throw result.error;
-        return result;
+      const data = await retryOperation(async () => {
+        return await roomsApi.listByTenant(tenantId);
       });
 
-      if (error) throw error;
-      return { data, error: undefined };
+      return { data: data as unknown as Room[], error: undefined };
     } catch (error) {
       reportError(error instanceof Error ? error : new Error(String(error)), ErrorSeverity.MEDIUM, {
         component: 'RoomService',
@@ -126,28 +110,14 @@ class RoomService {
     }
   }
 
-  // Added: 2025-01-24 - Get room by ID with error handling
+  // Get room by ID with error handling
   async getRoomById(roomId: string): Promise<RoomResponse> {
     try {
-      const { data, error } = await retryOperation(async () => {
-        const result = await supabase
-          .from('rooms')
-          .select('*')
-          .eq('id', roomId)
-          .single();
-      
-        if (result.error) {
-          throw result.error;
-        }
-      
-        return result;
+      const data = await retryOperation(async () => {
+        return await roomsApi.get(roomId);
       });
 
-      if (error) {
-        throw error;
-      }
-    
-      return { data, error: undefined };
+      return { data: data as unknown as Room, error: undefined };
     } catch (error) {
       reportError(error instanceof Error ? error : new Error(String(error)), ErrorSeverity.MEDIUM, {
         component: 'RoomService',
@@ -161,25 +131,14 @@ class RoomService {
     }
   }
 
-  // Added: 2025-01-24 - Update room with error handling
+  // Update room with error handling
   async updateRoom(roomId: string, updates: Partial<InsertRoom>): Promise<RoomResponse> {
     try {
-      const { data, error } = await retryOperation(async () => {
-        const result = await supabase
-          .from('rooms')
-          .update({
-            ...updates,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', roomId)
-          .select()
-          .single();
-        if (result.error) throw result.error;
-        return result;
+      const data = await retryOperation(async () => {
+        return await roomsApi.update(roomId, updates);
       });
 
-      if (error) throw error;
-      return { data, error: undefined };
+      return { data: data as unknown as Room, error: undefined };
     } catch (error) {
       reportError(error instanceof Error ? error : new Error(String(error)), ErrorSeverity.MEDIUM, {
         component: 'RoomService',
@@ -193,19 +152,13 @@ class RoomService {
     }
   }
 
-  // Added: 2025-01-24 - Delete room with error handling
+  // Delete room with error handling
   async deleteRoom(roomId: string): Promise<{ error?: Error }> {
     try {
-      const { error } = await retryOperation(async () => {
-        const result = await supabase
-          .from('rooms')
-          .update({ is_active: false })
-          .eq('id', roomId);
-        if (result.error) throw result.error;
-        return result;
+      await retryOperation(async () => {
+        return await roomsApi.delete(roomId);
       });
 
-      if (error) throw error;
       return { error: undefined };
     } catch (error) {
       reportError(error instanceof Error ? error : new Error(String(error)), ErrorSeverity.HIGH, {
@@ -219,23 +172,13 @@ class RoomService {
     }
   }
 
-  // Added: 2025-01-24 - Add user to room membership
+  // Add user to room membership
   async addRoomMember(roomId: string, userId: string, role: 'admin' | 'member' = 'member'): Promise<{ error?: Error }> {
     try {
-      const { error } = await retryOperation(async () => {
-        const result = await supabase
-          .from('room_memberships')
-          .insert({
-            room_id: roomId,
-            user_id: userId,
-            role,
-            joined_at: new Date().toISOString(),
-          });
-        if (result.error) throw result.error;
-        return result;
+      await retryOperation(async () => {
+        return await roomsApi.invite(roomId, userId, role);
       });
 
-      if (error) throw error;
       return { error: undefined };
     } catch (error) {
       reportError(error instanceof Error ? error : new Error(String(error)), ErrorSeverity.MEDIUM, {
@@ -249,20 +192,13 @@ class RoomService {
     }
   }
 
-  // Added: 2025-01-24 - Remove user from room membership
+  // Remove user from room membership
   async removeRoomMember(roomId: string, userId: string): Promise<{ error?: Error }> {
     try {
-      const { error } = await retryOperation(async () => {
-        const result = await supabase
-          .from('room_memberships')
-          .delete()
-          .eq('room_id', roomId)
-          .eq('user_id', userId);
-        if (result.error) throw result.error;
-        return result;
+      await retryOperation(async () => {
+        return await roomsApi.removeMember(roomId, userId);
       });
 
-      if (error) throw error;
       return { error: undefined };
     } catch (error) {
       reportError(error instanceof Error ? error : new Error(String(error)), ErrorSeverity.MEDIUM, {
@@ -277,6 +213,6 @@ class RoomService {
   }
 }
 
-// Added: 2025-01-24 - Export singleton instance
+// Export singleton instance
 export const roomService = new RoomService();
 export default roomService;

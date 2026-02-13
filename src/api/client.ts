@@ -1,6 +1,6 @@
 /**
  * API Client — Type-safe HTTP client for the Rust backend.
- * Replaces @supabase/supabase-js with native fetch.
+ * Typed HTTP client using native fetch.
  * Handles JWT token management, auto-refresh on 401, and error handling.
  */
 

@@ -1,29 +1,14 @@
 // src/services/spotifyApi.ts
-import { supabase } from '../lib/supabase';
-
+// Spotify API service using integrationsApi
+import { integrationsApi } from '../api/integrations';
 import { refreshTokenIfNeeded } from './oauthApi';
+
 import type {
-// Fixed: 2025-10-24 - Emergency null/undefined fixes for production
-// Microsoft TypeScript standards applied - null → undefined, using optional types
-
-
-// Fixed: 2025-01-24 - Eradicated 8 null usage(s) - Microsoft TypeScript standards
-// Replaced null with undefined, removed unnecessary null checks, used optional types
-
   SpotifyTrack,
   SpotifyPlaylist,
   CurrentlyPlaying,
   SpotifyUserProfile,
-  /* ORIGINAL CODE START — reason: SpotifyDevice interface unused causing TS6196 error
-     Date: 2025-01-21 21:20:00
-  */
-  // SpotifyDevice
-  /* ORIGINAL CODE END */
 } from './spotify/types';
-
-// FIX NOTE – TS6196 unused interface corrected: Comment out unused interface
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// const SpotifyDevice  = undefined; /* UNUSED INTERFACE – preserved for reference */
 
 // Re-export types for backward compatibility
 export type {
@@ -37,64 +22,57 @@ const SPOTIFY_API_BASE = 'https://api.spotify.com/v1';
 
 class SpotifyApiService {
   // Token refresh mutex - prevents concurrent token refresh requests
-  private tokenRefreshPromise: Promise<string> | undefined  = undefined;
+  private tokenRefreshPromise: Promise<string> | undefined = undefined;
   private lastTokenRefreshTime = 0;
-  private cachedToken: string | undefined  = undefined;
+  private cachedToken: string | undefined = undefined;
   private readonly CACHE_EXPIRATION_MS = 50 * 60 * 1000; // 50 minutes (tokens expire in 60 min)
 
   /**
    * Get a valid access token with mutex lock to prevent concurrent refreshes
    * @param userId User ID to get token for
-   * @returns Valid access token
    */
-  private async getValidAccessToken(userId: string): Promise<string> {
+  private async getValidAccessToken(_userId: string): Promise<string> {
     // If refresh is already in progress, wait for it
     if (this.tokenRefreshPromise) {
-      console.log('🔒 [SpotifyAPI] Token refresh in progress, waiting for completion...');
+      console.log('[SpotifyAPI] Token refresh in progress, waiting for completion...');
       return this.tokenRefreshPromise;
     }
 
     // If we have a cached token from recent refresh and it hasn't expired, use it
     const now = Date.now();
     if (this.cachedToken && now - this.lastTokenRefreshTime < this.CACHE_EXPIRATION_MS) {
-      console.log('✅ [SpotifyAPI] Using cached token from recent refresh');
+      console.log('[SpotifyAPI] Using cached token from recent refresh');
       return this.cachedToken;
     }
 
     // Start token refresh with mutex lock
-    console.log('🔄 [SpotifyAPI] Starting token refresh...');
+    console.log('[SpotifyAPI] Starting token refresh...');
 
     this.tokenRefreshPromise = (async () => {
       try {
-        const { data: integration } = await supabase
-          .from('user_integrations')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('integration_type', 'spotify')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false })
-          .maybeSingle();
+        // Use integrationsApi.refresh to get a new Spotify access token
+        const result = await integrationsApi.refresh('spotify');
 
-        if (!integration) {
+        if (!result.access_token) {
           throw new Error('Spotify not connected. Please connect your Spotify account.');
         }
 
-        const token = await refreshTokenIfNeeded(integration, 'spotify');
+        const token = result.access_token;
 
         // Cache the token
         this.cachedToken = token;
         this.lastTokenRefreshTime = Date.now();
 
-        console.log('✅ [SpotifyAPI] Token refresh complete');
+        console.log('[SpotifyAPI] Token refresh complete');
         return token;
       } catch (error) {
-        console.error('❌ [SpotifyAPI] Token refresh failed:', error);
+        console.error('[SpotifyAPI] Token refresh failed:', error);
         // Clear cached token on failure
         this.invalidateCache();
         throw error;
       } finally {
         // Clear the promise after completion (success or failure)
-        this.tokenRefreshPromise  = undefined;
+        this.tokenRefreshPromise = undefined;
       }
     })();
 
@@ -122,7 +100,7 @@ class SpotifyApiService {
 
   async getUserPlaylists(userId: string): Promise<SpotifyPlaylist[]> {
     const response = await this.fetchSpotify(userId, '/me/playlists?limit=50');
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch playlists');
     }
@@ -133,7 +111,7 @@ class SpotifyApiService {
 
   async getCurrentlyPlaying(userId: string): Promise<CurrentlyPlaying | undefined> {
     const response = await this.fetchSpotify(userId, '/me/player');
-    
+
     if (response.status === 204) {
       return undefined;
     }
@@ -147,7 +125,7 @@ class SpotifyApiService {
 
   async getSavedTracks(userId: string, limit: number = 50): Promise<SpotifyTrack[]> {
     const response = await this.fetchSpotify(userId, `/me/tracks?limit=${limit}`);
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch saved tracks');
     }
@@ -158,7 +136,7 @@ class SpotifyApiService {
 
   async getRecentlyPlayed(userId: string, limit: number = 50): Promise<SpotifyTrack[]> {
     const response = await this.fetchSpotify(userId, `/me/player/recently-played?limit=${limit}`);
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch recently played');
     }
@@ -169,7 +147,7 @@ class SpotifyApiService {
 
   async getTopTracks(userId: string, limit: number = 50): Promise<SpotifyTrack[]> {
     const response = await this.fetchSpotify(userId, `/me/top/tracks?limit=${limit}&time_range=short_term`);
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch top tracks');
     }
@@ -178,10 +156,9 @@ class SpotifyApiService {
     return data.items;
   }
 
-  // 🔧 UPDATED: Added deviceId parameter
   async play(userId: string, contextUri?: string, uris?: string[], deviceId?: string): Promise<void> {
     const body: Record<string, unknown> = {};
-    
+
     if (contextUri) {
       body.context_uri = contextUri;
     } else if (uris) {
@@ -369,10 +346,10 @@ class SpotifyApiService {
    * Call this when disconnecting or when token becomes invalid
    */
   invalidateCache(): void {
-    console.log('🗑️ [SpotifyAPI] Invalidating token cache');
-    this.cachedToken  = undefined;
+    console.log('[SpotifyAPI] Invalidating token cache');
+    this.cachedToken = undefined;
     this.lastTokenRefreshTime = 0;
-    this.tokenRefreshPromise  = undefined;
+    this.tokenRefreshPromise = undefined;
   }
 
   /**
@@ -380,7 +357,7 @@ class SpotifyApiService {
    * @param userId User ID to refresh token for
    */
   async forceRefreshToken(userId: string): Promise<string> {
-    console.log('🔄 [SpotifyAPI] Forcing token refresh');
+    console.log('[SpotifyAPI] Forcing token refresh');
     this.invalidateCache();
     return this.getValidAccessToken(userId);
   }

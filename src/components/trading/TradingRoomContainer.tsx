@@ -10,7 +10,11 @@
 
 import { useEffect, useRef, useCallback, useMemo } from 'react';
 
-import { supabase } from '../../lib/supabase';
+import { api } from '../../api/client';
+import { moderationApi } from '../../api/moderation';
+import { privateChatsApi } from '../../api/private_chats';
+import { roomsApi } from '../../api/rooms';
+import { usersApi } from '../../api/users';
 import { refreshRoom } from '../../services/RoomRefresh';
 import {
   getRoomMessages,
@@ -173,7 +177,7 @@ export function TradingRoomContainer({
       try {
         setIsRefreshing(true);
 
-        // ENTERPRISE PATTERN: Validate membership with Supabase before granting permissions
+        // ENTERPRISE PATTERN: Validate membership with API before granting permissions
         console.log('[TradingRoom] 🔐 Validating user membership and role...');
         const membershipResult = await import('../../services/membershipService').then(m => 
           m.validateMembership(user.id, room.id)
@@ -197,8 +201,8 @@ export function TradingRoomContainer({
             console.error('[TradingRoom]    → Check RLS policies on room_memberships table');
             console.error('[TradingRoom]    → Verify user has proper authentication');
           } else {
-            console.error('[TradingRoom]    → Check network connectivity to Supabase');
-            console.error('[TradingRoom]    → Verify Supabase credentials in .env.local');
+            console.error('[TradingRoom]    → Check network connectivity to the API server');
+            console.error('[TradingRoom]    → Verify VITE_API_BASE_URL in .env.local');
           }
           // Still set undefined to prevent stale data
           setMembership(undefined);
@@ -525,24 +529,7 @@ export function TradingRoomContainer({
     
     try {
       // Microsoft Enterprise: Server-side ban implementation
-      // Remove user from room (banned users are tracked in banned_users table)
-      const { error } = await supabase
-        .from('room_memberships')
-        .delete()
-        .eq('user_id', userId)
-        .eq('room_id', room.id);
-      
-      if (error) throw error;
-      
-      // Add to banned_users table for audit trail and enforcement
-      await supabase.from('banned_users')
-        .insert({
-          user_id: userId,
-          room_id: room.id,
-          banned_by: user.id,
-          reason: 'Banned by moderator',
-          banned_at: new Date().toISOString()
-        });
+      await moderationApi.banUser(room.id, userId, 'Banned by moderator');
       
       addToast(`${displayName} has been banned`);
       logger.info('User banned:', { userId, displayName, roomId: room.id });
@@ -561,25 +548,7 @@ export function TradingRoomContainer({
     
     try {
       // Microsoft Enterprise: Server-side kick implementation
-      // Temporarily remove from room (they can rejoin)
-      const { error } = await supabase
-        .from('room_memberships')
-        .delete()
-        .eq('user_id', userId)
-        .eq('room_id', room.id);
-      
-      if (error) throw error;
-      
-      // Log moderation action
-      await supabase.from('moderation_log')
-        .insert({
-          room_id: room.id,
-          moderator_id: user.id,
-          target_user_id: userId,
-          action: 'kick',
-          reason: 'Kicked by moderator',
-          created_at: new Date().toISOString()
-        });
+      await moderationApi.kickUser(room.id, userId, 'Kicked by moderator');
       
       addToast(`${displayName} has been kicked`);
       logger.info('User kicked:', { userId, displayName, roomId: room.id });
@@ -598,18 +567,12 @@ export function TradingRoomContainer({
     
     try {
       // Microsoft Enterprise: Server-side report implementation
-      const { error } = await supabase.from('reported_content')
-        .insert({
-          content_type: 'alert',
-          content_id: alertId,
-          room_id: room.id,
-          reported_by: user.id,
-          reason: 'Reported by user',
-          status: 'pending',
-          created_at: new Date().toISOString()
-        });
-      
-      if (error) throw error;
+      await moderationApi.report({
+        content_type: 'alert',
+        content_id: alertId,
+        room_id: room.id,
+        reason: 'Reported by user',
+      });
       
       addToast('Alert reported to moderators');
       logger.info('Alert reported:', { alertId, roomId: room.id, reportedBy: user.id });
@@ -667,21 +630,12 @@ export function TradingRoomContainer({
     }
     // Microsoft Enterprise: Show user info modal
     try {
-      // Fetch user profile data
-      const { data: profile, error } = await supabase.from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single() as { data: { last_seen?: string; email?: string; status?: string; is_online?: boolean } | null; error: Error | null };
-      
-      if (error) throw error;
-      
+      // Fetch user profile data via API
+      const profile = await usersApi.get(userId) as { last_seen?: string; email?: string; status?: string; is_online?: boolean } | null;
+
       // Get user's room membership info
-      const { data: membership } = await supabase
-        .from('room_memberships')
-        .select('role, joined_at, city, region, country')
-        .eq('user_id', userId)
-        .eq('room_id', room.id)
-        .single();
+      const members = await roomsApi.listMembers(room.id);
+      const membership = members.find(m => m.user_id === userId) as { role?: string; joined_at?: string; city?: string; region?: string; country?: string } | undefined;
       
       // Create modal content
       const modalHtml = `
@@ -846,28 +800,9 @@ export function TradingRoomContainer({
     }
     
     try {
-      // Create or get existing private chat room
-      const { data: existingChat, error: fetchError } = await supabase.from('private_chats')
-        .select('*')
-        .or(`and(user1_id.eq.${user.id},user2_id.eq.${userId}),and(user1_id.eq.${userId},user2_id.eq.${user.id})`)
-        .maybeSingle();
-      
-      let chatId = existingChat?.id;
-      
-      if (!existingChat && !fetchError) {
-        // Create new private chat
-        const { data: newChat, error: createError } = await supabase.from('private_chats')
-          .insert({
-            user1_id: user.id,
-            user2_id: userId,
-            created_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-        
-        if (createError) throw createError;
-        chatId = newChat?.id;
-      }
+      // Create or get existing private chat room via API
+      const chat = await privateChatsApi.getOrCreate(userId);
+      const chatId = chat?.id;
       
       // Dispatch event to open private chat drawer
       window.dispatchEvent(new CustomEvent('open-private-chat', { 
@@ -893,29 +828,11 @@ export function TradingRoomContainer({
     }
     // Microsoft Enterprise: Broadcast alert to all users
     try {
-      // Send notification to all room members
-      const { data: members } = await supabase
-        .from('room_memberships')
-        .select('user_id')
-        .eq('room_id', room.id);
-      
-      if (members && members.length > 0) {
-        // Create notifications for all members
-        const notifications = members.map((member: { user_id: string }) => ({
-          user_id: member.user_id,
-          type: 'broadcast_alert',
-          message: 'New alert has been broadcasted to all members',
-          title: 'Alert Broadcast',
-          room_id: room.id,
-          alert_id: alertId
-        }));
-        
-        await supabase.from('notifications')
-          .insert(notifications);
-      }
-      
+      // Broadcast alert to all room members via API
+      await api.post(`/api/v1/rooms/${room.id}/alerts/${alertId}/broadcast`);
+
       addToast('Alert broadcasted to all users');
-      logger.info('Alert broadcasted:', { alertId, roomId: room.id, memberCount: members?.length || 0 });
+      logger.info('Alert broadcasted:', { alertId, roomId: room.id });
     } catch (error) {
       logger.error('Failed to broadcast alert:', error);
       addToast('Failed to broadcast alert');

@@ -1,5 +1,7 @@
-import { supabase } from '../lib/supabase';
-
+// Token refresh service using integrationsApi
+// The API client handles JWT auto-refresh on 401 automatically.
+// This service now handles OAuth provider token refresh (Spotify, X, LinkedIn).
+import { integrationsApi } from '../api/integrations';
 import { refreshTokenIfNeeded } from './oauthApi';
 
 interface TokenRefreshConfig {
@@ -22,43 +24,24 @@ class TokenRefreshService {
 
     const checkAndRefresh = async () => {
       try {
-        const { data: integration } = await supabase
-          .from('user_integrations')
-          .select('*')
-          .eq('user_id', config.userId)
-          .eq('integration_type', config.provider)
-          .eq('is_active', true)
-          .maybeSingle();
+        // Use the server-side refresh endpoint.
+        // The server knows whether a refresh is needed based on token expiry.
+        const result = await integrationsApi.refresh(config.provider);
 
-        if (!integration) {
+        if (result.access_token && config.onRefresh) {
+          config.onRefresh(result.access_token);
+        }
+
+        console.log(`Token refreshed for ${key}`);
+      } catch (error) {
+        // If refresh fails with a "not connected" type error, stop auto-refresh
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('not connected') || errorMessage.includes('Not found')) {
           console.log(`No active integration found for ${key}, stopping auto-refresh`);
           this.stopAutoRefresh(config.provider, config.userId);
           return;
         }
 
-        const expiresAt = integration.token_expires_at
-          ? new Date(integration.token_expires_at)
-          : null;
-
-        if (!expiresAt) {
-          return;
-        }
-
-        const now = new Date();
-        const timeUntilExpiry = expiresAt.getTime() - now.getTime();
-        const tenMinutes = 10 * 60 * 1000;
-
-        if (timeUntilExpiry < tenMinutes && timeUntilExpiry > 0) {
-          console.log(`Token expiring soon for ${key}, refreshing...`);
-          const newToken = await refreshTokenIfNeeded(integration, config.provider);
-
-          if (config.onRefresh) {
-            config.onRefresh(newToken);
-          }
-
-          console.log(`✅ Token refreshed for ${key}`);
-        }
-      } catch (error) {
         console.error(`Failed to refresh token for ${key}:`, error);
         if (config.onError) {
           config.onError(error instanceof Error ? error : new Error(String(error)));

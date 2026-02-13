@@ -19,7 +19,9 @@ import {
   UPLOAD_CONFIG,
   LIMITS,
 } from '../../config/constants';
-import { supabase } from '../../lib/supabase';
+import { roomsApi } from '../../api/rooms';
+import { tenantsApi } from '../../api/tenants';
+import { themesApi } from '../../api/themes';
 import { useAuthStore } from '../../store/authStore';
 import { useRoomStore } from '../../store/roomStore';
 import { useThemeStore } from '../../store/themeStore';
@@ -140,7 +142,7 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
    * ========================================
    * Date: October 21, 2025
    * Change ID: HYBRID-008
-   * Purpose: Loading indicator during Supabase upload
+   * Purpose: Loading indicator during API upload
    * 
    * USAGE:
    * - setUploadingLogo(true) → Start upload, disable button, show spinner
@@ -184,14 +186,10 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
     }
 
     try {
-      const { data, error } = await supabase
-        .from('room_memberships')
-        .select('id, room_id, user_id, role, joined_at')
-        .eq('room_id', currentRoom.id)
-        .eq('user_id', user.id)
-        .single();
+      const members = await roomsApi.listMembers(currentRoom.id);
+      const data = members.find(m => m.user_id === user.id);
 
-      if (error || !data) {
+      if (!data) {
         return false;
       }
 
@@ -209,10 +207,10 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
         return false;
       }
 
-      const { data: withinLimits } = await supabase
-        .rpc('check_rate_limit', { p_user_id: user.id });
+      // Rate limiting is now server-enforced
+      const withinLimits = rateLimiter.current.check();
 
-      if (withinLimits === false) {
+      if (!withinLimits) {
         addToast('Rate limit exceeded. Maximum 10 changes per hour.', 'error');
         return false;
       }
@@ -341,12 +339,8 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
     setUploadingLogo(true);
     try {
       // Get tenant_id for pathing
-      const { data: room } = await supabase
-        .from('rooms')
-        .select('tenant_id')
-        .eq('id', currentRoom.id)
-        .single();
-      
+      const room = await roomsApi.get(currentRoom.id);
+
       if (!room?.tenant_id) {
         addToast('No tenant found', 'error');
         return;
@@ -354,10 +348,9 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${room.tenant_id}/logo-${Date.now()}.${fileExt}`;
-      
+
       // Upload using shared service (typed result)
       const result = await uploadPublicAsset({
-        supabase,
         bucket: 'branding',
         path: fileName,
         file,
@@ -428,24 +421,13 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
       }
 
       // Fetch tenant_id from rooms
-      const { data: room } = await supabase
-        .from('rooms')
-        .select('tenant_id')
-        .eq('id', currentRoom.id)
-        .single();
+      const room = await roomsApi.get(currentRoom.id);
       if (!room?.tenant_id) throw new Error('No tenant found for this room');
-      
-      
-      
+
+
+
       const updatePayload = mapFormDataToDatabase(formData);
-      const { error: supabaseError } = await supabase
-        .from('tenants')
-        .update(updatePayload)
-        .eq('id', room.tenant_id);
-      
-      if (supabaseError) {
-        throw new Error(`Database save failed: ${supabaseError.message}`);
-      }
+      await tenantsApi.update(room.tenant_id, updatePayload as Record<string, unknown>);
       
       
       // Check if this is still the latest request
@@ -684,12 +666,12 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
            * 
            * FIELDS:
            * - Business Name: Text input for company/tenant name
-           * - Logo Upload: File input with Supabase storage integration
+           * - Logo Upload: File input with API storage integration
            * - Logo Preview: Shows uploaded logo image
            * - Remove Logo: Button to clear logo
            * 
            * INTEGRATION:
-           * - handleLogoUpload: Supabase storage upload function
+           * - handleLogoUpload: API storage upload function
            * - uploadingLogo: Loading state for upload button
            * - formData.businessName: Business name value
            * - formData.logoUrl: Logo URL for preview
@@ -1355,21 +1337,10 @@ export function AdvancedBrandingSettingsPhase2({ onClose: _onClose }: AdvancedBr
       }
 
       // TODO: Use user_themes table with correct schema
-      const { error } = await supabase
-        .from('user_themes')
-        .insert([
-          {
-            user_id: user?.id || 'anonymous',
-            name: presetName,
-            description: `Theme preset: ${presetName}`,
-            theme_json: {
-              // Add all theme properties from formData
-              ...formData
-            },
-          },
-        ]);
-
-      if (error) throw error;
+      await themesApi.create(presetName, {
+        description: `Theme preset: ${presetName}`,
+        ...formData,
+      });
 
       // Check again before applying results
       if (reqId !== presetReqId.current) {
@@ -1388,8 +1359,12 @@ export function AdvancedBrandingSettingsPhase2({ onClose: _onClose }: AdvancedBr
   };
 
   const loadPresets = async () => {
-    const { data, error } = await supabase.from('user_themes').select('*');
-    if (!error && data) setPresets(data);
+    try {
+      const data = await themesApi.list();
+      if (data) setPresets(data);
+    } catch (err) {
+      console.error('[AdvancedBrandingSettings] Failed to load presets:', err);
+    }
   };
 
   const applyPreset = (preset: { theme_json?: Record<string, unknown> }) => {

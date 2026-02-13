@@ -37,7 +37,7 @@ export class AuthError extends AppError {
 
 /**
  * Database operation errors
- * Thrown when Supabase queries fail
+ * Thrown when database queries fail
  */
 export class DatabaseError extends AppError {
   originalError?: unknown;

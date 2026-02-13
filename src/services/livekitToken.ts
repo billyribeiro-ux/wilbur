@@ -1,8 +1,6 @@
 // src/services/livekitToken.ts
-// ──────────────────────────────────────────────
-// LiveKit token generation via Supabase Edge Function
-// ──────────────────────────────────────────────
-import { supabase } from '../lib/supabase';
+// LiveKit token service using livekitApi.generateToken
+import { livekitApi } from '../api/livekit';
 
 export interface LiveKitTokenRequest {
   roomName: string;
@@ -25,39 +23,19 @@ export interface LiveKitTokenError {
   code?: string;
 }
 
-// ──────────────────────────────────────────────
-// Get LiveKit token from Supabase Edge Function
-// ──────────────────────────────────────────────
+// Get LiveKit token from API
+// Identity is now server-enforced from the JWT, so participantIdentity/Name/Role
+// parameters are kept for backward compatibility but are no longer sent to the server.
 export async function getLiveKitToken(
   roomName: string,
-  participantIdentity: string,
-  participantName: string,
-  participantRole: 'host' | 'moderator' | 'member' = 'member'
+  _participantIdentity: string,
+  _participantName: string,
+  _participantRole: 'host' | 'moderator' | 'member' = 'member'
 ): Promise<string> {
   try {
-    console.log('[getLiveKitToken] Requesting token for:', {
-      roomName,
-      participantIdentity,
-      participantName,
-      participantRole,
-    });
+    console.log('[getLiveKitToken] Requesting token for room:', roomName);
 
-    const { data, error } = await supabase.functions.invoke('generate-livekit-token', {
-      body: {
-        roomName,
-        participantIdentity,
-        participantName,
-        participantRole,
-      },
-    });
-
-    if (error) {
-      // Only log error in development for debugging if enabled via env flag
-      if (import.meta.env.DEV && import.meta.env.VITE_DEBUG_LIVEKIT === 'true') {
-        console.warn('[getLiveKitToken] LiveKit service unavailable:', error.message);
-      }
-      throw new Error(`Failed to generate LiveKit token: ${error.message}`);
-    }
+    const data = await livekitApi.generateToken(roomName);
 
     if (!data?.token) {
       throw new Error('No token received from LiveKit service');
@@ -78,9 +56,7 @@ export async function getLiveKitToken(
   }
 }
 
-// ──────────────────────────────────────────────
 // Validate LiveKit token
-// ──────────────────────────────────────────────
 export function validateLiveKitToken(token: string): boolean {
   if (!token || typeof token !== 'string') {
     return false;
@@ -96,7 +72,7 @@ export function validateLiveKitToken(token: string): boolean {
     // Decode payload to check expiration
     const payload = JSON.parse(atob(parts[1]));
     const now = Math.floor(Date.now() / 1000);
-    
+
     if (payload.exp && payload.exp < now) {
       console.warn('[validateLiveKitToken] Token has expired');
       return false;
@@ -109,12 +85,10 @@ export function validateLiveKitToken(token: string): boolean {
   }
 }
 
-// ──────────────────────────────────────────────
 // Get LiveKit server URL from environment
-// ──────────────────────────────────────────────
 export function getLiveKitServerUrl(): string {
   const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
-  
+
   if (!serverUrl) {
     throw new Error('LiveKit server URL not configured. Please set VITE_LIVEKIT_URL environment variable.');
   }
@@ -122,16 +96,12 @@ export function getLiveKitServerUrl(): string {
   return serverUrl;
 }
 
-// ──────────────────────────────────────────────
 // Check if LiveKit is enabled
-// ──────────────────────────────────────────────
 export function isLiveKitEnabled(): boolean {
   return !!import.meta.env.VITE_LIVEKIT_URL;
 }
 
-// ──────────────────────────────────────────────
 // Get LiveKit configuration
-// ──────────────────────────────────────────────
 export function getLiveKitConfig(): { serverUrl: string; enabled: boolean } {
   return {
     serverUrl: import.meta.env.VITE_LIVEKIT_URL || '',

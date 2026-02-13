@@ -20,7 +20,7 @@ import {
 } from 'react';
 import { useFluentIcons } from '../../icons/useFluentIcons';
 
-import { supabase } from '../../lib/supabase';
+import { privateChatsApi } from '../../api/private_chats';
 import { useAuthStore } from '../../store/authStore';
 import { useRoomStore } from '../../store/roomStore';
 import { useToastStore } from '../../store/toastStore';
@@ -189,64 +189,28 @@ export function ChatPanel() {
     }
     
     try {
-      // Check if chat already exists (either direction) - use maybeSingle to avoid errors
-      // @ts-ignore - Table will be added in migration
-      const { data: existingChat1, error: error1 } = await supabase
-        .from('private_chats')
-        .select('*')
-        .eq('user1_id', user.id)
-        .eq('user2_id', userId)
-        .maybeSingle();
-      
-      if (error1) throw error1;
-      
-      // @ts-ignore - Table will be added in migration
-      const { data: existingChat2, error: error2 } = await supabase
-        .from('private_chats')
-        .select('*')
-        .eq('user1_id', userId)
-        .eq('user2_id', user.id)
-        .maybeSingle();
-      
-      if (error2) throw error2;
-      
-      let chatId = existingChat1?.id || existingChat2?.id;
-      
-      // Create new chat if doesn't exist
+      const existingChat = await privateChatsApi.findByUser(userId);
+      let chatId = existingChat?.id;
+
       if (!chatId) {
-        // @ts-ignore - Table will be added in migration
-        const { data: newChat, error: createError } = await supabase
-          .from('private_chats')
-          .insert({
-            user1_id: user.id,
-            user2_id: userId,
-            created_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-        
-        if (createError) {
-          console.error('[ChatPanel] Failed to create chat:', createError);
-          throw new Error(`Failed to create chat: ${createError.message}`);
-        }
-        
-        chatId = newChat?.id;
+        const newChat = await privateChatsApi.create(userId);
+        chatId = newChat.id;
       }
-      
+
       if (!chatId) {
         throw new Error('Failed to get or create chat ID');
       }
-      
+
       // Dispatch event to open private chat drawer
-      window.dispatchEvent(new CustomEvent('open-private-chat', { 
-        detail: { 
+      window.dispatchEvent(new CustomEvent('open-private-chat', {
+        detail: {
           chatId,
-          userId, 
+          userId,
           displayName,
           currentUserId: user.id
-        } 
+        }
       }));
-      
+
       addToast(`Opening chat with ${displayName}`, 'success');
     } catch (error) {
       console.error('[ChatPanel] Private chat error:', error);

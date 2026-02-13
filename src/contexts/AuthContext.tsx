@@ -4,13 +4,13 @@
  * Authentication context provider
  * Provides auth state to entire application with session management
  * Microsoft-standard: Centralized auth state management
+ *
+ * Wraps the Zustand authStore to provide React context-based auth access.
  */
 
-import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
-import { AuthError } from '../lib/errors';
-import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../store/authStore';
 
 /**
  * Authenticated user interface
@@ -27,7 +27,7 @@ export interface AuthUser {
  */
 export interface AuthContextType {
   user: AuthUser | undefined;
-  session: Session | undefined;
+  isAuthenticated: boolean;
   loading: boolean;
   error: Error | undefined;
   signOut: () => Promise<void>;
@@ -40,129 +40,47 @@ export interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /**
+ * Convert authStore user to AuthUser
+ */
+function convertUser(storeUser: { id: string; email: string; display_name?: string; avatar_url?: string }): AuthUser {
+  return {
+    id: storeUser.id,
+    email: storeUser.email,
+    displayName: storeUser.display_name,
+    avatarUrl: storeUser.avatar_url,
+  };
+}
+
+/**
  * Auth provider component
  * Wraps the application and provides auth state
  */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<AuthUser | undefined>(undefined);
-  const [session, setSession] = useState<Session | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
+  const store = useAuthStore();
   const [error, setError] = useState<Error | undefined>(undefined);
 
   /**
-   * Convert Supabase user to AuthUser
-   */
-  const convertUser = useCallback((supabaseUser: SupabaseUser): AuthUser => {
-    return {
-      id: supabaseUser.id,
-      email: supabaseUser.email || '',
-      displayName: supabaseUser.user_metadata?.display_name || supabaseUser.user_metadata?.displayName,
-      avatarUrl: supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.avatarUrl,
-    };
-  }, []);
-
-  /**
-   * Update user and session state
-   */
-  const updateSession = useCallback(
-    async (session: Session | null) => {
-      try {
-        if (session?.user) {
-          const authUser = convertUser(session.user);
-          setUser(authUser);
-          setSession(session);
-          setError(undefined);
-        } else {
-          setUser(undefined);
-          setSession(undefined);
-          setError(undefined);
-        }
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to update session');
-        setError(error);
-        setUser(undefined);
-        setSession(undefined);
-      }
-    },
-    [convertUser]
-  );
-
-  /**
-   * Initialize session on mount
+   * Initialize auth on mount
    */
   useEffect(() => {
-    let mounted = true;
-
-    const initSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-
-        if (error) {
-          throw new AuthError('Failed to get session', { error });
-        }
-
-        if (mounted) {
-          await updateSession(session);
-        }
-      } catch (err) {
-        if (mounted) {
-          setError(err instanceof Error ? err : new Error('Failed to initialize session'));
-          setUser(undefined);
-          setSession(undefined);
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    initSession();
-
-    return () => {
-      mounted = false;
-    };
-  }, [updateSession]);
-
-  /**
-   * Listen for auth state changes
-   */
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event: AuthChangeEvent, session: Session | null) => {
-        await updateSession(session);
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [updateSession]);
+    if (!store.initialized) {
+      store.initialize();
+    }
+  }, [store]);
 
   /**
    * Sign out function
    */
   const signOut = useCallback(async () => {
     try {
-      setLoading(true);
       setError(undefined);
-
-      const { error } = await supabase.auth.signOut();
-
-      if (error) {
-        throw new AuthError('Failed to sign out', { error });
-      }
-
-      setUser(undefined);
-      setSession(undefined);
+      await store.signOut();
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to sign out');
       setError(error);
       throw error;
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  }, [store]);
 
   /**
    * Refresh session function
@@ -170,25 +88,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshSession = useCallback(async () => {
     try {
       setError(undefined);
-
-      const { data: { session }, error } = await supabase.auth.refreshSession();
-
-      if (error) {
-        throw new AuthError('Failed to refresh session', { error });
-      }
-
-      await updateSession(session);
+      await store.refreshSession();
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to refresh session');
       setError(error);
       throw error;
     }
-  }, [updateSession]);
+  }, [store]);
+
+  const user = store.user ? convertUser(store.user) : undefined;
 
   const value: AuthContextType = {
     user,
-    session,
-    loading,
+    isAuthenticated: store.isAuthenticated,
+    loading: !store.initialized,
     error,
     signOut,
     refreshSession,

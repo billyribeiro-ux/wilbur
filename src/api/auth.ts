@@ -1,5 +1,5 @@
 /**
- * Auth API — Replaces supabase.auth.* calls.
+ * Auth API module.
  */
 
 import { api } from './client';

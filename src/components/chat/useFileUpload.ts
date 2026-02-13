@@ -6,8 +6,7 @@
 
 import { useCallback, useState } from 'react';
 
-import { STORAGE_BUCKETS } from '../../config/constants';
-import { supabase } from '../../lib/supabase';
+import { storageApi } from '../../api/storage';
 import type { ToastType } from '../../store/toastStore';
 import type { Database } from '../../types/database.types';
 
@@ -70,7 +69,7 @@ export function useFileUpload(props: UseFileUploadProps) {
       try {
         const compressed = await compressImage(file);
         fileToUpload = compressed;
-        
+
         // Create optimized preview
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -100,9 +99,7 @@ export function useFileUpload(props: UseFileUploadProps) {
     });
 
     try {
-      const fileName = `${user.id}/${Date.now()}-${fileToUpload.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-      
-      // Simulate progress for better UX (Supabase doesn't provide real progress)
+      // Simulate progress for better UX
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => {
           if (prev.percentage >= 90) return prev;
@@ -114,25 +111,14 @@ export function useFileUpload(props: UseFileUploadProps) {
         });
       }, 200);
 
-      const { error } = await supabase.storage
-        .from(STORAGE_BUCKETS.chatUploads)
-        .upload(fileName, fileToUpload, {
-          cacheControl: '31536000', // 1 year cache for performance
-          upsert: false
-        });
+      const result = await storageApi.upload(fileToUpload, 'chat-uploads');
 
       clearInterval(progressInterval);
 
-      if (error) throw error;
-
-      const { data: publicData } = supabase.storage
-        .from(STORAGE_BUCKETS.chatUploads)
-        .getPublicUrl(fileName);
-
-      setUploadedFileUrl(publicData.publicUrl);
+      setUploadedFileUrl(result.url);
       setUploadingState(LoadingState.Success);
       setUploadProgress(prev => ({ ...prev, percentage: 100, bytesUploaded: prev.totalBytes }));
-      
+
       addToast('Upload complete', 'success');
     } catch (error: unknown) {
       setUploadingState(LoadingState.Error);

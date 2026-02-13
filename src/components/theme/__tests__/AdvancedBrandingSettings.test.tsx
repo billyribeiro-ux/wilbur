@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as RTL from '@testing-library/react';
 const { render, screen, waitFor, fireEvent } = RTL;
 import { AdvancedBrandingSettings } from '../AdvancedBrandingSettings';
-import { mockThemeStore, mockAuthStore, mockRoomStore, mockToastStore, createMockSupabase } from '../../../test-utils/test-helpers';
+import { mockThemeStore, mockAuthStore, mockRoomStore, mockToastStore } from '../../../test-utils/test-helpers';
 
 // Mock stores
 vi.mock('../../../store/themeStore', () => ({
@@ -26,11 +26,6 @@ vi.mock('../../../store/roomStore', () => ({
 
 vi.mock('../../../store/toastStore', () => ({
   useToastStore: () => mockToastStore,
-}));
-
-// Mock Supabase
-vi.mock('../../../lib/supabase', () => ({
-  supabase: createMockSupabase(),
 }));
 
 // Mock utilities

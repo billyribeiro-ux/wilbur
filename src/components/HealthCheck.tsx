@@ -1,14 +1,13 @@
 
 // Health check component for monitoring
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { api } from '../api/client';
 
 export function HealthCheck() {
   const [_status, setStatus] = useState({
     database: 'checking',
     auth: 'checking',
-    realtime: 'checking',
-    storage: 'checking'
+    api: 'checking',
   });
 
   useEffect(() => {
@@ -16,39 +15,23 @@ export function HealthCheck() {
   }, []);
 
   async function checkHealth() {
-    // Check database
+    // Check API health endpoint
     try {
-      await supabase.from('users').select('count').limit(0);
-      setStatus(s => ({ ...s, database: 'healthy' }));
+      await api.get('/health');
+      setStatus(s => ({ ...s, api: 'healthy', database: 'healthy' }));
     } catch {
-      setStatus(s => ({ ...s, database: 'error' }));
+      setStatus(s => ({ ...s, api: 'error', database: 'error' }));
     }
 
     // Check auth
     try {
-      await supabase.auth.getSession();
-      setStatus(s => ({ ...s, auth: 'healthy' }));
+      if (api.isAuthenticated()) {
+        setStatus(s => ({ ...s, auth: 'healthy' }));
+      } else {
+        setStatus(s => ({ ...s, auth: 'no_session' }));
+      }
     } catch {
       setStatus(s => ({ ...s, auth: 'error' }));
-    }
-
-    // Check realtime
-    const channel = supabase.channel('health-check');
-    channel.subscribe((status: any) => {
-      if (status === 'SUBSCRIBED') {
-        setStatus(s => ({ ...s, realtime: 'healthy' }));
-        channel.unsubscribe();
-      } else {
-        setStatus(s => ({ ...s, realtime: 'error' }));
-      }
-    });
-
-    // Check storage
-    try {
-      await supabase.storage.listBuckets();
-      setStatus(s => ({ ...s, storage: 'healthy' }));
-    } catch {
-      setStatus(s => ({ ...s, storage: 'error' }));
     }
   }
 

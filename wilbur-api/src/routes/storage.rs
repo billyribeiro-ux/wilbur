@@ -275,6 +275,7 @@ async fn create_room_file(
             let file_name = sanitize_filename(&raw_name);
             validate_upload(data.len(), &content_type, ALLOWED_CONTENT_TYPES)?;
 
+            let size = data.len() as i64;
             let file_id = Uuid::new_v4();
             let key = format!("rooms/{}/files/{}/{}", room_id, file_id, file_name);
 
@@ -290,7 +291,6 @@ async fn create_room_file(
                 .map_err(|e| AppError::Internal(format!("S3 upload failed: {e}")))?;
 
             let url = format!("{}/{}/{}", state.config.s3_endpoint, state.config.s3_bucket, key);
-            let size = data.len() as i64;
 
             // Store file record in DB
             let file = sqlx::query_as::<_, RoomFile>(

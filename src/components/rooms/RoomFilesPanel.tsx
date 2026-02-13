@@ -1,6 +1,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // RoomFilesPanel.tsx — Fluent Hybrid Adaptive File/Notes Panel (Microsoft Edition)
-// Integrated with Supabase Service Layer (roomFiles.ts), ThemeStore, and ToastStore
+// Integrated with Service Layer (roomFiles.ts), ThemeStore, and ToastStore
 // ══════════════════════════════════════════════════════════════════════════════
 
 import {
@@ -246,7 +246,7 @@ export function RoomFilesPanel({
 
   // const handleDeleteNoteFile = async (id: string) => {
   //   try {
-  //     const { error } = await supabase.from("notes").delete().eq("id", id);
+  //     const { error } = await api.from("notes").delete().eq("id", id);
   //     if (error) throw error;
   //     addToast("Note file deleted", "success");
   //   } catch (err) {

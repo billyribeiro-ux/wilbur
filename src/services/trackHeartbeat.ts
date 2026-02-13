@@ -1,13 +1,22 @@
+// Track heartbeat service using mediaTracksApi
 import { TIMING } from '../config/constants';
-import { supabase } from '../lib/supabase';
+import { mediaTracksApi } from '../api/media_tracks';
 
 class TrackHeartbeatService {
   private heartbeatIntervals: Map<string, number> = new Map();
   private sessionId: string = '';
+  private roomId: string = '';
 
-  initialize() {
+  initialize(roomId?: string) {
     this.sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    if (roomId) {
+      this.roomId = roomId;
+    }
     console.log('[Heartbeat] Session initialized:', this.sessionId);
+  }
+
+  setRoomId(roomId: string) {
+    this.roomId = roomId;
   }
 
   getSessionId(): string {
@@ -33,19 +42,14 @@ class TrackHeartbeatService {
 
   private async sendHeartbeat(trackId: string) {
     try {
-      const { error } = await supabase
-        .from('mediatrack')
-        .update({
-          last_heartbeat_at: new Date().toISOString()
-        } as unknown as Record<string, string>)
-        .eq('id', trackId)
-        .is('ended_at', null);
-
-      if (error) {
-        console.error('[Heartbeat] Failed to send heartbeat for track:', trackId, error);
+      if (!this.roomId) {
+        console.error('[Heartbeat] No roomId set, cannot send heartbeat');
+        return;
       }
+
+      await mediaTracksApi.heartbeat(this.roomId, [trackId]);
     } catch (error) {
-      console.error('[Heartbeat] Exception sending heartbeat:', error);
+      console.error('[Heartbeat] Failed to send heartbeat for track:', trackId, error);
     }
   }
 
@@ -68,46 +72,16 @@ class TrackHeartbeatService {
   }
 
   async cleanupSessionTracks() {
-    if (!this.sessionId) {
-      console.log('[Heartbeat] No session ID, skipping cleanup');
+    if (!this.sessionId || !this.roomId) {
+      console.log('[Heartbeat] No session ID or room ID, skipping cleanup');
       return 0;
     }
 
     console.log('[Heartbeat] Cleaning up session tracks:', this.sessionId);
 
     try {
-      // First, find tracks to cleanup
-      const { data: tracksToCleanup, error: queryError } = await supabase
-        .from('mediatrack')
-        .select('id')
-        .eq('session_id', this.sessionId)
-        .is('ended_at', null);
-
-      if (queryError) {
-        console.log('[Heartbeat] Query error (non-critical):', queryError.message);
-        return 0;
-      }
-
-      if (!tracksToCleanup || tracksToCleanup.length === 0) {
-        console.log('[Heartbeat] No tracks to cleanup for session:', this.sessionId);
-        return 0;
-      }
-
-      // Update tracks by ID
-      const trackIds = tracksToCleanup.map((t: any) => t.id);
-      const { data, error } = await supabase
-        .from('mediatrack')
-        .update({
-          ended_at: new Date().toISOString()
-        } as unknown as Record<string, string>)
-        .in('id', trackIds);
-
-      if (error) {
-        console.log('[Heartbeat] Cleanup completed with error (tracks may have already been cleaned):', error.message);
-        return 0;
-      }
-
-      const cleanedCount = data?.length || 0;
+      const result = await mediaTracksApi.cleanup(this.roomId);
+      const cleanedCount = result?.removed_count || 0;
       console.log('[Heartbeat] Cleaned up tracks:', cleanedCount);
       return cleanedCount;
     } catch (error) {

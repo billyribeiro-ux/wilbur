@@ -1,19 +1,9 @@
 import { Upload, Check, User } from 'lucide-react';
 import { useState, useRef } from 'react';
 
-import { supabase } from '../../lib/supabase';
+import { usersApi } from '../../api/users';
 import { useAuthStore } from '../../store/authStore';
 import { useToastStore } from '../../store/toastStore';
-// Fixed: 2025-10-24 - React component type fixes
-// Microsoft TypeScript standards - proper ref and element types
-
-
-// Fixed: 2025-10-24 - Emergency null/undefined fixes for production
-// Microsoft TypeScript standards applied - null → undefined, using optional types
-
-
-// Fixed: 2025-01-24 - Eradicated 3 null usage(s) - Microsoft TypeScript standards
-// Replaced null with undefined, removed unnecessary null checks, used optional types
 
 
 interface AvatarSelectorProps {
@@ -70,25 +60,11 @@ export function AvatarSelector({ currentAvatarUrl, onAvatarChange }: AvatarSelec
       };
       reader.readAsDataURL(file);
 
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true,
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
+      // Upload avatar via usersApi
+      const result = await usersApi.uploadAvatar(user.id, file);
 
       setSelectedPreset(undefined);
-      onAvatarChange(publicUrl);
+      onAvatarChange(result.avatar_url);
       addToast('Avatar uploaded successfully', 'success');
     } catch (error) {
       console.error('Failed to upload avatar:', error);

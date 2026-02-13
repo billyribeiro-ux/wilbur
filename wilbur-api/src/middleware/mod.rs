@@ -1,2 +1,2 @@
-// Middleware modules — rate limiting, additional auth layers, etc.
-// Currently handled by tower-http layers in main.rs.
+pub mod rate_limit;
+pub mod security;

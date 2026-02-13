@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Minus, Send } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-import { supabase } from '../../lib/supabase';
+import { privateChatsApi } from '../../api/private_chats';
 
 // ============================================================================
 // TYPES
@@ -72,6 +72,7 @@ export function PrivateChatModal({
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   // Suppress unused variable warning - userId reserved for future use
   void _userId;
@@ -81,38 +82,25 @@ export function PrivateChatModal({
     if (!chatId || !isOpen) return;
 
     const fetchMessages = async () => {
-      const { data, error } = await supabase
-        .from('private_messages')
-        .select('*')
-        .eq('chat_id', chatId)
-        .order('created_at', { ascending: true });
-
-      if (!error && data) {
-        setMessages(data);
+      try {
+        const { messages: data } = await privateChatsApi.listMessages(chatId);
+        if (data) {
+          setMessages(data as unknown as PrivateMessage[]);
+        }
+      } catch (err) {
+        console.error('[PrivateChatModal] Failed to fetch messages:', err);
       }
     };
 
     fetchMessages();
 
-    // Subscribe to new messages
-    const channel = supabase
-      .channel(`private_chat:${chatId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'private_messages',
-          filter: `chat_id=eq.${chatId}`,
-        },
-        (payload: { new: PrivateMessage }) => {
-          setMessages((prev) => [...prev, payload.new]);
-        }
-      )
-      .subscribe();
+    // Poll for new messages (replaces realtime subscription)
+    pollIntervalRef.current = setInterval(fetchMessages, 3000);
 
     return () => {
-      supabase.removeChannel(channel);
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
     };
   }, [chatId, isOpen]);
 
@@ -134,21 +122,16 @@ export function PrivateChatModal({
 
     setIsSending(true);
     try {
-      const { error } = await supabase.from('private_messages').insert({
-        chat_id: chatId,
-        sender_id: currentUserId,
-        content: message.trim(),
-        created_at: new Date().toISOString(),
-      });
-
-      if (error) throw error;
+      const sent = await privateChatsApi.sendMessage(chatId, message.trim());
+      // Optimistically add the sent message
+      setMessages((prev) => [...prev, sent as unknown as PrivateMessage]);
       setMessage('');
     } catch (error) {
       console.error('[PrivateChatModal] Failed to send message:', error);
     } finally {
       setIsSending(false);
     }
-  }, [message, chatId, currentUserId, isSending]);
+  }, [message, chatId, isSending]);
 
   // Keyboard handler - using onKeyDown instead of deprecated onKeyPress
   const handleKeyDown = useCallback(

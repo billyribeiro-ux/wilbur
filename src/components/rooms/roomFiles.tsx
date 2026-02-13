@@ -1,8 +1,9 @@
 // ---------------------------------------------------------------------------
 // roomFiles.ts — Microsoft Enterprise Lean Edition (Verified + Stable)
+// API-backed file management
 // ---------------------------------------------------------------------------
 
-import { supabase } from "../../lib/supabase";
+import { storageApi } from "../../api/storage";
 import { logger } from "../../utils/productionLogger";
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -50,22 +51,18 @@ export async function getRoomFiles(roomId: string): Promise<RoomFile[]> {
   try {
     logger.info("[roomFiles] Fetching room files", { roomId });
 
-    // ✅ Corrected: Use 'room_files' — the table containing metadata
-    const { data, error } = await supabase
-      .from("notes")
-      .select("*")
-      .eq("room_id", roomId)
-      .order("created_at", { ascending: false });
+    const data = await storageApi.listRoomFiles(roomId);
 
-    if (error) throw new RoomFileError("Failed to fetch files", { error });
-    return (data || []).map((item: any) => {
-      const anyItem = item as Record<string, unknown>;
-      return {
-        ...item,
-        file_size: (anyItem.file_size as number) || 0,
-        mime_type: (anyItem.mime_type as string) || 'application/octet-stream'
-      } as RoomFile;
-    });
+    return (data || []).map((item: Record<string, unknown>) => ({
+      id: item.id as string,
+      room_id: item.room_id as string,
+      user_id: (item.uploaded_by as string) || '',
+      filename: (item.file_name as string) || '',
+      file_url: (item.file_url as string) || '',
+      file_size: (item.file_size as number) || 0,
+      mime_type: (item.mime_type as string) || 'application/octet-stream',
+      created_at: (item.created_at as string) || '',
+    }));
   } catch (error) {
     logger.error("[roomFiles] getRoomFiles failed", error instanceof Error ? error : new Error('Unknown error'));
     throw error;
@@ -91,48 +88,22 @@ export async function uploadRoomFiles(
     if (file.size > MAX)
       throw new RoomFileError(`File too large: ${file.name}`);
 
-    const ts = Date.now();
-    const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const path = `${roomId}/${ts}_${cleanName}`;
-
-    // ✅ Ensure upload with retry
-    await retry(async () => {
+    // Upload with retry
+    const result = await retry(async () => {
       logger.info("[roomFiles] Uploading file", { roomId, userId, file: file.name });
-      const { data, error } = await supabase.storage
-        .from("room-files")
-        .upload(path, file, { cacheControl: "3600", upsert: false });
-
-      if (error) throw new RoomFileError("Storage upload failed", { error });
-      return data;
+      return storageApi.uploadRoomFile(roomId, file);
     });
 
-    // ✅ Get Public URL
-    const { data: urlData } = supabase.storage
-      .from("room-files")
-      .getPublicUrl(path);
-    const fileUrl = urlData?.publicUrl;
-
-    // ✅ Insert metadata into 'notes' table
-    const { data: dbData, error: dbError } = await supabase
-      .from("notes")
-      .insert({
-        room_id: roomId,
-        user_id: userId,
-        filename: file.name,
-        file_url: fileUrl,
-        folder_name: "uploads",
-      })
-      .select()
-      .single();
-
-    if (dbError)
-      throw new RoomFileError("Database insert failed", { dbError, file: file.name });
-
     uploaded.push({
-      ...dbData,
-      file_size: file.size,
-      mime_type: file.type || "application/octet-stream",
-    } as RoomFile);
+      id: result.id,
+      room_id: result.room_id,
+      user_id: result.uploaded_by,
+      filename: result.file_name,
+      file_url: result.file_url,
+      file_size: result.file_size || file.size,
+      mime_type: result.mime_type || file.type || "application/octet-stream",
+      created_at: result.created_at,
+    });
   }
 
   logger.info("[roomFiles] Upload completed", { count: uploaded.length });
@@ -140,42 +111,15 @@ export async function uploadRoomFiles(
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Delete file (storage + DB) safely
+// Delete file safely
 // ────────────────────────────────────────────────────────────────────────────
-export async function deleteRoomFile(fileId: string, userId: string) {
+export async function deleteRoomFile(fileId: string, _userId: string) {
   try {
-    logger.info("[roomFiles] Deleting file", { fileId, userId });
+    logger.info("[roomFiles] Deleting file", { fileId });
 
-    const { data: file, error } = await supabase
-      .from("room_files")
-      .select("*")
-      .eq("id", fileId)
-      .single();
-
-    if (error || !file)
-      throw new RoomFileError("File not found", { fileId, error });
-
-    if (file.user_id !== userId)
-      throw new RoomFileError("Unauthorized delete attempt", { fileId, userId });
-
-    const path = new URL(file.file_url).pathname.split("/room-files/")[1];
-
-    // ✅ Remove from storage first
     await retry(async () => {
-      const { error: sErr } = await supabase.storage
-        .from("room-files")
-        .remove([path]);
-      if (sErr) throw sErr;
+      await storageApi.delete(fileId);
     });
-
-    // ✅ Then remove metadata
-    const { error: dbErr } = await supabase
-      .from("room_files")
-      .delete()
-      .eq("id", fileId);
-
-    if (dbErr)
-      throw new RoomFileError("Failed to delete file record", { dbErr, fileId });
 
     logger.info("[roomFiles] File deleted successfully", { fileId });
   } catch (error) {
@@ -189,16 +133,10 @@ export async function deleteRoomFile(fileId: string, userId: string) {
 // ────────────────────────────────────────────────────────────────────────────
 export async function downloadRoomFile(fileId: string): Promise<string> {
   try {
-    const { data, error } = await supabase
-      .from("room_files")
-      .select("file_url")
-      .eq("id", fileId)
-      .single();
-
-    if (error || !data)
-      throw new RoomFileError("File not found", { fileId, error });
-
-    return data.file_url;
+    // Get file info from room files list - we need to find the file URL
+    // Since storageApi doesn't have a direct get-by-id, we use the fileId
+    // The caller should already have the file_url from the list
+    throw new RoomFileError("Use file_url from getRoomFiles() directly", { fileId });
   } catch (error) {
     logger.error("[roomFiles] downloadRoomFile failed", error instanceof Error ? error : new Error('Unknown error'));
     throw error;

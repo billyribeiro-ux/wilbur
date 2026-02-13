@@ -1,12 +1,10 @@
 import { Upload, Play, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
-import { supabase } from '../../lib/supabase';
+import { storageApi } from '../../api/storage';
 import { useAuthStore } from '../../store/authStore';
 import { useRoomStore } from '../../store/roomStore';
 import { useToastStore } from '../../store/toastStore';
-// Fixed: 2025-01-24 - Eradicated 1 null usage(s) - Microsoft TypeScript standards
-// Replaced null with undefined, removed unnecessary null checks, used optional types
 
 
 interface CustomSound {
@@ -63,66 +61,28 @@ export function CustomSoundUpload() {
     setUploading(true);
 
     try {
-      const fileExtension = file.name.split('.').pop();
-      const fileName = `${currentRoom.tenant_id}/${user.id}/${Date.now()}.${fileExtension}`;
-
       console.log('Uploading file:', {
         name: file.name,
         type: file.type,
         size: file.size,
-        path: fileName
       });
 
-      const { error: uploadError, data: uploadData } = await supabase.storage
-        .from('custom-sounds')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: file.type || 'audio/mpeg'
-        });
+      // Upload via storageApi
+      const uploadResult = await storageApi.upload(file, 'custom-sounds');
 
-      if (uploadError) {
-        console.error('Upload error details:', uploadError);
-        throw uploadError;
-      }
+      console.log('Upload successful:', uploadResult);
 
-      console.log('Upload successful:', uploadData);
+      // Save as a room file
+      const roomFile = await storageApi.uploadRoomFile(currentRoom.id, file);
 
-      // Get public URL for the uploaded file
-      const { data: { publicUrl } } = supabase.storage
-        .from('custom-sounds')
-        .getPublicUrl(fileName);
-
-      // Save to room_files database with audio type
+      // Convert to CustomSound format
       const soundFileName = file.name.replace(/\.[^/.]+$/, '');
-      const { data: dbData, error: dbError } = await supabase
-        .from('room_files')
-        .insert({
-          room_id: currentRoom.id,
-          user_id: user.id,
-          file_url: publicUrl,
-          folder_name: 'custom-sounds',
-          filename: file.name,
-          file_type: 'audio',
-          file_size: file.size,
-          mime_type: file.type || 'audio/mpeg',
-        })
-        .select()
-        .single();
-
-      if (dbError) {
-        console.error('Database error:', dbError);
-        addToast('File uploaded but database save failed', 'error');
-        return;
-      }
-
-      // Convert room_file to CustomSound format
       const newSound: CustomSound = {
-        id: dbData.id,
+        id: roomFile.id,
         name: soundFileName,
         category: selectedCategory,
-        file_url: dbData.file_url,
-        created_at: dbData.created_at || undefined,
+        file_url: roomFile.file_url,
+        created_at: roomFile.created_at || undefined,
       };
 
       setCustomSounds([...customSounds, newSound]);
@@ -137,27 +97,12 @@ export function CustomSoundUpload() {
     }
   };
 
-  const handleDelete = async (soundId: string, fileUrl: string) => {
+  const handleDelete = async (soundId: string, _fileUrl: string) => {
     if (!confirm('Are you sure you want to delete this sound?')) return;
 
     try {
-      // Delete from storage
-      const filePath = fileUrl.split('/').slice(-3).join('/');
-      await supabase.storage
-        .from('custom-sounds')
-        .remove([filePath]);
-
-      // Delete from room_files database
-      const { error: dbError } = await supabase
-        .from('room_files')
-        .delete()
-        .eq('id', soundId);
-
-      if (dbError) {
-        console.error('Database delete error:', dbError);
-        addToast('File deleted from storage but database delete failed', 'error');
-        return;
-      }
+      // Delete via storageApi
+      await storageApi.delete(soundId);
 
       setCustomSounds(customSounds.filter(s => s.id !== soundId));
       addToast('Sound deleted successfully', 'success');
