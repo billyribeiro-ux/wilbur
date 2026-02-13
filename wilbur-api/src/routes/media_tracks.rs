@@ -106,7 +106,7 @@ async fn create_track(
 /// PUT /:id -- update a media track (metadata and/or muted state).
 async fn update_track(
     State(state): State<Arc<AppState>>,
-    auth_user: AuthUser,
+    _auth_user: AuthUser,
     Path((room_id, id)): Path<(Uuid, Uuid)>,
     Json(body): Json<UpdateTrackRequest>,
 ) -> AppResult<Json<Value>> {
