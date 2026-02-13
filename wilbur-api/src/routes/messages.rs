@@ -12,9 +12,13 @@ use validator::Validate;
 
 use crate::{
     error::{AppError, AppResult},
-    extractors::{auth::AuthUser, pagination::PaginationParams},
+    extractors::{
+        auth::AuthUser,
+        pagination::PaginationParams,
+        room_access::{require_room_member, require_room_moderator},
+    },
     models::message::{
-        ChatMessage, ChatMessageWithUser, CreateMessageRequest, MessageResponse, UpdateMessageRequest,
+        ChatMessageWithUser, CreateMessageRequest, MessageResponse, UpdateMessageRequest,
     },
     state::AppState,
     ws::manager::WsManager,
@@ -34,14 +38,17 @@ pub fn router() -> Router<Arc<AppState>> {
 /// GET / -- list messages for a room (paginated). Room ID comes from the nested path.
 async fn list_messages(
     State(state): State<Arc<AppState>>,
-    _auth_user: AuthUser,
+    auth_user: AuthUser,
     Path(room_id): Path<Uuid>,
     Query(pagination): Query<PaginationParams>,
 ) -> AppResult<Json<Vec<MessageResponse>>> {
+    // Verify the user is a member of the room
+    require_room_member(&state.pool, auth_user.id, room_id).await?;
+
     let messages = sqlx::query_as::<_, ChatMessageWithUser>(
         r#"
-        SELECT m.*, u.display_name, u.avatar_url
-        FROM chat_messages m
+        SELECT m.*, u.display_name AS user_display_name, u.avatar_url AS user_avatar_url
+        FROM chatmessages m
         JOIN users u ON u.id = m.user_id
         WHERE m.room_id = $1 AND m.is_deleted = false
         ORDER BY m.created_at DESC
@@ -65,6 +72,9 @@ async fn create_message(
     Path(room_id): Path<Uuid>,
     Json(body): Json<CreateMessageRequest>,
 ) -> AppResult<(StatusCode, Json<MessageResponse>)> {
+    // Verify the user is a member of the room
+    require_room_member(&state.pool, auth_user.id, room_id).await?;
+
     body.validate()
         .map_err(|e| AppError::Validation(e.to_string()))?;
 
@@ -75,11 +85,11 @@ async fn create_message(
     let message = sqlx::query_as::<_, ChatMessageWithUser>(
         r#"
         WITH inserted AS (
-            INSERT INTO chat_messages (id, room_id, user_id, content, content_type, is_pinned, is_off_topic, is_deleted, created_at, updated_at)
+            INSERT INTO chatmessages (id, room_id, user_id, content, content_type, is_pinned, is_off_topic, is_deleted, created_at, updated_at)
             VALUES ($1, $2, $3, $4, $5, false, false, false, $6, $7)
             RETURNING *
         )
-        SELECT i.*, u.display_name, u.avatar_url
+        SELECT i.*, u.display_name AS user_display_name, u.avatar_url AS user_avatar_url
         FROM inserted i
         JOIN users u ON u.id = i.user_id
         "#,
@@ -121,7 +131,7 @@ async fn update_message(
     let message = sqlx::query_as::<_, ChatMessageWithUser>(
         r#"
         WITH updated AS (
-            UPDATE chat_messages SET
+            UPDATE chatmessages SET
                 content    = COALESCE($1, content),
                 is_pinned  = COALESCE($2, is_pinned),
                 is_off_topic = COALESCE($3, is_off_topic),
@@ -129,7 +139,7 @@ async fn update_message(
             WHERE id = $4 AND room_id = $5 AND user_id = $6 AND is_deleted = false
             RETURNING *
         )
-        SELECT u2.*, usr.display_name, usr.avatar_url
+        SELECT u2.*, usr.display_name AS user_display_name, usr.avatar_url AS user_avatar_url
         FROM updated u2
         JOIN users usr ON usr.id = u2.user_id
         "#,
@@ -165,7 +175,7 @@ async fn delete_message(
 ) -> AppResult<StatusCode> {
     let result = sqlx::query(
         r#"
-        UPDATE chat_messages SET is_deleted = true, deleted_at = NOW(), updated_at = NOW()
+        UPDATE chatmessages SET is_deleted = true, deleted_at = NOW(), updated_at = NOW()
         WHERE id = $1 AND room_id = $2 AND user_id = $3
         "#,
     )
@@ -193,11 +203,14 @@ async fn delete_message(
 /// POST /:id/pin -- pin a message.
 async fn pin_message(
     State(state): State<Arc<AppState>>,
-    _auth_user: AuthUser,
+    auth_user: AuthUser,
     Path((room_id, id)): Path<(Uuid, Uuid)>,
 ) -> AppResult<Json<Value>> {
+    // Only host or moderator can pin messages
+    require_room_moderator(&state.pool, auth_user.id, room_id).await?;
+
     let result = sqlx::query(
-        "UPDATE chat_messages SET is_pinned = true, updated_at = NOW() WHERE id = $1 AND room_id = $2",
+        "UPDATE chatmessages SET is_pinned = true, updated_at = NOW() WHERE id = $1 AND room_id = $2",
     )
     .bind(id)
     .bind(room_id)
@@ -222,11 +235,14 @@ async fn pin_message(
 /// POST /:id/unpin -- unpin a message.
 async fn unpin_message(
     State(state): State<Arc<AppState>>,
-    _auth_user: AuthUser,
+    auth_user: AuthUser,
     Path((room_id, id)): Path<(Uuid, Uuid)>,
 ) -> AppResult<Json<Value>> {
+    // Only host or moderator can unpin messages
+    require_room_moderator(&state.pool, auth_user.id, room_id).await?;
+
     let result = sqlx::query(
-        "UPDATE chat_messages SET is_pinned = false, updated_at = NOW() WHERE id = $1 AND room_id = $2",
+        "UPDATE chatmessages SET is_pinned = false, updated_at = NOW() WHERE id = $1 AND room_id = $2",
     )
     .bind(id)
     .bind(room_id)
@@ -251,11 +267,14 @@ async fn unpin_message(
 /// POST /:id/off-topic -- mark a message as off-topic.
 async fn mark_off_topic(
     State(state): State<Arc<AppState>>,
-    _auth_user: AuthUser,
+    auth_user: AuthUser,
     Path((room_id, id)): Path<(Uuid, Uuid)>,
 ) -> AppResult<Json<Value>> {
+    // Only host or moderator can mark messages as off-topic
+    require_room_moderator(&state.pool, auth_user.id, room_id).await?;
+
     let result = sqlx::query(
-        "UPDATE chat_messages SET is_off_topic = true, updated_at = NOW() WHERE id = $1 AND room_id = $2",
+        "UPDATE chatmessages SET is_off_topic = true, updated_at = NOW() WHERE id = $1 AND room_id = $2",
     )
     .bind(id)
     .bind(room_id)

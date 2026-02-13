@@ -20,7 +20,7 @@ pub struct Alert {
     pub room_id: Uuid,
     pub author_id: Uuid,
     pub title: String,
-    pub body: String,
+    pub body: Option<String>,
     pub alert_type: AlertType,
     pub ticker_symbol: Option<String>,
     pub entry_price: Option<f64>,
@@ -36,8 +36,8 @@ pub struct Alert {
 pub struct CreateAlertRequest {
     #[validate(length(min = 1, max = 200))]
     pub title: String,
-    #[validate(length(min = 1, max = 5000))]
-    pub body: String,
+    #[validate(length(max = 5000))]
+    pub body: Option<String>,
     pub alert_type: AlertType,
     #[validate(length(max = 20))]
     pub ticker_symbol: Option<String>,
@@ -56,7 +56,7 @@ pub struct AlertResponse {
     pub room_id: Uuid,
     pub author_id: Uuid,
     pub title: String,
-    pub body: String,
+    pub body: Option<String>,
     pub alert_type: AlertType,
     pub ticker_symbol: Option<String>,
     pub entry_price: Option<f64>,

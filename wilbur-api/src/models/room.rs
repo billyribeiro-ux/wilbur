@@ -9,8 +9,8 @@ pub struct Room {
     pub id: Uuid,
     pub tenant_id: Option<Uuid>,
     pub name: String,
-    pub title: String,
-    pub description: String,
+    pub title: Option<String>,
+    pub description: Option<String>,
     pub max_members: i32,
     pub is_active: bool,
     pub background_image_url: Option<String>,
@@ -28,7 +28,7 @@ pub struct CreateRoomRequest {
     #[validate(length(min = 1, max = 100))]
     pub name: String,
     #[validate(length(min = 1, max = 200))]
-    pub title: String,
+    pub title: Option<String>,
     #[validate(length(max = 2000))]
     pub description: Option<String>,
     pub tenant_id: Option<Uuid>,
@@ -65,8 +65,8 @@ pub struct RoomResponse {
     pub id: Uuid,
     pub tenant_id: Option<Uuid>,
     pub name: String,
-    pub title: String,
-    pub description: String,
+    pub title: Option<String>,
+    pub description: Option<String>,
     pub max_members: i32,
     pub is_active: bool,
     pub background_image_url: Option<String>,

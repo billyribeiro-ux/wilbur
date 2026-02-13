@@ -23,18 +23,40 @@ function getCorsHeaders(req: Request) {
 }
 
 // =========================================================
-// JWT Verification
+// JWT Verification (HMAC-SHA256 via Web Crypto API)
 // =========================================================
-function verifyAuth(req: Request): boolean {
+async function verifyAuth(req: Request): Promise<boolean> {
   const authHeader = req.headers.get('authorization')
   if (!authHeader?.startsWith('Bearer ')) return false
   const token = authHeader.replace('Bearer ', '')
-  if (!token) return false
+  const jwtSecret = Deno.env.get('SUPABASE_JWT_SECRET')
+  if (!jwtSecret || !token) return false
+
   try {
-    const [, payloadB64] = token.split('.')
-    const payload = JSON.parse(atob(payloadB64))
+    const parts = token.split('.')
+    if (parts.length !== 3) return false
+    const [headerB64, payloadB64, signatureB64] = parts
+
+    const encoder = new TextEncoder()
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(jwtSecret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    )
+    const signatureBytes = Uint8Array.from(
+      atob(signatureB64.replace(/-/g, '+').replace(/_/g, '/')),
+      c => c.charCodeAt(0)
+    )
+    const dataBytes = encoder.encode(`${headerB64}.${payloadB64}`)
+    const valid = await crypto.subtle.verify('HMAC', key, signatureBytes, dataBytes)
+    if (!valid) return false
+
+    const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')))
     if (!payload.sub || !payload.exp) return false
     if (payload.exp * 1000 < Date.now()) return false
+
     return true
   } catch {
     return false
@@ -90,7 +112,7 @@ serve(async (req: Request) => {
   // ═══════════════════════════════════════════════════════
   // Verify Caller Identity
   // ═══════════════════════════════════════════════════════
-  if (!verifyAuth(req)) {
+  if (!(await verifyAuth(req))) {
     return new Response(
       JSON.stringify({ error: 'Unauthorized. Valid JWT required.' }),
       {

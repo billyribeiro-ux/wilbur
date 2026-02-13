@@ -42,8 +42,8 @@ pub struct ChatMessageWithUser {
     pub deleted_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
-    pub display_name: Option<String>,
-    pub avatar_url: Option<String>,
+    pub user_display_name: Option<String>,
+    pub user_avatar_url: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Validate)]
@@ -72,8 +72,8 @@ pub struct MessageResponse {
     pub is_pinned: bool,
     pub is_off_topic: bool,
     pub is_deleted: bool,
-    pub display_name: Option<String>,
-    pub avatar_url: Option<String>,
+    pub user_display_name: Option<String>,
+    pub user_avatar_url: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -89,8 +89,8 @@ impl From<ChatMessageWithUser> for MessageResponse {
             is_pinned: m.is_pinned,
             is_off_topic: m.is_off_topic,
             is_deleted: m.is_deleted,
-            display_name: m.display_name,
-            avatar_url: m.avatar_url,
+            user_display_name: m.user_display_name,
+            user_avatar_url: m.user_avatar_url,
             created_at: m.created_at,
             updated_at: m.updated_at,
         }

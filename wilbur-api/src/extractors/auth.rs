@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use jsonwebtoken::{decode, DecodingKey, Validation};
@@ -5,9 +7,9 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::error::AppError;
-use crate::state::SharedState;
+use crate::state::AppState;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     pub sub: Uuid,
     pub email: String,
@@ -24,15 +26,13 @@ pub struct AuthUser {
     pub role: String,
 }
 
-impl<S> FromRequestParts<S> for AuthUser
-where
-    S: Send + Sync + AsRef<SharedState>,
-{
+impl FromRequestParts<Arc<AppState>> for AuthUser {
     type Rejection = AppError;
 
-    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        let app_state = state.as_ref();
-
+    async fn from_request_parts(
+        parts: &mut Parts,
+        state: &Arc<AppState>,
+    ) -> Result<Self, Self::Rejection> {
         let auth_header = parts
             .headers
             .get("authorization")
@@ -45,7 +45,7 @@ where
 
         let token_data = decode::<Claims>(
             token,
-            &DecodingKey::from_secret(app_state.config.jwt_secret.as_bytes()),
+            &DecodingKey::from_secret(state.config.jwt_secret.as_bytes()),
             &Validation::default(),
         )
         .map_err(|e| AppError::Unauthorized(format!("Invalid token: {e}")))?;
@@ -62,13 +62,13 @@ where
 #[derive(Debug, Clone)]
 pub struct OptionalAuth(pub Option<AuthUser>);
 
-impl<S> FromRequestParts<S> for OptionalAuth
-where
-    S: Send + Sync + AsRef<SharedState>,
-{
+impl FromRequestParts<Arc<AppState>> for OptionalAuth {
     type Rejection = AppError;
 
-    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(
+        parts: &mut Parts,
+        state: &Arc<AppState>,
+    ) -> Result<Self, Self::Rejection> {
         match AuthUser::from_request_parts(parts, state).await {
             Ok(user) => Ok(OptionalAuth(Some(user))),
             Err(_) => Ok(OptionalAuth(None)),

@@ -12,6 +12,7 @@ use uuid::Uuid;
 use crate::{
     error::{AppError, AppResult},
     extractors::auth::AuthUser,
+    models::notification::{Notification, NotificationResponse},
     state::AppState,
 };
 
@@ -28,10 +29,27 @@ async fn list_notifications(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
 ) -> AppResult<Json<Value>> {
+    let notifications = sqlx::query_as::<_, Notification>(
+        r#"
+        SELECT id, user_id, title, body, notification_type, is_read, data, created_at
+        FROM notifications
+        WHERE user_id = $1
+        ORDER BY created_at DESC
+        LIMIT 50
+        "#,
+    )
+    .bind(auth_user.id)
+    .fetch_all(&state.pool)
+    .await?;
+
+    let data: Vec<NotificationResponse> = notifications
+        .into_iter()
+        .map(NotificationResponse::from)
+        .collect();
+
     Ok(Json(json!({
-        "endpoint": "list_notifications",
         "user_id": auth_user.id,
-        "notifications": []
+        "notifications": data
     })))
 }
 
@@ -41,8 +59,19 @@ async fn mark_read(
     auth_user: AuthUser,
     Path(id): Path<Uuid>,
 ) -> AppResult<Json<Value>> {
+    let result = sqlx::query(
+        "UPDATE notifications SET is_read = true WHERE id = $1 AND user_id = $2",
+    )
+    .bind(id)
+    .bind(auth_user.id)
+    .execute(&state.pool)
+    .await?;
+
+    if result.rows_affected() == 0 {
+        return Err(AppError::NotFound("Notification not found".into()));
+    }
+
     Ok(Json(json!({
-        "endpoint": "mark_notification_read",
         "notification_id": id,
         "user_id": auth_user.id,
         "read": true
@@ -55,6 +84,18 @@ async fn delete_notification(
     auth_user: AuthUser,
     Path(id): Path<Uuid>,
 ) -> AppResult<StatusCode> {
+    let result = sqlx::query(
+        "DELETE FROM notifications WHERE id = $1 AND user_id = $2",
+    )
+    .bind(id)
+    .bind(auth_user.id)
+    .execute(&state.pool)
+    .await?;
+
+    if result.rows_affected() == 0 {
+        return Err(AppError::NotFound("Notification not found".into()));
+    }
+
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -63,9 +104,16 @@ async fn read_all_notifications(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
 ) -> AppResult<Json<Value>> {
+    let result = sqlx::query(
+        "UPDATE notifications SET is_read = true WHERE user_id = $1 AND is_read = false",
+    )
+    .bind(auth_user.id)
+    .execute(&state.pool)
+    .await?;
+
     Ok(Json(json!({
-        "endpoint": "read_all_notifications",
         "user_id": auth_user.id,
-        "read_all": true
+        "read_all": true,
+        "updated_count": result.rows_affected()
     })))
 }

@@ -5,7 +5,7 @@ use crate::models::media_track::MediaTrack;
 
 pub async fn list_by_room(pool: &PgPool, room_id: Uuid) -> Result<Vec<MediaTrack>, sqlx::Error> {
     sqlx::query_as::<_, MediaTrack>(
-        "SELECT * FROM media_tracks WHERE room_id = $1 AND is_active = true",
+        "SELECT * FROM media_tracks WHERE room_id = $1 AND is_active = true LIMIT 200",
     )
     .bind(room_id)
     .fetch_all(pool)

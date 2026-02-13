@@ -5,7 +5,7 @@ use crate::models::theme::UserTheme;
 
 pub async fn list_by_user(pool: &PgPool, user_id: Uuid) -> Result<Vec<UserTheme>, sqlx::Error> {
     sqlx::query_as::<_, UserTheme>(
-        "SELECT * FROM user_themes WHERE user_id = $1 ORDER BY created_at DESC",
+        "SELECT * FROM user_themes WHERE user_id = $1 ORDER BY created_at DESC LIMIT 200",
     )
     .bind(user_id)
     .fetch_all(pool)

@@ -5,7 +5,7 @@ use crate::models::private_chat::{PrivateChat, PrivateMessage};
 
 pub async fn list_for_user(pool: &PgPool, user_id: Uuid) -> Result<Vec<PrivateChat>, sqlx::Error> {
     sqlx::query_as::<_, PrivateChat>(
-        "SELECT * FROM private_chats WHERE participant_one = $1 OR participant_two = $1 ORDER BY created_at DESC",
+        "SELECT * FROM private_chats WHERE participant_one = $1 OR participant_two = $1 ORDER BY created_at DESC LIMIT 200",
     )
     .bind(user_id)
     .fetch_all(pool)

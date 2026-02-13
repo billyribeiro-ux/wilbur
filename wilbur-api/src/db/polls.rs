@@ -5,7 +5,7 @@ use crate::models::poll::{Poll, PollVote};
 
 pub async fn list_by_room(pool: &PgPool, room_id: Uuid) -> Result<Vec<Poll>, sqlx::Error> {
     sqlx::query_as::<_, Poll>(
-        "SELECT * FROM polls WHERE room_id = $1 ORDER BY created_at DESC",
+        "SELECT * FROM polls WHERE room_id = $1 ORDER BY created_at DESC LIMIT 200",
     )
     .bind(room_id)
     .fetch_all(pool)
@@ -64,7 +64,7 @@ pub async fn get_votes(pool: &PgPool, poll_id: Uuid) -> Result<Vec<PollVote>, sq
 }
 
 pub async fn close(pool: &PgPool, id: Uuid) -> Result<(), sqlx::Error> {
-    sqlx::query("UPDATE polls SET status = 'closed' WHERE id = $1")
+    sqlx::query("UPDATE polls SET status = 'closed'::poll_status WHERE id = $1")
         .bind(id)
         .execute(pool)
         .await?;

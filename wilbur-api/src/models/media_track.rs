@@ -19,8 +19,11 @@ pub struct MediaTrack {
     pub user_id: Uuid,
     pub track_id: String,
     pub track_type: TrackType,
+    pub track_sid: Option<String>,
     pub is_active: bool,
+    pub muted: bool,
     pub metadata: Option<serde_json::Value>,
+    pub last_heartbeat: DateTime<Utc>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }

@@ -14,19 +14,42 @@ function getCorsHeaders(req: Request) {
   }
 }
 
-// Verify Supabase JWT from Authorization header
+// Verify Supabase JWT using HMAC-SHA256 signature via Web Crypto API
 async function verifyAuth(req: Request): Promise<boolean> {
   const authHeader = req.headers.get('authorization')
   if (!authHeader?.startsWith('Bearer ')) return false
   const token = authHeader.replace('Bearer ', '')
-  const supabaseJwtSecret = Deno.env.get('SUPABASE_JWT_SECRET')
-  if (!supabaseJwtSecret || !token) return false
-  // Decode and verify JWT (basic validation — payload structure + expiry)
+  const jwtSecret = Deno.env.get('SUPABASE_JWT_SECRET')
+  if (!jwtSecret || !token) return false
+
   try {
-    const [, payloadB64] = token.split('.')
-    const payload = JSON.parse(atob(payloadB64))
+    const parts = token.split('.')
+    if (parts.length !== 3) return false
+    const [headerB64, payloadB64, signatureB64] = parts
+
+    // Verify HMAC-SHA256 signature
+    const encoder = new TextEncoder()
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(jwtSecret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    )
+    // JWT signatures use base64url encoding
+    const signatureBytes = Uint8Array.from(
+      atob(signatureB64.replace(/-/g, '+').replace(/_/g, '/')),
+      c => c.charCodeAt(0)
+    )
+    const dataBytes = encoder.encode(`${headerB64}.${payloadB64}`)
+    const valid = await crypto.subtle.verify('HMAC', key, signatureBytes, dataBytes)
+    if (!valid) return false
+
+    // Verify payload claims
+    const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')))
     if (!payload.sub || !payload.exp) return false
     if (payload.exp * 1000 < Date.now()) return false
+
     return true
   } catch {
     return false

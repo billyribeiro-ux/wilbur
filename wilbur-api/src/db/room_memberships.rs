@@ -5,7 +5,7 @@ use crate::models::membership::RoomMembership;
 
 pub async fn list_by_room(pool: &PgPool, room_id: Uuid) -> Result<Vec<RoomMembership>, sqlx::Error> {
     sqlx::query_as::<_, RoomMembership>(
-        "SELECT * FROM room_memberships WHERE room_id = $1 AND status = 'active' ORDER BY created_at",
+        "SELECT * FROM room_memberships WHERE room_id = $1 AND status = 'active' ORDER BY created_at LIMIT 200",
     )
     .bind(room_id)
     .fetch_all(pool)

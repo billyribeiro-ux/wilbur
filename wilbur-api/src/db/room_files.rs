@@ -5,7 +5,7 @@ use crate::models::storage::{Note, RoomFile};
 
 pub async fn list_files(pool: &PgPool, room_id: Uuid) -> Result<Vec<RoomFile>, sqlx::Error> {
     sqlx::query_as::<_, RoomFile>(
-        "SELECT * FROM room_files WHERE room_id = $1 ORDER BY created_at DESC",
+        "SELECT * FROM room_files WHERE room_id = $1 ORDER BY created_at DESC LIMIT 200",
     )
     .bind(room_id)
     .fetch_all(pool)
@@ -40,7 +40,7 @@ pub async fn create_file(
 
 pub async fn list_notes(pool: &PgPool, room_id: Uuid) -> Result<Vec<Note>, sqlx::Error> {
     sqlx::query_as::<_, Note>(
-        "SELECT * FROM notes WHERE room_id = $1 ORDER BY updated_at DESC",
+        "SELECT * FROM notes WHERE room_id = $1 ORDER BY updated_at DESC LIMIT 200",
     )
     .bind(room_id)
     .fetch_all(pool)

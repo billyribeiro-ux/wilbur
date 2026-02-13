@@ -12,7 +12,11 @@ use validator::Validate;
 
 use crate::{
     error::{AppError, AppResult},
-    extractors::{auth::AuthUser, pagination::PaginationParams},
+    extractors::{
+        auth::AuthUser,
+        pagination::PaginationParams,
+        room_access::{require_room_host, require_room_moderator},
+    },
     models::{
         membership::{MemberRole, MemberStatus, MembershipResponse, RoomMembership, UpdateMemberRoleRequest},
         room::{CreateRoomRequest, Room, RoomResponse, UpdateRoomRequest},
@@ -78,7 +82,7 @@ async fn create_room(
     .bind(body.tenant_id)
     .bind(&body.name)
     .bind(&body.title)
-    .bind(body.description.as_deref().unwrap_or(""))
+    .bind(&body.description)
     .bind(body.max_members.unwrap_or(100))
     .bind(&body.background_image_url)
     .bind(&body.header_color)
@@ -129,10 +133,13 @@ async fn get_room(
 /// PUT /:id -- update a room.
 async fn update_room(
     State(state): State<Arc<AppState>>,
-    _auth_user: AuthUser,
+    auth_user: AuthUser,
     Path(id): Path<Uuid>,
     Json(body): Json<UpdateRoomRequest>,
 ) -> AppResult<Json<RoomResponse>> {
+    // Only host or moderator can update a room
+    require_room_moderator(&state.pool, auth_user.id, id).await?;
+
     body.validate()
         .map_err(|e| AppError::Validation(e.to_string()))?;
 
@@ -177,9 +184,12 @@ async fn update_room(
 /// DELETE /:id -- soft-delete a room by deactivating it.
 async fn delete_room(
     State(state): State<Arc<AppState>>,
-    _auth_user: AuthUser,
+    auth_user: AuthUser,
     Path(id): Path<Uuid>,
 ) -> AppResult<StatusCode> {
+    // Only the host can delete a room
+    require_room_host(&state.pool, auth_user.id, id).await?;
+
     let result = sqlx::query("UPDATE rooms SET is_active = false, updated_at = NOW() WHERE id = $1")
         .bind(id)
         .execute(&state.pool)
@@ -212,10 +222,13 @@ async fn list_members(
 /// POST /:id/members -- invite/add a member to a room.
 async fn invite_member(
     State(state): State<Arc<AppState>>,
-    _auth_user: AuthUser,
+    auth_user: AuthUser,
     Path(id): Path<Uuid>,
     Json(body): Json<Value>,
 ) -> AppResult<(StatusCode, Json<MembershipResponse>)> {
+    // Only host or moderator can invite members
+    require_room_moderator(&state.pool, auth_user.id, id).await?;
+
     let user_id = body
         .get("user_id")
         .and_then(|v| v.as_str())
@@ -247,9 +260,17 @@ async fn invite_member(
 /// DELETE /:id/members/:user_id -- remove a member from a room.
 async fn remove_member(
     State(state): State<Arc<AppState>>,
-    _auth_user: AuthUser,
+    auth_user: AuthUser,
     Path((room_id, user_id)): Path<(Uuid, Uuid)>,
 ) -> AppResult<StatusCode> {
+    // Only host or moderator can remove members
+    require_room_moderator(&state.pool, auth_user.id, room_id).await?;
+
+    // Cannot remove yourself
+    if auth_user.id == user_id {
+        return Err(AppError::BadRequest("You cannot remove yourself from the room".into()));
+    }
+
     let result = sqlx::query(
         "DELETE FROM room_memberships WHERE room_id = $1 AND user_id = $2",
     )
@@ -268,10 +289,13 @@ async fn remove_member(
 /// PUT /:id/members/:user_id/role -- update a member's role.
 async fn update_member_role(
     State(state): State<Arc<AppState>>,
-    _auth_user: AuthUser,
+    auth_user: AuthUser,
     Path((room_id, user_id)): Path<(Uuid, Uuid)>,
     Json(body): Json<UpdateMemberRoleRequest>,
 ) -> AppResult<Json<MembershipResponse>> {
+    // Only the host can change member roles
+    require_room_host(&state.pool, auth_user.id, room_id).await?;
+
     let membership = sqlx::query_as::<_, RoomMembership>(
         r#"
         UPDATE room_memberships SET role = $1, updated_at = NOW()

@@ -111,14 +111,10 @@ class WsClient {
         if (msg.event_id && this.seenEvents.has(msg.event_id)) return;
         if (msg.event_id) {
           this.seenEvents.add(msg.event_id);
-          // Prune old event IDs (keep last 1000)
+          // Prune old event IDs — keep most recent 500
           if (this.seenEvents.size > 1000) {
-            const iterator = this.seenEvents.values();
-            for (let i = 0; i < 500; i++) iterator.next();
-            // Can't easily prune a Set; rebuild
-            const keep = new Set<string>();
-            for (const id of this.seenEvents) keep.add(id);
-            this.seenEvents = keep;
+            const all = Array.from(this.seenEvents);
+            this.seenEvents = new Set(all.slice(-500));
           }
         }
         const handlers = this.subscriptions.get(msg.channel!);

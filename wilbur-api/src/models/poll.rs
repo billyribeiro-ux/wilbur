@@ -4,6 +4,14 @@ use sqlx::FromRow;
 use uuid::Uuid;
 use validator::Validate;
 
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, PartialEq)]
+#[sqlx(type_name = "poll_status", rename_all = "lowercase")]
+#[serde(rename_all = "lowercase")]
+pub enum PollStatus {
+    Active,
+    Closed,
+}
+
 #[derive(Debug, Clone, FromRow, Serialize)]
 pub struct Poll {
     pub id: Uuid,
@@ -11,7 +19,7 @@ pub struct Poll {
     pub creator_id: Uuid,
     pub question: String,
     pub options: serde_json::Value,
-    pub is_closed: bool,
+    pub status: PollStatus,
     pub closes_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
 }
@@ -48,7 +56,7 @@ pub struct PollResponse {
     pub creator_id: Uuid,
     pub question: String,
     pub options: serde_json::Value,
-    pub is_closed: bool,
+    pub status: PollStatus,
     pub closes_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
     pub total_votes: i64,
@@ -62,7 +70,7 @@ impl From<Poll> for PollResponse {
             creator_id: p.creator_id,
             question: p.question,
             options: p.options,
-            is_closed: p.is_closed,
+            status: p.status,
             closes_at: p.closes_at,
             created_at: p.created_at,
             total_votes: 0,

@@ -2,7 +2,7 @@
 
 CREATE TABLE rooms (
     id                   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id            UUID        NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    tenant_id            UUID        REFERENCES tenants(id) ON DELETE SET NULL,
     name                 VARCHAR     NOT NULL,
     title                VARCHAR,
     description          TEXT,

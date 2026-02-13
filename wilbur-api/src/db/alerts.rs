@@ -5,7 +5,7 @@ use crate::models::alert::Alert;
 
 pub async fn list_by_room(pool: &PgPool, room_id: Uuid) -> Result<Vec<Alert>, sqlx::Error> {
     sqlx::query_as::<_, Alert>(
-        "SELECT * FROM alerts WHERE room_id = $1 AND is_active = true ORDER BY created_at DESC",
+        "SELECT * FROM alerts WHERE room_id = $1 AND is_active = true ORDER BY created_at DESC LIMIT 200",
     )
     .bind(room_id)
     .fetch_all(pool)
