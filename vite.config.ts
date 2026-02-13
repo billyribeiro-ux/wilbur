@@ -19,6 +19,17 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: 'hidden',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-fluent': ['@fluentui/react-components', '@fluentui/react-icons'],
+          'vendor-livekit': ['livekit-client'],
+          'vendor-framer': ['framer-motion'],
+          'vendor-zustand': ['zustand', 'immer'],
+        },
+      },
+    },
   },
 });

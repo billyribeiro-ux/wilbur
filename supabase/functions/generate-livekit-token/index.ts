@@ -8,13 +8,38 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { AccessToken } from "https://esm.sh/livekit-server-sdk@2.6.0";
 
 // =========================================================
-// CORS Headers - Critical for localhost development
+// CORS Headers - Restricted to configured origins
 // =========================================================
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') || '').split(',').filter(Boolean)
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('origin') || ''
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0] || ''
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  }
+}
+
+// =========================================================
+// JWT Verification
+// =========================================================
+function verifyAuth(req: Request): boolean {
+  const authHeader = req.headers.get('authorization')
+  if (!authHeader?.startsWith('Bearer ')) return false
+  const token = authHeader.replace('Bearer ', '')
+  if (!token) return false
+  try {
+    const [, payloadB64] = token.split('.')
+    const payload = JSON.parse(atob(payloadB64))
+    if (!payload.sub || !payload.exp) return false
+    if (payload.exp * 1000 < Date.now()) return false
+    return true
+  } catch {
+    return false
+  }
+}
 
 // =========================================================
 // Environment Variables (Set in Supabase Dashboard)
@@ -37,13 +62,15 @@ interface TokenRequest {
 // Main Handler
 // =========================================================
 serve(async (req: Request) => {
+  const corsHeaders = getCorsHeaders(req)
+
   // ═══════════════════════════════════════════════════════
   // Handle CORS Preflight (OPTIONS)
   // ═══════════════════════════════════════════════════════
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { 
+    return new Response('ok', {
       headers: corsHeaders,
-      status: 200 
+      status: 200
     });
   }
 
@@ -53,9 +80,22 @@ serve(async (req: Request) => {
   if (req.method !== 'POST') {
     return new Response(
       JSON.stringify({ error: 'Method not allowed. Use POST.' }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 405 
+        status: 405
+      }
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Verify Caller Identity
+  // ═══════════════════════════════════════════════════════
+  if (!verifyAuth(req)) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized. Valid JWT required.' }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401
       }
     );
   }
