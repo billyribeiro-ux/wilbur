@@ -1,1 +1,40 @@
-node_modules
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+blob-report/
+
+# Source maps (generated at build time)
+*.map
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Rust backend
+wilbur-api/target/
+wilbur-api/.sqlx/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

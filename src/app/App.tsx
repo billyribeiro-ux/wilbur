@@ -6,23 +6,30 @@
  * on every render, which was causing infinite mount/unmount cycles downstream
  */
 
-import { useEffect, type FC, type ReactNode } from 'react';
+import { useEffect, lazy, Suspense, type FC, type ReactNode } from 'react';
 import '../icons/fa';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { FluentProvider, webDarkTheme, Spinner, type Theme } from '@fluentui/react-components';
 
-// Removed unused supabase import - authStore.initialize() is single source of truth
-import { ThemeSwitcher } from '../components/ThemeSwitcher';
-import { NotesView } from '../components/trading/NotesView';
-import { TestTradingRoomShell } from '../components/trading/TestTradingRoomShell';
 import type { Session, User } from '@supabase/supabase-js';
-import { ToastContainer } from '../components/ToastContainer';
-import { EnhancedAuthPage } from '../components/icons/EnhancedAuthPage';
-import { ImageModal } from '../components/modals/ImageModal';
-import { RoomSelector } from '../components/rooms/RoomSelector';
-import { TradingRoomWrapper } from '../components/trading/TradingRoomWrapper';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
+
+// Lazy-loaded route components for code splitting
+const ThemeSwitcher = lazy(() => import('../components/ThemeSwitcher').then(m => ({ default: m.ThemeSwitcher })));
+const NotesView = lazy(() => import('../components/trading/NotesView').then(m => ({ default: m.NotesView })));
+const TestTradingRoomShell = lazy(() => import('../components/trading/TestTradingRoomShell').then(m => ({ default: m.TestTradingRoomShell })));
+const ToastContainer = lazy(() => import('../components/ToastContainer').then(m => ({ default: m.ToastContainer })));
+const EnhancedAuthPage = lazy(() => import('../components/icons/EnhancedAuthPage').then(m => ({ default: m.EnhancedAuthPage })));
+const ImageModal = lazy(() => import('../components/modals/ImageModal').then(m => ({ default: m.ImageModal })));
+const RoomSelector = lazy(() => import('../components/rooms/RoomSelector').then(m => ({ default: m.RoomSelector })));
+const TradingRoomWrapper = lazy(() => import('../components/trading/TradingRoomWrapper').then(m => ({ default: m.TradingRoomWrapper })));
+
+const PageSpinner = () => (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#111827' }}>
+    <Spinner label="Loading..." />
+  </div>
+);
 
 // 🔥 CRITICAL: Hoist ProtectedRoute outside to prevent recreation
 interface ProtectedRouteProps {
@@ -110,8 +117,7 @@ const TestTradingRoom: FC = () => {
   );
 };
 
-// Import the test harness
-import { TestWhiteboardHarness } from '../components/testing/TestWhiteboardHarness';
+const TestWhiteboardHarness = lazy(() => import('../components/testing/TestWhiteboardHarness').then(m => ({ default: m.TestWhiteboardHarness })));
 
 // Test Whiteboard route wrapper (always active overlay + toolbar)
 const TestWhiteboard: FC = () => (
@@ -128,6 +134,7 @@ const AppRoutes: FC = () => {
 
   return (
     <FluentProvider theme={(currentTheme as Partial<Theme>) || webDarkTheme} dir="ltr">
+      <Suspense fallback={<PageSpinner />}>
       <Routes>
         {/* Public routes - session-based check */}
         <Route 
@@ -174,15 +181,16 @@ const AppRoutes: FC = () => {
         {/* Default fallback - session-based check */}
         <Route path="*" element={<Navigate to={session ? '/' : '/auth'} replace />} />
       </Routes>
+      </Suspense>
 
       {/* Global toast notifications */}
-      <ToastContainer />
-      
+      <Suspense fallback={null}><ToastContainer /></Suspense>
+
       {/* Global image modal */}
-      <ImageModal />
-      
+      <Suspense fallback={null}><ImageModal /></Suspense>
+
       {/* Theme switcher - only show when logged in */}
-      {session && <ThemeSwitcher />}
+      {session && <Suspense fallback={null}><ThemeSwitcher /></Suspense>}
     </FluentProvider>
   );
 };

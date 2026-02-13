@@ -65,8 +65,7 @@ export default [
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       'react-hooks/rules-of-hooks': 'error',
-      // Disable exhaustive-deps for now due to numerous false positives with Zustand store hooks
-      'react-hooks/exhaustive-deps': 'off',
+      'react-hooks/exhaustive-deps': 'warn',
 
       // TypeScript
   '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none', ignoreRestSiblings: true }],
@@ -84,7 +83,7 @@ export default [
       // General
       // Allow console usage broadly; consider migrating to structured logger later
       'no-console': 'off',
-      'no-empty': 'off',
+      'no-empty': 'warn',
       'no-async-promise-executor': 'error',
   'no-constant-condition': 'warn'
     },

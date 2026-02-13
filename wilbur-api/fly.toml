@@ -1,0 +1,30 @@
+app = "wilbur-api"
+primary_region = "iad"
+
+[build]
+dockerfile = "Dockerfile"
+
+[env]
+RUST_LOG = "wilbur_api=info,tower_http=info"
+PORT = "3000"
+
+[http_service]
+internal_port = 3000
+force_https = true
+auto_stop_machines = "suspend"
+auto_start_machines = true
+min_machines_running = 1
+
+[http_service.concurrency]
+type = "connections"
+hard_limit = 2500
+soft_limit = 2000
+
+[[http_service.checks]]
+path = "/health"
+interval = "15s"
+timeout = "5s"
+
+[[vm]]
+size = "shared-cpu-2x"
+memory = "512mb"
