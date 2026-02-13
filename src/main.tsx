@@ -1,5 +1,5 @@
 /**
- * main.tsx — Revolution Trading Room (Entry Point)
+ * main.tsx — Wilbur Trading Room (Entry Point)
  * - Validates environment configuration
  * - Initializes sound service on first user interaction
  * - Preloads Spotify SDK
@@ -13,7 +13,6 @@ import App from './app/App.tsx';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 import { validateEnvironmentConfig, logEnvironmentConfig } from "./config/environment";
-import { supabase } from './lib/supabase';
 import { initializeSoundService } from './services/soundService';
 import { initializeGlobalErrorHandlers } from './utils/globalErrorHandlers';
 
@@ -24,24 +23,11 @@ initializeGlobalErrorHandlers();
 // 1. Environment Validation
 // ═══════════════════════════════════════════════════════════════
 function validateEnvironment() {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
   const isE2ERoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/__test_');
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    if (isE2ERoute) {
-      console.warn('[ENV] Skipping Supabase configuration enforcement for E2E test route');
-    } else {
-      throw new Error('Missing Supabase configuration. Please check your .env file.');
-    }
-  }
-
-  if (supabaseUrl && !supabaseUrl.startsWith('http')) {
-    if (isE2ERoute) {
-      console.warn('[ENV] Supabase URL invalid, but tolerated in E2E mode');
-    } else {
-      throw new Error('Invalid Supabase URL in configuration.');
-    }
+  if (!apiBaseUrl && !isE2ERoute) {
+    console.warn('[ENV] VITE_API_BASE_URL not set, defaulting to http://localhost:3000');
   }
 
   const envValidation = validateEnvironmentConfig();
@@ -87,14 +73,7 @@ try {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 3. Initialize Supabase Session (preconnect)
-// ═══════════════════════════════════════════════════════════════
-supabase.auth.getSession().catch(() => {
-  // Silent preconnect - errors handled by auth flow
-});
-
-// ═══════════════════════════════════════════════════════════════
-// 4. Initialize Sound Service (on user interaction)
+// 3. Initialize Sound Service (on user interaction)
 // ═══════════════════════════════════════════════════════════════
 let soundInitialized = false;
 const initializeAudioOnInteraction = () => {
@@ -115,7 +94,7 @@ document.addEventListener('keydown', initializeAudioOnInteraction, { once: true,
 document.addEventListener('touchstart', initializeAudioOnInteraction, { once: true, passive: true });
 
 // ═══════════════════════════════════════════════════════════════
-// 5. Preload Spotify SDK
+// 4. Preload Spotify SDK
 // ═══════════════════════════════════════════════════════════════
 if (!document.querySelector('script[src*="spotify-player"]')) {
   const spotifyScript = document.createElement('script');
@@ -126,7 +105,7 @@ if (!document.querySelector('script[src*="spotify-player"]')) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 6. Render Application
+// 5. Render Application
 // ═══════════════════════════════════════════════════════════════
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
@@ -135,7 +114,7 @@ createRoot(document.getElementById('root')!).render(
 );
 
 // ═══════════════════════════════════════════════════════════════
-// 7. Performance Monitoring (Production Only)
+// 6. Performance Monitoring (Production Only)
 // ═══════════════════════════════════════════════════════════════
 if (import.meta.env.PROD) {
   import('./lib/monitoring')

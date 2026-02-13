@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import { api } from '../api/client';
+
 interface Integration {
   id: string;
   provider: string;
-  access_token: string;
-  refresh_token?: string;
-  expires_at?: string;
+  connected: boolean;
   display_name?: string;
   avatar_url?: string;
   user_id: string;
@@ -28,26 +28,30 @@ export const useIntegrationStore = create<IntegrationState>()(
       connections: [],
       isLoading: false,
 
-      loadConnections: async (userId: string) => {
+      loadConnections: async (_userId: string) => {
         set({ isLoading: true });
         try {
-          const { supabase } = await import('../lib/supabase');
-          const { data, error } = await supabase
-            .from('user_integrations')
-            .select('*')
-            .eq('user_id', userId);
+          // Fetch integration status from the Rust backend
+          // The backend stores tokens securely — we only need connection status
+          const providers = ['spotify', 'x', 'linkedin'] as const;
+          const connections: Integration[] = [];
 
-          if (error) throw error;
-          const connections: Integration[] = (data || []).map((item: any) => ({
-            id: item.id,
-            provider: item.integration_type,
-            access_token: item.access_token,
-            refresh_token: item.refresh_token || undefined,
-            expires_at: item.token_expires_at || undefined,
-            display_name: undefined,
-            avatar_url: undefined,
-            user_id: item.user_id
-          }));
+          for (const provider of providers) {
+            try {
+              const config = await api.get<{ client_id_configured: boolean }>(`/api/v1/integrations/${provider}/config`);
+              if (config.client_id_configured) {
+                connections.push({
+                  id: `${_userId}-${provider}`,
+                  provider,
+                  connected: true,
+                  user_id: _userId,
+                });
+              }
+            } catch {
+              // Provider not connected — skip
+            }
+          }
+
           set({ connections, isLoading: false });
         } catch (error) {
           console.error('[IntegrationStore] Failed to load connections:', error);

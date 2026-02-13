@@ -201,11 +201,11 @@ npm run test:e2e
 - File type and size validation
 - Color hex validation
 - Input sanitization
-- SQL injection prevention (Supabase RLS)
+- SQL injection prevention (parameterized queries)
 
 ### Rate Limiting
 - Front-end rate limiting (3 actions per 5 seconds)
-- Back-end rate limiting (Supabase policies)
+- Back-end rate limiting (Governor GCRA)
 - Concurrency control (latest-wins pattern)
 
 ---

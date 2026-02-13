@@ -4,13 +4,13 @@
  * - Lists user’s trading rooms with live theme branding
  * - Integrates Create/Edit/Clone/Delete modals
  * - Loads tenant-wide branding & color settings
- * - Safe Supabase + Toast integration (2025-10 edition)
+ * - Safe API + Toast integration (2025-10 edition)
  */
 
 import * as Icons from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 
-import { supabase } from '../../lib/supabase';
+import { tenantsApi } from '../../api/tenants';
 import { getUserRooms, deleteRoom } from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
@@ -77,27 +77,15 @@ export function RoomSelector({ onSelectRoom }: RoomSelectorProps) {
       const userRooms = await getUserRooms(user.id);
       setRooms(userRooms as ExtendedRoom[]);
 
-      if (userRooms.length > 0) {
-        const { data: tenantData, error: tenantError } = await supabase
-          .from('tenants')
-          .select(
-            `
-            business_name, logo_url, primary_color, secondary_color, accent_color,
-            text_color_primary, text_color_secondary, text_color_muted,
-            background_primary, background_secondary, border_color,
-            font_family, font_size_base, font_size_heading, font_weight_normal, font_weight_bold,
-            icon_style, icon_size, room_icon
-          `
-          )
-          .eq('id', userRooms[0].id)
-          .maybeSingle();
+      if (userRooms.length > 0 && userRooms[0].tenant_id) {
+        try {
+          const tenantData = await tenantsApi.get(userRooms[0].tenant_id);
 
-        if (tenantError) {
-          console.warn('[RoomSelector] Tenant load failed:', tenantError.message);
-        }
-
-        if (tenantData) {
-          // Note: Theme loading removed - using theme store directly
+          if (tenantData) {
+            // Note: Theme loading removed - using theme store directly
+          }
+        } catch (tenantError) {
+          console.warn('[RoomSelector] Tenant load failed:', tenantError instanceof Error ? tenantError.message : tenantError);
         }
       }
     } catch (error) {

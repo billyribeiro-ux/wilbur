@@ -21,7 +21,7 @@ export type AlertRealtimeEvent =
 function mapRawToAlertEvent(raw: any): AlertRealtimeEvent | null {
   if (!raw || typeof raw !== 'object') return null;
 
-  // common shapes seen from Supabase/realtime or custom sockets:
+  // common shapes seen from backend/realtime or custom sockets:
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const type = String(raw.type ?? raw.event ?? raw.kind ?? '').toLowerCase();
 

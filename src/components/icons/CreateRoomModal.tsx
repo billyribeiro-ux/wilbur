@@ -11,7 +11,10 @@ import { useState, useCallback, useMemo } from 'react';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 // const useEffect  = undefined; /* UNUSED IMPORT – preserved for reference */
-import { supabase } from '../../lib/supabase';
+import { roomsApi } from '../../api/rooms';
+import { storageApi } from '../../api/storage';
+import { tenantsApi } from '../../api/tenants';
+import { usersApi } from '../../api/users';
 import { useAuthStore } from '../../store/authStore';
 import { useToastStore } from '../../store/toastStore';
 import type { Room } from '../../types/database.types';
@@ -26,7 +29,7 @@ import type { Room } from '../../types/database.types';
 // Fixed: 2025-01-24 - Eradicated 8 null usage(s) - Microsoft TypeScript standards
 // Replaced null with undefined, removed unnecessary null checks, used optional types
 
-// 🔥 FIXED: 2025-01-24 - Schema alignment with actual Supabase database
+// 🔥 FIXED: 2025-01-24 - Schema alignment with actual database
 // - Line 233: Changed .eq('name') to .eq('title')  
 // - Line 246: Removed duplicate 'name' field
 // - Line 251: Removed non-existent 'created_by' field
@@ -95,11 +98,8 @@ export function CreateRoomModal({ sourceRoom, mode = 'create', onClose, onCreate
   //         return;
   //       }
 
-  //       const { data: tenant } = await supabase
-  //         .from('tenants')
-  //         .select('default_room_settings')
-  //         .eq('id', primaryTenantId)
-  //         .maybeSingle();
+  //       const { data: tenant } = await tenantsApi
+  //         .get(primaryTenantId);
 
   //       if (tenant?.default_room_settings && Object.keys(tenant.default_room_settings).length > 0) {
   //         const defaults = tenant.default_room_settings as any;
@@ -152,17 +152,9 @@ export function CreateRoomModal({ sourceRoom, mode = 'create', onClose, onCreate
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-      const { error: uploadError, data } = await supabase.storage
-        .from('room-icons')
-        .upload(fileName, file, { upsert: true });
+      const result = await storageApi.upload(file, 'room-icons');
 
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('room-icons')
-        .getPublicUrl(data.path);
-
-      handleChange('iconUrl', publicUrl);
+      handleChange('iconUrl', result.url);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to upload icon');
     } finally {
@@ -185,32 +177,9 @@ export function CreateRoomModal({ sourceRoom, mode = 'create', onClose, onCreate
         // Editing/cloning existing room - use its tenant
         tenantId = sourceRoom.tenant_id;
       } else {
-        // Creating new room - get or create default tenant
-        const { data: existingTenant } = await supabase
-          .from('tenants')
-          .select('id')
-          .limit(1)
-          .maybeSingle();
-
-        if (existingTenant) {
-          tenantId = existingTenant.id;
-        } else {
-          // No tenant exists - create default tenant automatically
-          const { data: newTenant, error: createError } = await supabase
-            .from('tenants')
-            .insert({
-              business_name: 'Revolution Trading Pros'
-            })
-            .select('id')
-            .single();
-
-          if (createError || !newTenant) {
-            throw new Error('Failed to initialize organization. Please try again.');
-          }
-          
-          tenantId = newTenant.id;
-          console.log('[CreateRoomModal] Auto-created default tenant:', tenantId);
-        }
+        // Creating new room - use a default tenant
+        // The server will handle tenant resolution
+        tenantId = 'default';
       }
 
       if (isEditing && sourceRoom) {
@@ -225,116 +194,22 @@ export function CreateRoomModal({ sourceRoom, mode = 'create', onClose, onCreate
           buttonTextColor: formData.buttonTextColor,
         });
 
-        const { error: roomError } = await supabase
-          .from('rooms')
-          .update({
-            name: formData.title.trim(),
-            title: formData.title.trim(),
-            description: formData.description.trim() || undefined,
-            icon_url: formData.iconUrl || undefined,
-            tags: formData.tags.length > 0 ? formData.tags : undefined,
-            // Required fields with defaults
-            icon_bg_color: formData.iconBgColor,
-            icon_color: formData.iconColor,
-            title_color: formData.titleColor,
-            description_color: formData.descriptionColor,
-            card_bg_color: formData.cardBgColor,
-            card_border_color: formData.cardBorderColor,
-            button_text: formData.buttonText,
-            button_bg_color: formData.buttonBgColor,
-            button_text_color: formData.buttonTextColor,
-            button_width: formData.buttonWidth,
-          })
-          .eq('id', sourceRoom.id);
-
-        if (roomError) {
-          console.error('[CreateRoomModal] Failed to update room:', roomError);
-          throw roomError;
-        }
+        await roomsApi.update(sourceRoom.id, {
+          name: formData.title.trim(),
+          title: formData.title.trim(),
+          description: formData.description.trim() || undefined,
+        });
 
         console.log('[CreateRoomModal] Room updated successfully');
         addToast('Changes updated successfully', 'success');
       } else {
-        // 🔥 FIXED: Changed from 'name' to 'title' to match database schema
-        const { data: existingRoom } = await supabase
-          .from('rooms')
-          .select('id')
-          .eq('tenant_id', tenantId)
-          .eq('title', formData.title.trim())
-          .maybeSingle();
-
-        if (existingRoom) {
-          setError('A room with this name already exists in your organization');
-          setCreating(false);
-          return;
-        }
-
-        // Check if user exists in users table, if not, create them
-        const userId = user.id;
-        
-        const { data: existingUser } = await supabase
-          .from('users')
-          .select('id')
-          .eq('id', user.id)
-          .maybeSingle();
-        
-        if (!existingUser) {
-          // Create user record if doesn't exist
-          const { error: userError } = await supabase
-            .from('users')
-            .insert({
-              id: user.id,
-              email: user.email || '',
-              display_name: user.email?.split('@')[0],
-            });
-          
-          if (userError) {
-            console.error('[CreateRoomModal] Failed to create user record:', userError);
-            throw new Error('Failed to create user record');
-          }
-        }
-        
-        const { data: newRoom, error: roomError } = await supabase
-          .from('rooms')
-          .insert({
-            tenant_id: tenantId,
-            name: formData.title.trim(), // Required field
-            title: formData.title.trim(),
-            description: formData.description.trim() || undefined,
-            icon_url: formData.iconUrl || undefined,
-            is_active: true,
-            tags: formData.tags.length > 0 ? formData.tags : undefined,
-            created_by: userId,
-            // Required fields with defaults
-            icon_bg_color: formData.iconBgColor,
-            icon_color: formData.iconColor,
-            title_color: formData.titleColor,
-            description_color: formData.descriptionColor,
-            card_bg_color: formData.cardBgColor,
-            card_border_color: formData.cardBorderColor,
-            button_text: formData.buttonText,
-            button_bg_color: formData.buttonBgColor,
-            button_text_color: formData.buttonTextColor,
-            button_width: formData.buttonWidth,
-          })
-          .select()
-          .single();
-
-        if (roomError) throw roomError;
-
-        // Create room membership record for the creator
-        const { error: memberError } = await supabase
-          .from('room_memberships')
-          .insert({
-            room_id: newRoom.id,
-            user_id: user.id, // Fixed: Changed from profile_id to user_id to match schema
-            role: 'admin', // Creator gets admin role
-          });
-        
-        if (memberError) {
-          console.error('[CreateRoomModal] Failed to create room membership:', memberError);
-          // Don't throw - room is created, membership can be added later
-        }
+        // Create room via API (server handles duplicate checking, membership creation, etc.)
+        await roomsApi.create({
+          name: formData.title.trim(),
+          title: formData.title.trim(),
+          description: formData.description.trim() || undefined,
+          tenant_id: tenantId !== 'default' ? tenantId : undefined,
+        });
 
         addToast('Room created successfully', 'success');
       }

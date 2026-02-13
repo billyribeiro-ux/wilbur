@@ -1,6 +1,6 @@
 /**
  * Enterprise Schema Verification Utility
- * Run this to verify live Supabase schema matches code expectations
+ * Run this to verify database schema matches code expectations
  * Microsoft standard: Comprehensive verification with detailed reporting
  */
 
@@ -14,7 +14,7 @@ import { verifyAllCriticalTables } from '../services/verifySchema';
 export async function runSchemaVerification() {
   // Enterprise standard: Only log in development
   if (import.meta.env.DEV) {
-    console.debug('🔍 Starting Comprehensive Supabase Schema Verification...');
+    console.debug('Starting Comprehensive Schema Verification...');
     console.debug('='.repeat(60));
   }
   

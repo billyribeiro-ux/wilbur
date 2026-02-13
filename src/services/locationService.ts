@@ -1,11 +1,11 @@
 /**
  * Location Service - Member Location Tracking
  * =====================================================
- * Tracks member city/state/country using IP geolocation
- * Uses ipapi.co (free, no API key needed, 1000 requests/day)
+ * Uses roomsApi and api client for location tracking
  */
 
-import { supabase } from '../lib/supabase';
+import { api } from '../api/client';
+import { roomsApi } from '../api/rooms';
 
 export interface MemberLocation {
   city?: string;
@@ -27,8 +27,8 @@ export async function getUserLocation(): Promise<MemberLocation | null> {
 }
 
 /**
- * Update member's location in Supabase room_memberships table
- * NOTE: This will work once the migration is run. For now, it stores in memory via RoomStore.
+ * Update member's location via the API
+ * NOTE: This will work once the backend supports location updates on memberships.
  */
 export async function updateMemberLocation(
   roomId: string,
@@ -36,28 +36,20 @@ export async function updateMemberLocation(
   location: MemberLocation
 ): Promise<boolean> {
   try {
-    // Update location in database
-    const { error } = await supabase
-      .from('room_memberships')
-      .update({
-        city: location.city,
-        region: location.region,
-        country: location.country,
-        country_code: location.country_code,
-        timezone: location.timezone,
-      })
-      .eq('room_id', roomId)
-      .eq('user_id', userId);
+    // Update location via the rooms API member role endpoint
+    // The backend should accept location data as part of the member update
+    await api.put(`/api/v1/rooms/${roomId}/members/${userId}/location`, {
+      city: location.city,
+      region: location.region,
+      country: location.country,
+      country_code: location.country_code,
+      timezone: location.timezone,
+    });
 
-    if (error) {
-      console.error('[LocationService] Failed to update location in DB:', error);
-      return false;
-    }
-
-    console.log('[LocationService] Location updated in DB:', location);
+    console.log('[LocationService] Location updated via API:', location);
     return true;
   } catch (error) {
-    console.warn('[LocationService] Error updating location (expected until migration runs):', error);
+    console.warn('[LocationService] Error updating location (expected until backend supports it):', error);
     return true; // Don't fail - we'll use in-memory storage
   }
 }
@@ -68,26 +60,9 @@ export async function updateMemberLocation(
  */
 export async function getRoomMemberLocations(roomId: string) {
   try {
-    const { data, error } = await supabase
-      .from('room_memberships')
-      .select(`
-        user_id,
-        city,
-        region,
-        country,
-        country_code,
-        timezone,
-        users!room_memberships_user_id_fkey(
-          id,
-          display_name,
-          avatar_url
-        )
-      `)
-      .eq('room_id', roomId)
-      .not('city', 'is', null);
-
-    if (error) throw error;
-    return data || [];
+    // Fetch members via roomsApi which includes location data
+    const members = await roomsApi.listMembers(roomId);
+    return members || [];
   } catch (error) {
     console.error('[LocationService] Failed to get member locations:', error);
     return [];
@@ -104,7 +79,7 @@ export async function initializeMemberLocation(
 ): Promise<void> {
   try {
     console.log('[LocationService] Initializing location for user:', userId);
-    
+
     const location = await getUserLocation();
     if (location?.city) {
       await updateMemberLocation(roomId, userId, location);
@@ -126,11 +101,11 @@ export function formatLocation(location: MemberLocation): string {
   }
 
   const parts: string[] = [];
-  
+
   if (location.city) parts.push(location.city);
   if (location.region) parts.push(location.region);
   else if (location.country_code) parts.push(location.country_code);
-  
+
   return parts.join(', ') || 'Unknown';
 }
 
@@ -143,10 +118,10 @@ export function getLocationDisplay(member: {
   country_code?: string | null;
 }): string {
   const parts: string[] = [];
-  
+
   if (member.city) parts.push(member.city);
   if (member.region) parts.push(member.region);
   else if (member.country_code) parts.push(member.country_code);
-  
+
   return parts.join(', ') || '';
 }

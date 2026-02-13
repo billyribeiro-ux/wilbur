@@ -6,7 +6,7 @@
 import { format } from 'date-fns';
 import { useCallback } from 'react';
 
-import { supabase } from '../../lib/supabase';
+import { messagesApi } from '../../api/messages';
 import { useRoomStore } from '../../store/roomStore';
 import type { ToastType } from '../../store/toastStore';
 import type { Database } from '../../types/database.types';
@@ -16,11 +16,11 @@ type RoomRow = Database['public']['Tables']['rooms']['Row'];
 import type { ChatMessage as ChatMessageType } from '../../types/database.types';
 
 import type { LoadingStates } from '../../features/chat/chat.types';
-import { 
-  MessageType, 
+import {
+  MessageType,
   LoadingState,
   MAX_PINNED_MESSAGES,
-  SMOOTH_SCROLL_BEHAVIOR 
+  SMOOTH_SCROLL_BEHAVIOR
 } from './constants';
 
 interface UseChatHandlersProps {
@@ -69,7 +69,7 @@ export function useChatHandlers(props: UseChatHandlersProps) {
    */
   const handleSend = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if ((!input.trim() && !pendingFile) || !user || !currentRoom) return;
 
     setLoadingStates((prev) => ({ ...prev, sending: LoadingState.Loading }));
@@ -78,35 +78,22 @@ export function useChatHandlers(props: UseChatHandlersProps) {
       const fileUrl = uploadedFileUrl;
       const isImage = pendingFile?.type.startsWith('image/');
 
-      const messageData = {
-        room_id: currentRoom.id,
-        user_id: user.id,
-        user_role: 'admin' as const,
-        content: input.trim() || (fileUrl ? (isImage ? 'Sent an image' : 'Sent a file') : ''),
-        content_type: fileUrl ? (isImage ? MessageType.Image : MessageType.File) : MessageType.Text,
-        file_url: fileUrl,
-        is_off_topic: activeTab === 'off-topic',
-      };
+      const contentType = fileUrl ? (isImage ? MessageType.Image : MessageType.File) : MessageType.Text;
+      const content = input.trim() || (fileUrl ? (isImage ? 'Sent an image' : 'Sent a file') : '');
 
-      const { data, error } = await supabase
-        .from('chatmessages')
-        .insert(messageData)
-        .select('*, user:users!chatmessages_user_id_fkey(id, display_name, email)')
-        .single();
+      const data = await messagesApi.create(currentRoom.id, content, contentType);
 
-      if (error) throw new Error(error.message);
-      
       if (data) {
         const { addMessage } = useRoomStore.getState();
-        addMessage(data);
+        addMessage(data as unknown as ChatMessageType);
         justSentMessageRef.current = true;
-        
+
         requestAnimationFrame(() => {
           setTimeout(() => {
             if (messagesEndRef.current) {
-              messagesEndRef.current.scrollIntoView({ 
-                behavior: SMOOTH_SCROLL_BEHAVIOR, 
-                block: 'end' 
+              messagesEndRef.current.scrollIntoView({
+                behavior: SMOOTH_SCROLL_BEHAVIOR,
+                block: 'end'
               });
               setIsUserScrolledUp(false);
             }
@@ -119,7 +106,7 @@ export function useChatHandlers(props: UseChatHandlersProps) {
       setPendingFile(undefined);
       setUploadedFileUrl(undefined);
       if (fileInputRef.current) fileInputRef.current.value = '';
-      
+
       setLoadingStates((prev) => ({ ...prev, sending: LoadingState.Success }));
       setTimeout(() => {
         setLoadingStates((prev) => ({ ...prev, sending: LoadingState.Idle }));
@@ -146,19 +133,10 @@ export function useChatHandlers(props: UseChatHandlersProps) {
     }));
 
     try {
-      const { error } = await supabase
-        .from('chatmessages')
-        .update({ 
-          deleted_at: new Date().toISOString(),
-          deleted_by: user.id,
-          is_deleted: true
-        })
-        .eq('id', messageId);
-
-      if (error) throw error;
+      await messagesApi.delete(currentRoom.id, messageId);
 
       const { updateMessage } = useRoomStore.getState();
-      updateMessage(messageId, { 
+      updateMessage(messageId, {
         deleted_at: new Date().toISOString(),
         deleted_by: user.id,
         is_deleted: true
@@ -180,26 +158,25 @@ export function useChatHandlers(props: UseChatHandlersProps) {
    * Handles pinning/unpinning a message
    */
   const handlePin = useCallback(async (message: ChatMessageType) => {
-    if (!user) return;
-    
+    if (!user || !currentRoom) return;
+
     const pinnedMessages = messages.filter(m => m.pinned_by);
-    
+
     if (!message.pinned_by && pinnedMessages.length >= MAX_PINNED_MESSAGES) {
       addToast(`Maximum ${MAX_PINNED_MESSAGES} pinned messages allowed`, 'error');
       return;
     }
 
     try {
+      if (message.pinned_by) {
+        await messagesApi.unpin(currentRoom.id, message.id);
+      } else {
+        await messagesApi.pin(currentRoom.id, message.id);
+      }
+
       const updateData = message.pinned_by
         ? { pinned_by: null, pinned_at: null }
         : { pinned_by: user.id, pinned_at: new Date().toISOString() };
-
-      const { error } = await supabase
-        .from('chatmessages')
-        .update(updateData)
-        .eq('id', message.id);
-
-      if (error) throw error;
 
       const { updateMessage } = useRoomStore.getState();
       updateMessage(message.id, updateData);
@@ -208,7 +185,7 @@ export function useChatHandlers(props: UseChatHandlersProps) {
     } catch (error: unknown) {
       addToast('Failed to pin message', 'error');
     }
-  }, [user, messages, addToast]);
+  }, [user, messages, currentRoom, addToast]);
 
   /**
    * Handles downloading chat history
@@ -263,16 +240,11 @@ export function useChatHandlers(props: UseChatHandlersProps) {
     }
 
     try {
-      const { error } = await supabase
-        .from('chatmessages')
-        .update({ 
-          deleted_at: new Date().toISOString(),
-          deleted_by: user.id,
-          is_deleted: true
-        })
-        .eq('room_id', currentRoom.id);
-
-      if (error) throw error;
+      // Delete all messages in the room via the API
+      const roomMessages = messages.filter(m => !m.is_deleted);
+      await Promise.all(
+        roomMessages.map(m => messagesApi.delete(currentRoom.id, m.id))
+      );
 
       useRoomStore.getState().setMessages([]);
 
@@ -280,7 +252,7 @@ export function useChatHandlers(props: UseChatHandlersProps) {
     } catch (error: unknown) {
       addToast('Failed to erase messages', 'error');
     }
-  }, [user, currentRoom, addToast]);
+  }, [user, currentRoom, messages, addToast]);
 
   /**
    * Handles detaching chat to new window
@@ -290,7 +262,7 @@ export function useChatHandlers(props: UseChatHandlersProps) {
     const height = 800;
     const left = window.screen.width / 2 - width / 2;
     const top = window.screen.height / 2 - height / 2;
-    
+
     window.open(
       window.location.href,
       'DetachedChat',

@@ -2,7 +2,6 @@ import { Upload, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useState, useRef } from 'react';
 
 import { UPLOAD_CONFIG, LIMITS, STORAGE_BUCKETS } from '../../config/constants';
-import { supabase } from '../../lib/supabase';
 import { useRoomStore } from '../../store/roomStore';
 import { useThemeStore } from '../../store/themeStore';
 import { useToastStore } from '../../store/toastStore';
@@ -15,7 +14,7 @@ import { createRateLimiter } from '../../utils/rateLimit';
  * -------------------------
  * Allows users to customize business name and logo.
  * - Business name input
- * - Logo upload via Supabase storage
+ * - Logo upload via API storage
  * - Live preview of logo
  */
 export function BrandingSettings() {
@@ -30,7 +29,7 @@ export function BrandingSettings() {
   const rateLimiter = useRef(createRateLimiter(5000, 3));
 
   /**
-   * Handle logo file upload to Supabase storage
+   * Handle logo file upload to API storage
    */
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -69,7 +68,6 @@ export function BrandingSettings() {
 
       // Upload using shared service (typed result)
       const result = await uploadPublicAsset({
-        supabase,
         bucket: STORAGE_BUCKETS.branding,
         path: fileName,
         file,

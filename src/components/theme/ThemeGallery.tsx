@@ -1,5 +1,5 @@
 /**
-* THEME GALLERY — SUPABASE CONNECTED
+* THEME GALLERY
 * ===================================
 * • Loads all saved themes from `user_themes`
 * • Shows dual light/dark thumbnails
@@ -9,7 +9,7 @@
 import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 
-import { supabase } from "../../lib/supabase";
+import { themesApi } from '../../api/themes';
 import { useThemeStore } from "../../store/themeStore";
 // Fixed: 2025-01-24 - Eradicated 3 null usage(s) - Microsoft TypeScript standards
 // Replaced null with undefined, removed unnecessary null checks, used optional types
@@ -34,12 +34,7 @@ const applyThemeByJson = useThemeStore((s) => s.applyThemeByJson);
 useEffect(() => {
 const loadThemes = async () => {
 try {
-const { data, error } = await supabase
-.from("user_themes")
-.select("*")
-.order("updated_at", { ascending: false });
-
-if (error) throw error;
+const data = await themesApi.list();
 setThemes((data || []) as UserTheme[]);
 } catch (err: unknown) {
 console.error("[ThemeGallery] Error:", err);

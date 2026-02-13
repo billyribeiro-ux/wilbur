@@ -105,33 +105,6 @@ export const mockToastStore = {
   clearToasts: vi.fn(),
 };
 
-// Mock Supabase client
-export const createMockSupabase = () => ({
-  from: vi.fn((_table: string) => ({
-    select: vi.fn(() => ({
-      eq: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: vi.fn().mockResolvedValue({
-            data: { role: 'admin', joined_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
-            error: null,
-          }),
-        })),
-      })),
-    })),
-    update: vi.fn(() => ({
-      eq: vi.fn().mockResolvedValue({ error: null }),
-    })),
-    insert: vi.fn().mockResolvedValue({ error: null }),
-  })),
-  storage: {
-    from: vi.fn((_bucket: string) => ({
-      upload: vi.fn().mockResolvedValue({ error: null }),
-      getPublicUrl: vi.fn(() => ({
-        data: { publicUrl: 'https://example.com/test-file.png' },
-      })),
-    })),
-  },
-});
 
 // Custom render with providers
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {

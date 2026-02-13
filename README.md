@@ -1,8 +1,8 @@
 # Wilbur - Trading Room Platform
 
-A real-time trading room platform built with React, TypeScript, Supabase, and LiveKit.
+A real-time trading room platform built with React, TypeScript, Rust (Axum), and LiveKit.
 
-## 🚀 Features
+## Features
 
 ### Core Functionality
 - **Real-time Video/Audio** - LiveKit integration for high-quality streaming
@@ -25,63 +25,65 @@ A real-time trading room platform built with React, TypeScript, Supabase, and Li
 - **LinkedIn** - Connect your LinkedIn profile
 - **X (Twitter)** - Connect your X/Twitter account
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: React 18, TypeScript, Vite
 - **Styling**: TailwindCSS
 - **State Management**: Zustand
-- **Real-time**: Supabase Realtime, LiveKit
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **Storage**: Supabase Storage
-- **Edge Functions**: Supabase Edge Functions (Deno)
+- **Backend**: Rust (Axum), SQLx, PostgreSQL
+- **Real-time**: Native WebSocket, LiveKit
+- **Authentication**: JWT (Rust backend)
+- **Storage**: Rust backend file API
+- **Rate Limiting**: Governor (GCRA)
 
-## 📦 Installation
+## Installation
 
 ```bash
-# Install dependencies
+# Install frontend dependencies
 npm install
 
 # Set up environment variables
 cp .env.example .env
 # Edit .env with your credentials
 
-# Run development server
+# Run frontend dev server
 npm run dev
+
+# Run Rust backend
+cd wilbur-api && cargo run
 ```
 
-## 🔧 Environment Variables
+## Environment Variables
 
 Required in `.env`:
 ```
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_API_BASE_URL=http://localhost:3001
 VITE_LIVEKIT_URL=your_livekit_url
 VITE_LIVEKIT_API_KEY=your_livekit_api_key
 VITE_LIVEKIT_API_SECRET=your_livekit_api_secret
 ```
 
-## 🗄️ Database
+## Database
 
-Run migrations:
+Run migrations via SQLx:
 ```bash
-supabase db push
+cd wilbur-api && sqlx migrate run
 ```
 
-## 🚀 Deployment
+## Deployment
 
 ```bash
-# Build for production
+# Build frontend for production
 npm run build
 
-# Deploy to your hosting provider
-# (Netlify, Vercel, etc.)
+# Build Rust backend for production
+cd wilbur-api && cargo build --release
 ```
 
-## 📝 License
+## License
 
 MIT
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! Please open an issue or PR.

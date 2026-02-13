@@ -1,9 +1,9 @@
-/** Shared utility — SSOT. Do not duplicate logic elsewhere. */
+/** Shared utility -- SSOT. Do not duplicate logic elsewhere. */
+/** Storage service using storageApi */
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { storageApi } from '../api/storage';
 
 export interface UploadAssetParams {
-  supabase: SupabaseClient;
   bucket: string;
   path: string;
   file: File;
@@ -15,42 +15,29 @@ export type UploadAssetResult =
   | { ok: false; error: string };
 
 /**
- * Uploads a file to Supabase Storage and returns the public URL.
+ * Uploads a file via the API and returns the public URL.
  * No direct UI or store access - pure service function.
  * Returns typed result instead of throwing.
- * 
+ *
  * @param params - Upload parameters
  * @returns Promise resolving to typed result
  */
 export async function uploadPublicAsset(
   params: UploadAssetParams
 ): Promise<UploadAssetResult> {
-  const { supabase, bucket, path, file, upsert = false } = params;
+  const { bucket, file } = params;
 
   try {
-    // Upload file to storage
-    const { error: uploadError } = await supabase.storage
-      .from(bucket)
-      .upload(path, file, { upsert });
+    const result = await storageApi.upload(file, bucket);
 
-    if (uploadError) {
-      return {
-        ok: false,
-        error: `Storage upload failed: ${uploadError.message || 'Unknown error'}`,
-      };
-    }
-
-    // Get public URL
-    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-
-    if (!data?.publicUrl) {
+    if (!result?.url) {
       return {
         ok: false,
         error: 'Failed to retrieve public URL after upload',
       };
     }
 
-    return { ok: true, url: data.publicUrl };
+    return { ok: true, url: result.url };
   } catch (err) {
     return {
       ok: false,

@@ -11,7 +11,9 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 
-import { supabase } from '../../lib/supabase';
+import { alertsApi } from '../../api/alerts';
+import { messagesApi } from '../../api/messages';
+import { roomsApi } from '../../api/rooms';
 import { useAuthStore } from '../../store/authStore';
 import type { Room, Alert, ChatMessage } from '../../types/database.types';
 
@@ -56,49 +58,29 @@ export function TradingRoomWrapper() {
         setError(undefined);
         setRoomData(undefined);
 
-        // Fetch directly from database - no cache dependency
-        const { data, error: fetchError } = await supabase
-          .from('rooms')
-          .select('*')
-          .eq('id', roomId)
-          .single();
-
-        if (fetchError) {
-          throw new Error(`Failed to load room: ${fetchError.message}`);
-        }
+        // Fetch room via API
+        const data = await roomsApi.get(roomId);
 
         if (data) {
           setRoomData(data as Room);
-          
-          // Microsoft Pattern: Pre-load alerts and messages for instant scroll
+
+          // Pre-load alerts and messages for instant scroll
           // This eliminates the 1-2 second delay on room load
-          
+
           try {
-            // Load alerts
-            const { data: alertsData, error: alertsError } = await supabase
-              .from('alerts')
-              .select('*')
-              .eq('room_id', roomId)
-              .order('created_at', { ascending: true });
-            
-            if (alertsError) {
-              console.error('[TradingRoomWrapper] Failed to load alerts:', alertsError);
-            } else {
-              setInitialAlerts(alertsData || []);
-            }
-            
-            // Load messages (note: table name is 'chatmessages' in Supabase, not 'chat_messages')
-            const { data: messagesData, error: messagesError } = await supabase
-              .from('chatmessages')
-              .select('*')
-              .eq('room_id', roomId)
-              .order('created_at', { ascending: true });
-            
-            if (messagesError) {
-              console.error('[TradingRoomWrapper] Failed to load messages:', messagesError);
-            } else {
-              setInitialMessages((messagesData || []) as ChatMessage[]);
-            }
+            const [alertsData, messagesData] = await Promise.all([
+              alertsApi.list(roomId).catch((err) => {
+                console.error('[TradingRoomWrapper] Failed to load alerts:', err);
+                return [] as Alert[];
+              }),
+              messagesApi.list(roomId).catch((err) => {
+                console.error('[TradingRoomWrapper] Failed to load messages:', err);
+                return [] as ChatMessage[];
+              }),
+            ]);
+
+            setInitialAlerts(alertsData || []);
+            setInitialMessages((messagesData || []) as ChatMessage[]);
           } catch (preloadError) {
             console.error('[TradingRoomWrapper] Pre-load error:', preloadError);
             // Don't fail the entire load if pre-load fails

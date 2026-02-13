@@ -1,5 +1,5 @@
 /**
- * Rooms API — Replaces supabase.from('rooms').* calls.
+ * Rooms API module.
  */
 
 import { api } from './client';

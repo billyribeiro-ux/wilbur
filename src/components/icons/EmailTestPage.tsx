@@ -26,9 +26,9 @@ export function EmailTestPage({ onBack }: { onBack: () => void }) {
   const [healthStatus, setHealthStatus] = useState<{ available: boolean; error?: string; lastChecked?: number } | undefined>();
   const [isCheckingHealth, setIsCheckingHealth] = useState(false);
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-  const edgeFunctionUrl = supabaseUrl ? `${supabaseUrl}/functions/v1/send-email` : 'Not configured';
-  const supabaseUrlDisplay = supabaseUrl ? `${supabaseUrl.substring(0, 10)}...${supabaseUrl.substring(supabaseUrl.length - 10)}` : 'Not set';
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const edgeFunctionUrl = apiBaseUrl ? `${apiBaseUrl}/api/v1/email/send` : 'Not configured';
+  const apiUrlDisplay = apiBaseUrl ? `${apiBaseUrl.substring(0, 10)}...${apiBaseUrl.substring(apiBaseUrl.length - 10)}` : 'Not set';
 
   const handleCheckHealth = async () => {
     setIsCheckingHealth(true);
@@ -189,8 +189,8 @@ export function EmailTestPage({ onBack }: { onBack: () => void }) {
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-green-400"></div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-300">Supabase URL</p>
-                    <p className="text-xs text-slate-400 font-mono break-all">{supabaseUrlDisplay}</p>
+                    <p className="text-sm font-medium text-slate-300">API URL</p>
+                    <p className="text-xs text-slate-400 font-mono break-all">{apiUrlDisplay}</p>
                   </div>
                 </div>
 
@@ -367,7 +367,7 @@ export function EmailTestPage({ onBack }: { onBack: () => void }) {
               <ul className="list-disc list-inside space-y-1 text-slate-400">
                 <li>Email delivery may take a few minutes even after a successful send</li>
                 <li>Check your spam folder if the email doesn't arrive</li>
-                <li>The Edge Function must be deployed to Supabase for emails to work</li>
+                <li>The email endpoint must be configured on the Rust backend for emails to work</li>
                 <li>SMTP credentials are embedded in the Edge Function (not in frontend)</li>
               </ul>
             </div>

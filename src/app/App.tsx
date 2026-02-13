@@ -11,7 +11,6 @@ import '../icons/fa';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { FluentProvider, webDarkTheme, Spinner, type Theme } from '@fluentui/react-components';
 
-import type { Session, User } from '@supabase/supabase-js';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 
@@ -37,8 +36,8 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
-  const { session, initialized } = useAuthStore();
-  
+  const { isAuthenticated, initialized } = useAuthStore();
+
   if (!initialized) {
     const path = typeof window !== 'undefined' ? window.location.pathname : '';
     // Fast-path: allow test whiteboard route to render immediately without auth/session
@@ -66,8 +65,7 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  if (!session) {
-    console.log('[ProtectedRoute] No session, redirecting to login');
+  if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
   }
 
@@ -76,35 +74,26 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
 
 // Test-session injector for E2E routes (bypasses real auth for deterministic tests)
 const InjectTestSession: FC<{ children: ReactNode }> = ({ children }) => {
-  const { initialized, session } = useAuthStore();
+  const { initialized, isAuthenticated } = useAuthStore();
   useEffect(() => {
-    if (initialized && !session) {
-      // Minimal fake user/session (satisfies TradingRoom + ProtectedRoute expectations)
-      const fakeUser: Partial<User> = {
-        id: 'test-user',
-        email: 'test@example.com',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        aud: 'authenticated',
-        role: 'authenticated',
-        email_confirmed_at: new Date().toISOString(),
-        last_sign_in_at: new Date().toISOString(),
-        is_anonymous: false,
-        user_metadata: {},
-        app_metadata: {},
-      };
-      const fakeSession: Partial<Session> = {
+    if (initialized && !isAuthenticated) {
+      // Inject fake session for E2E tests
+      useAuthStore.getState().setSession({
+        user: {
+          id: 'test-user',
+          email: 'test@example.com',
+          display_name: 'Test User',
+          avatar_url: undefined,
+          role: 'admin',
+          tokens: undefined,
+          created_at: new Date().toISOString(),
+        },
         access_token: 'test-access-token',
-        token_type: 'bearer',
-        expires_in: 3600,
-        expires_at: Math.floor(Date.now() / 1000) + 3600,
         refresh_token: 'test-refresh-token',
-        user: fakeUser as User,
-      };
-      // Directly set session in store
-      useAuthStore.getState().setSession(fakeSession as Session);
+        expires_in: 3600,
+      });
     }
-  }, [initialized, session]);
+  }, [initialized, isAuthenticated]);
   return <>{children}</>;
 };
 
@@ -128,7 +117,7 @@ const TestWhiteboard: FC = () => (
 
 // 🔥 CRITICAL: AppRoutes component outside App() to prevent re-creation
 const AppRoutes: FC = () => {
-  const { session } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const { currentTheme } = useThemeStore();
   const navigate = useNavigate();
 
@@ -139,7 +128,7 @@ const AppRoutes: FC = () => {
         {/* Public routes - session-based check */}
         <Route 
           path="/auth" 
-          element={!session ? <EnhancedAuthPage /> : <Navigate to="/" replace />} 
+          element={!isAuthenticated ? <EnhancedAuthPage /> : <Navigate to="/" replace />} 
         />
 
         {/* Protected routes */}
@@ -179,7 +168,7 @@ const AppRoutes: FC = () => {
         {/* Test-only Whiteboard route */}
         <Route path="/__test_whiteboard" element={<TestWhiteboard />} />
         {/* Default fallback - session-based check */}
-        <Route path="*" element={<Navigate to={session ? '/' : '/auth'} replace />} />
+        <Route path="*" element={<Navigate to={isAuthenticated ? '/' : '/auth'} replace />} />
       </Routes>
       </Suspense>
 
@@ -190,7 +179,7 @@ const AppRoutes: FC = () => {
       <Suspense fallback={null}><ImageModal /></Suspense>
 
       {/* Theme switcher - only show when logged in */}
-      {session && <Suspense fallback={null}><ThemeSwitcher /></Suspense>}
+      {isAuthenticated && <Suspense fallback={null}><ThemeSwitcher /></Suspense>}
     </FluentProvider>
   );
 };

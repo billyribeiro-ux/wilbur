@@ -1,26 +1,12 @@
 /**
- * roomStore.ts
- * -------------------------------------------------------------------
- * Unified Room + Tenant Store (Enterprise Edition)
- *
- * Combines:
- * - Chat, alerts, tracks, and members management (your existing system)
- * - Supabase CRUD (fetchRooms, createRoom, updateRoom)
- * - Tenant integration for AdvancedBrandingSettings and themes
- * -------------------------------------------------------------------
+ * roomStore.ts — Unified Room + Tenant Store
  */
 
 import { create } from 'zustand';
 
-import { supabase } from '../lib/supabase';
+import { roomsApi } from '../api/rooms';
+import { tenantsApi } from '../api/tenants';
 import type {
-// Fixed: 2025-10-24 - Emergency null/undefined fixes for production
-// Microsoft TypeScript standards applied - null → undefined, using optional types
-
-
-// Fixed: 2025-01-24 - Eradicated 12 null usage(s) - Microsoft TypeScript standards
-// Replaced null with undefined, removed unnecessary null checks, used optional types
-
   Room,
   ChatMessage,
   Alert,
@@ -43,18 +29,12 @@ export interface RoomMember {
 }
 
 interface RoomState {
-  // ─────────────────────────────
-  // Core room and tenant context
-  // ─────────────────────────────
   currentRoom: (Room & { tenant?: Tenant }) | undefined;
   rooms: Room[];
   tenants: Tenant[];
   loading: boolean;
   error: string | undefined;
 
-  // ─────────────────────────────
-  // Real-time features
-  // ─────────────────────────────
   messages: ChatMessage[];
   alerts: Alert[];
   polls: Poll[];
@@ -70,16 +50,10 @@ interface RoomState {
   isRefreshing: boolean;
   isRoomReady: boolean;
 
-  // ─────────────────────────────
-  // Computed permissions (Microsoft Enterprise Pattern)
-  // ─────────────────────────────
   canRecord: () => boolean;
   canManageRoom: () => boolean;
   canDelete: () => boolean;
 
-  // ─────────────────────────────
-  // Room + tenant actions
-  // ─────────────────────────────
   fetchRooms: (userId: string) => Promise<void>;
   setCurrentRoom: (room: Room | undefined) => Promise<void>;
   clearRoom: () => void;
@@ -87,9 +61,6 @@ interface RoomState {
   updateRoom: (roomId: string, data: Partial<Room>) => Promise<void>;
   loadTenantData: (tenantId: string) => Promise<Tenant | undefined>;
 
-  // ─────────────────────────────
-  // Local state management
-  // ─────────────────────────────
   setRoomReady: (ready: boolean) => void;
   getLastRoomId: () => string | undefined;
   clearLastRoomId: () => void;
@@ -126,10 +97,7 @@ interface RoomState {
   setRefreshing: (refreshing: boolean) => void;
 }
 
-export const useRoomStore = create<RoomState>((set: (state: Partial<RoomState> | ((state: RoomState) => Partial<RoomState>)) => void, get: () => RoomState) => ({
-  // ─────────────────────────────
-  // Initial state
-  // ─────────────────────────────
+export const useRoomStore = create<RoomState>((set, get) => ({
   currentRoom: undefined,
   rooms: [],
   tenants: [],
@@ -150,69 +118,47 @@ export const useRoomStore = create<RoomState>((set: (state: Partial<RoomState> |
   isRefreshing: false,
   isRoomReady: false,
 
-  // ─────────────────────────────
-  // Computed permissions (Microsoft Enterprise Pattern)
-  // ─────────────────────────────
   canRecord: () => {
     const role = get().membership?.role;
-    // Recording available for admin and member roles
     return role === 'admin' || role === 'member';
   },
   canManageRoom: () => {
-    // Only admin can manage room (edit settings, etc.)
     return get().membership?.role === 'admin';
   },
   canDelete: () => {
-    // Only admin can delete content
     return get().membership?.role === 'admin';
   },
 
-  // ─────────────────────────────
-  // Supabase CRUD and tenant logic
-  // ─────────────────────────────
-  fetchRooms: async (userId: string) => {
-    if (!userId) return;
+  fetchRooms: async (_userId: string) => {
     set({ loading: true, error: undefined });
-
     try {
-      const { data, error } = await supabase
-        .from('rooms')
-        .select('*, tenant:tenants(*)')
-        .eq('created_by', userId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await roomsApi.list();
       set({ rooms: data || [], loading: false });
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      console.error('[roomStore] ❌ Failed to fetch rooms:', errorMessage);
+      console.error('[roomStore] Failed to fetch rooms:', errorMessage);
       set({ error: errorMessage, loading: false });
     }
   },
 
   setCurrentRoom: async (room: Room | undefined) => {
-    // Enterprise standard: Clear stale data when changing rooms to ensure fresh state
     if (!room) {
-      set({ 
+      set({
         currentRoom: undefined,
-        messages: [],      // Clear messages for new room
-        alerts: [],        // Clear alerts for new room
-        polls: [],         // Clear polls for new room
-        tracks: [],        // Clear tracks for new room
+        messages: [],
+        alerts: [],
+        polls: [],
+        tracks: [],
       });
       return;
     }
 
     try {
-      // Microsoft Pattern: Clear data but DON'T reset isRoomReady
-      // TradingRoom will control isRoomReady state after data loads
-      // This prevents double state changes and scroll delays
-      set({ 
+      set({
         messages: [],
         alerts: [],
-        polls: [],         // Clear polls when changing rooms
-        tracks: []
-        // isRoomReady: false REMOVED - let TradingRoom control this
+        polls: [],
+        tracks: [],
       });
 
       if (room.tenant_id) {
@@ -224,7 +170,7 @@ export const useRoomStore = create<RoomState>((set: (state: Partial<RoomState> |
       localStorage.setItem(LAST_ROOM_KEY, room.id);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      console.error('[roomStore] ❌ Failed to set current room:', errorMessage);
+      console.error('[roomStore] Failed to set current room:', errorMessage);
       set({ error: errorMessage });
     }
   },
@@ -233,21 +179,14 @@ export const useRoomStore = create<RoomState>((set: (state: Partial<RoomState> |
     set({ currentRoom: undefined });
   },
 
-  createRoom: async (name: string, tenantId: string, userId: string) => {
+  createRoom: async (name: string, tenantId: string, _userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('rooms')
-        .insert([{ name, title: name, tenant_id: tenantId, created_by: userId }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      set((state: RoomState) => ({ rooms: [data, ...state.rooms] }));
+      const data = await roomsApi.create({ name, title: name, tenant_id: tenantId });
+      set((state) => ({ rooms: [data, ...state.rooms] }));
       return data;
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      console.error('[roomStore] ❌ Failed to create room:', errorMessage);
+      console.error('[roomStore] Failed to create room:', errorMessage);
       set({ error: errorMessage });
       return undefined;
     }
@@ -255,46 +194,34 @@ export const useRoomStore = create<RoomState>((set: (state: Partial<RoomState> |
 
   updateRoom: async (roomId: string, data: Partial<Room>) => {
     try {
-      const { error } = await supabase.from('rooms').update(data).eq('id', roomId);
-      if (error) throw error;
-
-      set((state: RoomState) => ({
-        rooms: state.rooms.map((r: Room) => (r.id === roomId ? { ...r, ...data } : r)),
+      await roomsApi.update(roomId, data);
+      set((state) => ({
+        rooms: state.rooms.map((r) => (r.id === roomId ? { ...r, ...data } : r)),
       }));
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      console.error('[roomStore] ❌ Failed to update room:', errorMessage);
+      console.error('[roomStore] Failed to update room:', errorMessage);
       set({ error: errorMessage });
     }
   },
 
   loadTenantData: async (tenantId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('tenants')
-        .select('*')
-        .eq('id', tenantId)
-        .single();
-
-      if (error) throw error;
-      return data;
+      return await tenantsApi.get(tenantId);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      console.error('[roomStore] ❌ Failed to load tenant:', errorMessage);
+      console.error('[roomStore] Failed to load tenant:', errorMessage);
       return undefined;
     }
   },
 
-  // ─────────────────────────────
-  // Local state management
-  // ─────────────────────────────
   setRoomReady: (ready: boolean) => set({ isRoomReady: ready }),
 
   getLastRoomId: () => {
     try {
       const value = localStorage.getItem(LAST_ROOM_KEY);
       return value || undefined;
-    } catch (error) {
+    } catch {
       return undefined;
     }
   },
@@ -302,74 +229,67 @@ export const useRoomStore = create<RoomState>((set: (state: Partial<RoomState> |
   clearLastRoomId: () => {
     try {
       localStorage.removeItem(LAST_ROOM_KEY);
-    } catch (error) {
+    } catch {
       // Silently fail if localStorage is not available
-      console.debug('[roomStore] Failed to clear last room ID:', error);
     }
   },
 
-  // ─────────────────────────────
-  // Messages / alerts / media / members
-  // ─────────────────────────────
   setMessages: (messages: ChatMessage[]) => set({ messages }),
   addMessage: (message: ChatMessage) =>
-    set((state: RoomState) => {
-      // Enterprise standard: Prevent duplicates (optimistic updates + real-time can cause duplicates)
-      const exists = state.messages.some((m: ChatMessage) => m.id === message.id);
+    set((state) => {
+      const exists = state.messages.some((m) => m.id === message.id);
       if (exists) return state;
       return { messages: [...state.messages, message] };
     }),
   updateMessage: (id: string, updates: Partial<ChatMessage>) =>
-    set((state: RoomState) => ({
-      messages: state.messages.map((msg: ChatMessage) => (msg.id === id ? { ...msg, ...updates } : msg)),
+    set((state) => ({
+      messages: state.messages.map((msg) => (msg.id === id ? { ...msg, ...updates } : msg)),
     })),
-  removeMessage: (id: string) => set((state: RoomState) => ({ messages: state.messages.filter((m: ChatMessage) => m.id !== id) })),
+  removeMessage: (id: string) => set((state) => ({ messages: state.messages.filter((m) => m.id !== id) })),
 
   setAlerts: (alerts: Alert[]) => set({ alerts }),
   addAlert: (alert: Alert) =>
-    set((state: RoomState) => {
-      const exists = state.alerts.some((a: Alert) => a.id === alert.id);
+    set((state) => {
+      const exists = state.alerts.some((a) => a.id === alert.id);
       if (exists) return state;
-      return { alerts: [...state.alerts, alert] }; // Append at end - newest at bottom
+      return { alerts: [...state.alerts, alert] };
     }),
-  removeAlert: (id: string) => set((state: RoomState) => ({ alerts: state.alerts.filter((a: Alert) => a.id !== id) })),
+  removeAlert: (id: string) => set((state) => ({ alerts: state.alerts.filter((a) => a.id !== id) })),
 
   setPolls: (polls: Poll[]) => set({ polls }),
   addPoll: (poll: Poll) =>
-    set((state: RoomState) => {
-      // Enterprise standard: Prevent duplicates (optimistic updates + real-time can cause duplicates)
-      const exists = state.polls.some((p: Poll) => p.id === poll.id);
+    set((state) => {
+      const exists = state.polls.some((p) => p.id === poll.id);
       if (exists) return state;
       return { polls: [...state.polls, poll] };
     }),
-  removePoll: (id: string) => set((state: RoomState) => ({ polls: state.polls.filter((p: Poll) => p.id !== id) })),
+  removePoll: (id: string) => set((state) => ({ polls: state.polls.filter((p) => p.id !== id) })),
 
   setTracks: (tracks: MediaTrack[]) => set({ tracks }),
-  addTrack: (track: MediaTrack) => set((state: RoomState) => ({ tracks: [...state.tracks, track] })),
+  addTrack: (track: MediaTrack) => set((state) => ({ tracks: [...state.tracks, track] })),
   updateTrack: (id: string, updates: Partial<MediaTrack>) =>
-    set((state: RoomState) => ({
-      tracks: state.tracks.map((t: MediaTrack) => (t.id === id ? { ...t, ...updates } : t)),
+    set((state) => ({
+      tracks: state.tracks.map((t) => (t.id === id ? { ...t, ...updates } : t)),
     })),
-  removeTrack: (id: string) => set((state: RoomState) => ({ tracks: state.tracks.filter((t: MediaTrack) => t.id !== id) })),
+  removeTrack: (id: string) => set((state) => ({ tracks: state.tracks.filter((t) => t.id !== id) })),
 
   setMembers: (members: RoomMember[]) => set({ members }),
   addMember: (member: RoomMember) =>
-    set((state: RoomState) => {
-      const exists = state.members.some((m: RoomMember) => m.id === member.id);
+    set((state) => {
+      const exists = state.members.some((m) => m.id === member.id);
       if (exists) return state;
       return { members: [...state.members, member] };
     }),
   removeMember: (userId: string) =>
-    set((state: RoomState) => ({ members: state.members.filter((m: RoomMember) => m.id !== userId) })),
+    set((state) => ({ members: state.members.filter((m) => m.id !== userId) })),
   updateMemberLocation: (userId: string, location: { city?: string; region?: string; country?: string; country_code?: string }) =>
-    set((state: RoomState) => ({
-      members: state.members.map((m: RoomMember) =>
+    set((state) => ({
+      members: state.members.map((m) =>
         m.id === userId ? { ...m, ...location } : m
       ),
     })),
 
   setMembership: (membership: RoomMembership | undefined) => {
-    console.log('[RoomStore] ✅ setMembership:', membership?.role || 'none');
     set({ membership });
   },
   setViewers: (count: number) => set({ viewers: count }),

@@ -1,5 +1,5 @@
 /**
- * Storage API — Replaces supabase.storage.* calls.
+ * Storage API module.
  */
 
 import { api } from './client';

@@ -1,5 +1,5 @@
 /**
- * Integrations API — Replaces Supabase Edge Function calls for OAuth.
+ * Integrations API module.
  */
 
 import { api } from './client';

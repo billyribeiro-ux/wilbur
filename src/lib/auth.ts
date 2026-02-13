@@ -2,9 +2,19 @@
 // ──────────────────────────────────────────────
 // Authentication utilities and functions
 // ──────────────────────────────────────────────
-import type { User } from '@supabase/supabase-js';
+import { authApi } from '../api/auth';
+import { api } from '../api/client';
 
-import { supabase } from './supabase';
+/**
+ * Local AuthUser type
+ */
+export interface AuthUser {
+  id: string;
+  email: string;
+  display_name?: string;
+  avatar_url?: string;
+  role?: string;
+}
 
 export interface RegisterUserInput {
   email: string;
@@ -21,14 +31,13 @@ export interface LoginWithPasswordInput {
 export interface AuthResult<T = unknown> {
   success: boolean;
   data?: T;
-  user?: User;  // For verifyOTP
+  user?: AuthUser;  // For verifyOTP
   error?: string;
   serviceError?: string;
 }
 
 export interface UserData {
-  user: User;
-  session: unknown;
+  user: AuthUser;
 }
 
 // ──────────────────────────────────────────────
@@ -38,77 +47,28 @@ export async function registerUser(input: RegisterUserInput): Promise<AuthResult
   try {
     console.log('[registerUser] Starting registration for:', input.email);
 
-    const { data, error } = await supabase.auth.signUp({
-      email: input.email,
-      password: input.password,
-      options: {
-        data: {
-          display_name: input.displayName,
-        },
-      },
-    });
-
-    if (error) {
-      console.error('[registerUser] Supabase error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-
-    if (!data.user) {
-      return {
-        success: false,
-        error: 'No user data returned',
-      };
-    }
-
-    // FIXED: Create user record in users table (not profiles)
-    console.log('[registerUser] Creating user record for user:', data.user.id);
-    const { error: userError } = await supabase
-      .from('users')
-      .insert({
-        id: data.user.id,
-        email: input.email,
-        display_name: input.displayName,
-        role: 'member',
-      });
-
-    if (userError) {
-      console.error('[registerUser] ❌ User creation error:', userError);
-      console.error('[registerUser] 🚨 CRITICAL: Registration incomplete - user exists in auth but not in database');
-      console.error('[registerUser] 🚨 User will NOT be able to log in until this is fixed');
-      
-      // ENTERPRISE PATTERN: Rollback auth user creation if database insert fails
-      try {
-        await supabase.auth.admin.deleteUser(data.user.id);
-        console.log('[registerUser] ✅ Rolled back auth user creation');
-      } catch (rollbackError) {
-        console.error('[registerUser] ❌ Failed to rollback auth user:', rollbackError);
-      }
-      
-      return {
-        success: false,
-        error: 'Registration failed. Please try again or contact support.',
-      };
-    }
-    
-    console.log('[registerUser] ✅ User record created successfully');
+    const data = await authApi.register(input.email, input.password, input.displayName);
 
     console.log('[registerUser] Registration successful for:', input.email);
     return {
       success: true,
       data: {
-        user: data.user,
-        session: data.session,
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          display_name: data.user.display_name,
+          avatar_url: data.user.avatar_url,
+          role: data.user.role,
+        },
       },
     };
 
   } catch (error) {
     console.error('[registerUser] Registration failed:', error);
+    const err = error as { error?: string; message?: string };
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Registration failed',
+      error: err.error || (error instanceof Error ? error.message : 'Registration failed'),
     };
   }
 }
@@ -120,40 +80,28 @@ export async function loginWithPassword(input: LoginWithPasswordInput): Promise<
   try {
     console.log('[loginWithPassword] Starting login for:', input.email);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: input.email,
-      password: input.password,
-    });
-
-    if (error) {
-      console.error('[loginWithPassword] Supabase error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-
-    if (!data.user) {
-      return {
-        success: false,
-        error: 'No user data returned',
-      };
-    }
+    const data = await authApi.login(input.email, input.password);
 
     console.log('[loginWithPassword] Login successful for:', input.email);
     return {
       success: true,
       data: {
-        user: data.user,
-        session: data.session,
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          display_name: data.user.display_name,
+          avatar_url: data.user.avatar_url,
+          role: data.user.role,
+        },
       },
     };
 
   } catch (error) {
     console.error('[loginWithPassword] Login failed:', error);
+    const err = error as { error?: string; message?: string };
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Login failed',
+      error: err.error || (error instanceof Error ? error.message : 'Login failed'),
     };
   }
 }
@@ -165,20 +113,7 @@ export async function requestOTP(email: string): Promise<AuthResult<{ message: s
   try {
     console.log('[requestOTP] Requesting OTP for:', email);
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    if (error) {
-      console.error('[requestOTP] Supabase error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
+    await api.post('/api/v1/auth/otp/request', { email });
 
     console.log('[requestOTP] OTP sent successfully to:', email);
     return {
@@ -190,9 +125,10 @@ export async function requestOTP(email: string): Promise<AuthResult<{ message: s
 
   } catch (error) {
     console.error('[requestOTP] OTP request failed:', error);
+    const err = error as { error?: string; message?: string };
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'OTP request failed',
+      error: err.error || (error instanceof Error ? error.message : 'OTP request failed'),
     };
   }
 }
@@ -200,23 +136,11 @@ export async function requestOTP(email: string): Promise<AuthResult<{ message: s
 // ──────────────────────────────────────────────
 // OTP Verification
 // ──────────────────────────────────────────────
-export async function verifyOTP(email: string, token: string): Promise<AuthResult<{ user: User }>> {
+export async function verifyOTP(email: string, token: string): Promise<AuthResult<{ user: AuthUser }>> {
   try {
     console.log('[verifyOTP] Verifying OTP for:', email);
 
-    const { data, error } = await supabase.auth.verifyOtp({
-      email,
-      token,
-      type: 'email',
-    });
-
-    if (error) {
-      console.error('[verifyOTP] Supabase error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
+    const data = await api.post<{ user: AuthUser }>('/api/v1/auth/otp/verify', { email, token });
 
     if (!data.user) {
       return {
@@ -233,9 +157,10 @@ export async function verifyOTP(email: string, token: string): Promise<AuthResul
 
   } catch (error) {
     console.error('[verifyOTP] OTP verification failed:', error);
+    const err = error as { error?: string; message?: string };
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'OTP verification failed',
+      error: err.error || (error instanceof Error ? error.message : 'OTP verification failed'),
     };
   }
 }
@@ -247,17 +172,7 @@ export async function requestPasswordReset(email: string): Promise<AuthResult<{ 
   try {
     console.log('[requestPasswordReset] Requesting password reset for:', email);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback`,
-    });
-
-    if (error) {
-      console.error('[requestPasswordReset] Supabase error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
+    await authApi.forgotPassword(email);
 
     console.log('[requestPasswordReset] Password reset email sent to:', email);
     return {
@@ -269,9 +184,10 @@ export async function requestPasswordReset(email: string): Promise<AuthResult<{ 
 
   } catch (error) {
     console.error('[requestPasswordReset] Password reset request failed:', error);
+    const err = error as { error?: string; message?: string };
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Password reset request failed',
+      error: err.error || (error instanceof Error ? error.message : 'Password reset request failed'),
     };
   }
 }
@@ -283,21 +199,7 @@ export async function resendVerificationEmail(email: string): Promise<AuthResult
   try {
     console.log('[resendVerificationEmail] Resending verification for:', email);
 
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    if (error) {
-      console.error('[resendVerificationEmail] Supabase error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
+    await api.post('/api/v1/auth/verify/resend', { email });
 
     console.log('[resendVerificationEmail] Verification email resent to:', email);
     return {
@@ -309,9 +211,10 @@ export async function resendVerificationEmail(email: string): Promise<AuthResult
 
   } catch (error) {
     console.error('[resendVerificationEmail] Resend verification failed:', error);
+    const err = error as { error?: string; message?: string };
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Resend verification failed',
+      error: err.error || (error instanceof Error ? error.message : 'Resend verification failed'),
     };
   }
 }
@@ -323,15 +226,7 @@ export async function signOut(): Promise<AuthResult<{ message: string }>> {
   try {
     console.log('[signOut] Signing out user');
 
-    const { error } = await supabase.auth.signOut();
-
-    if (error) {
-      console.error('[signOut] Supabase error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
+    await authApi.logout();
 
     console.log('[signOut] Sign out successful');
     return {
@@ -343,9 +238,10 @@ export async function signOut(): Promise<AuthResult<{ message: string }>> {
 
   } catch (error) {
     console.error('[signOut] Sign out failed:', error);
+    const err = error as { error?: string; message?: string };
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Sign out failed',
+      error: err.error || (error instanceof Error ? error.message : 'Sign out failed'),
     };
   }
 }

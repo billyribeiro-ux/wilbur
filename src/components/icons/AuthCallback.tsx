@@ -1,12 +1,9 @@
-// ⚠️  CRITICAL: profiles table has no email column
-// If you see profiles.email queries, they should be users.email instead
-// profiles table structure: id, tenant_id, display_name, avatar_url, role, status, created_at, updated_at
-// users table structure: id, email, display_name, avatar_url, role, created_at, updated_at
+// AuthCallback.tsx — Auth callback handler
 
 import { CheckCircle, XCircle, ArrowRight, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { supabase } from '../../lib/supabase';
+import { authApi } from '../../api/auth';
 import { useToastStore } from '../../store/toastStore';
 
 type VerificationStatus = 'loading' | 'success' | 'error';
@@ -38,7 +35,7 @@ export function AuthCallback() {
 
   const handleEmailVerification = async () => {
     try {
-      // Get the hash from the URL (Supabase Auth uses hash for tokens)
+      // Get the hash from the URL
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get('access_token');
       const type = hashParams.get('type');
@@ -71,68 +68,27 @@ export function AuthCallback() {
         return;
       }
 
-      /* ORIGINAL CODE BLOCK START */
-      /*
-      // Get the current session (should be set after clicking verification link)
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      // Use the authApi to get current user info
+      const user = await authApi.me();
 
-      if (sessionError) {
-        console.error('[AuthCallback] Session error:', sessionError);
-        setErrorMessage(sessionError.message);
-        setStatus('error');
-        addToast('Failed to verify email', 'error');
-        return;
-      }
-
-      if (!sessionData.session) {
-        console.error('[AuthCallback] No session found');
-        setErrorMessage('No session found. Please try logging in.');
-        setStatus('error');
-        return;
-      }
-
-      const user = sessionData.session.user;
-      */
-      /* ORIGINAL CODE BLOCK END */
-
-      /* FIX NOTE:
-         - Issue: Using deprecated getSession() method (security risk)
-         - Action: Replace with modern getUser() method for server-validated authentication
-         - Date: 2025-01-21
-      */
-      // Get the current user (should be set after clicking verification link)
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-
-      if (userError) {
-        console.error('[AuthCallback] User error:', userError);
-        setErrorMessage(userError.message);
-        setStatus('error');
-        addToast('Failed to verify email', 'error');
-        return;
-      }
-
-      if (!userData.user) {
+      if (!user) {
         console.error('[AuthCallback] No user found');
         setErrorMessage('No user found. Please try logging in.');
         setStatus('error');
         return;
       }
 
-      const user = userData.user;
       console.log('[AuthCallback] User verified:', user.email);
 
       // Set user information
       setEmail(user.email || '');
-      setDisplayName(user.user_metadata?.display_name || '');
-
-      // Note: email verification is handled by Supabase Auth automatically
-      // No need to update profiles table since it doesn't have email_verified field
+      setDisplayName(user.display_name || '');
 
       setStatus('success');
       addToast('Email verified successfully!', 'success');
 
       // Sign out the user so they must log in with their credentials
-      await supabase.auth.signOut();
+      await authApi.logout();
       console.log('[AuthCallback] User signed out - must log in to access app');
 
     } catch (error) {

@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use axum::Router;
+use axum::{middleware as axum_middleware, Router};
 use sqlx::postgres::PgPoolOptions;
 use tokio::net::TcpListener;
 use tower_http::compression::CompressionLayer;
@@ -77,9 +77,46 @@ async fn main() {
         .allow_headers(Any)
         .allow_credentials(true);
 
-    // Build router
+    // Build rate limiters
+    let auth_limiter = middleware::rate_limit::create_auth_rate_limiter();
+    let api_limiter = middleware::rate_limit::create_api_rate_limiter();
+
+    // Auth routes with stricter rate limiting
+    let auth_routes = Router::new()
+        .nest("/api/v1/auth", routes::auth::router())
+        .route_layer(axum_middleware::from_fn_with_state(
+            auth_limiter,
+            middleware::rate_limit::auth_rate_limit,
+        ));
+
+    // All other API routes with general rate limiting
+    let api_routes = Router::new()
+        .merge(routes::health::router())
+        .nest("/ws", routes::ws::router())
+        .nest("/api/v1/users", routes::users::router())
+        .nest("/api/v1/rooms", routes::rooms::router())
+        .nest("/api/v1/rooms/:room_id/messages", routes::messages::router())
+        .nest("/api/v1/rooms/:room_id/alerts", routes::alerts::router())
+        .nest("/api/v1/rooms/:room_id/polls", routes::polls::router())
+        .nest("/api/v1/integrations", routes::integrations::router())
+        .nest("/api/v1/storage", routes::storage::router())
+        .nest("/api/v1/themes", routes::themes::router())
+        .nest("/api/v1/tenants", routes::tenants::router())
+        .nest("/api/v1/livekit", routes::livekit::router())
+        .nest("/api/v1/moderation", routes::moderation::router())
+        .nest("/api/v1/dm", routes::private_chats::router())
+        .nest("/api/v1/notifications", routes::notifications::router())
+        .nest("/api/v1/rooms/:room_id/tracks", routes::media_tracks::router())
+        .route_layer(axum_middleware::from_fn_with_state(
+            api_limiter,
+            middleware::rate_limit::api_rate_limit,
+        ));
+
+    // Build router with security headers, rate limiting, CORS, and compression
     let app = Router::new()
-        .merge(routes::router())
+        .merge(auth_routes)
+        .merge(api_routes)
+        .layer(axum_middleware::from_fn(middleware::security::security_headers))
         .layer(cors)
         .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http())

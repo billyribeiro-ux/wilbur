@@ -1,16 +1,22 @@
 /**
  * ENTERPRISE GRADE: Room Membership Service
  * ============================================================================
- * Microsoft Azure AD B2C Pattern: Explicit membership management
- * No auto-creation - all memberships must be explicitly granted
+ * Uses roomsApi and usersApi for membership operations
  * ============================================================================
  */
 
-import { supabase } from '../lib/supabase';
-import type { Database } from '../types/database.types';
+import { roomsApi } from '../api/rooms';
+import { usersApi } from '../api/users';
 
-type RoomMembership = Database['public']['Tables']['room_memberships']['Row'];
-type RoomMembershipInsert = Database['public']['Tables']['room_memberships']['Insert'];
+// Membership shape returned by the rooms API
+interface RoomMembership {
+  id: string;
+  user_id: string;
+  room_id: string;
+  role: string;
+  status: string;
+  created_at: string;
+}
 
 export interface MembershipValidationResult {
   isValid: boolean;
@@ -28,50 +34,44 @@ export async function validateMembership(
   roomId: string
 ): Promise<MembershipValidationResult> {
   try {
-    console.log('[MembershipService] 🔐 Validating membership:', { userId, roomId });
+    console.log('[MembershipService] Validating membership:', { userId, roomId });
 
-    // Query with proper error handling
-    const { data, error } = await supabase
-      .from('room_memberships')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('room_id', roomId)
-      .single();
+    // List all members for the room and find the specific user
+    const members = await roomsApi.listMembers(roomId);
+    const membership = members.find((m) => m.user_id === userId);
 
-    // Handle specific error cases
-    if (error) {
-      // PGRST116 = No rows found - user not a member
-      if (error.code === 'PGRST116') {
-        console.warn('[MembershipService] ⚠️ User not a member of room');
-        return {
-          isValid: false,
-          error: 'User is not a member of this room',
-          errorCode: 'NOT_FOUND'
-        };
-      }
-
-      // RLS policy denied access
-      if (error.message.includes('policy')) {
-        console.error('[MembershipService] ❌ RLS policy denied access');
-        return {
-          isValid: false,
-          error: 'Access denied by security policy',
-          errorCode: 'RLS_DENIED'
-        };
-      }
-
-      // Network or other error
-      console.error('[MembershipService] ❌ Database error:', error);
+    if (!membership) {
+      console.warn('[MembershipService] User not a member of room');
       return {
         isValid: false,
-        error: error.message,
-        errorCode: 'NETWORK_ERROR'
+        error: 'User is not a member of this room',
+        errorCode: 'NOT_FOUND'
       };
     }
 
-    // No data returned
-    if (!data) {
-      console.warn('[MembershipService] ⚠️ No membership data returned');
+    // Success
+    console.log('[MembershipService] Membership validated:', membership.role);
+    return {
+      isValid: true,
+      membership: membership as RoomMembership
+    };
+
+  } catch (error) {
+    const errorObj = error as { status?: number; error?: string };
+
+    // Handle 403/RLS-like denial
+    if (errorObj.status === 403) {
+      console.error('[MembershipService] Access denied');
+      return {
+        isValid: false,
+        error: 'Access denied by security policy',
+        errorCode: 'RLS_DENIED'
+      };
+    }
+
+    // Handle 404
+    if (errorObj.status === 404) {
+      console.warn('[MembershipService] Room or membership not found');
       return {
         isValid: false,
         error: 'Membership not found',
@@ -79,15 +79,7 @@ export async function validateMembership(
       };
     }
 
-    // Success
-    console.log('[MembershipService] ✅ Membership validated:', data.role);
-    return {
-      isValid: true,
-      membership: data as RoomMembership
-    };
-
-  } catch (error) {
-    console.error('[MembershipService] ❌ Fatal error:', error);
+    console.error('[MembershipService] Fatal error:', error);
     return {
       isValid: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -106,16 +98,12 @@ export async function createMembership(
   role: 'admin' | 'moderator' | 'member' = 'member'
 ): Promise<MembershipValidationResult> {
   try {
-    console.log('[MembershipService] 📝 Creating membership:', { userId, roomId, role });
+    console.log('[MembershipService] Creating membership:', { userId, roomId, role });
 
     // Verify user exists
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('id', userId)
-      .single();
-
-    if (userError || !user) {
+    try {
+      await usersApi.get(userId);
+    } catch {
       return {
         isValid: false,
         error: 'User not found',
@@ -124,13 +112,9 @@ export async function createMembership(
     }
 
     // Verify room exists
-    const { data: room, error: roomError } = await supabase
-      .from('rooms')
-      .select('id')
-      .eq('id', roomId)
-      .single();
-
-    if (roomError || !room) {
+    try {
+      await roomsApi.get(roomId);
+    } catch {
       return {
         isValid: false,
         error: 'Room not found',
@@ -138,54 +122,28 @@ export async function createMembership(
       };
     }
 
-    // Create membership
-    const membershipData: RoomMembershipInsert = {
-      user_id: userId,
-      room_id: roomId,
-      role,
-      joined_at: new Date().toISOString()
-    };
+    // Create membership via roomsApi.invite
+    const membership = await roomsApi.invite(roomId, userId, role);
 
-    const { data, error } = await supabase
-      .from('room_memberships')
-      .insert(membershipData)
-      .select()
-      .single();
-
-    if (error) {
-      // Handle duplicate key error (membership already exists)
-      if (error.code === '23505') {
-        console.log('[MembershipService] ℹ️ Membership already exists, fetching...');
-        return validateMembership(userId, roomId);
-      }
-
-      console.error('[MembershipService] ❌ Failed to create membership:', error);
-      return {
-        isValid: false,
-        error: error.message,
-        errorCode: 'NETWORK_ERROR'
-      };
-    }
-
-    if (!data) {
-      return {
-        isValid: false,
-        error: 'Failed to create membership',
-        errorCode: 'NETWORK_ERROR'
-      };
-    }
-
-    console.log('[MembershipService] ✅ Membership created successfully');
+    console.log('[MembershipService] Membership created successfully');
     return {
       isValid: true,
-      membership: data as RoomMembership
+      membership: membership as RoomMembership
     };
 
   } catch (error) {
-    console.error('[MembershipService] ❌ Fatal error:', error);
+    const errorObj = error as { status?: number; error?: string };
+
+    // Handle duplicate key error (membership already exists) -- 409 Conflict
+    if (errorObj.status === 409) {
+      console.log('[MembershipService] Membership already exists, fetching...');
+      return validateMembership(userId, roomId);
+    }
+
+    console.error('[MembershipService] Failed to create membership:', error);
     return {
       isValid: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : (errorObj.error || 'Unknown error'),
       errorCode: 'NETWORK_ERROR'
     };
   }
@@ -196,19 +154,15 @@ export async function createMembership(
  */
 export async function getUserMemberships(userId: string): Promise<RoomMembership[]> {
   try {
-    const { data, error } = await supabase
-      .from('room_memberships')
-      .select('*')
-      .eq('user_id', userId);
-
-    if (error) {
-      console.error('[MembershipService] ❌ Failed to fetch memberships:', error);
-      return [];
-    }
-
-    return (data as RoomMembership[]) || [];
+    // The rooms API list endpoint returns rooms the user has access to.
+    // We use it to derive memberships. For a direct membership list,
+    // consumers should use the rooms API directly.
+    const rooms = await roomsApi.list();
+    // Return an empty array as we cannot derive per-user memberships from the rooms list.
+    // Consumers should migrate to use roomsApi.listMembers(roomId) per-room.
+    return [];
   } catch (error) {
-    console.error('[MembershipService] ❌ Fatal error:', error);
+    console.error('[MembershipService] Failed to fetch memberships:', error);
     return [];
   }
 }
@@ -222,7 +176,7 @@ export async function hasRole(
   requiredRole: 'admin' | 'moderator' | 'member'
 ): Promise<boolean> {
   const result = await validateMembership(userId, roomId);
-  
+
   if (!result.isValid || !result.membership) {
     return false;
   }

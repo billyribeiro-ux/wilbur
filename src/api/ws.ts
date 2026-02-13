@@ -1,5 +1,5 @@
 /**
- * WebSocket Client — Replaces Supabase Realtime with native WebSocket.
+ * WebSocket Client — Native WebSocket client with auto-reconnect.
  * Supports channel subscriptions, auto-reconnect, and event deduplication.
  */
 

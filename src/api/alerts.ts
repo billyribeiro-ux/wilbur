@@ -1,5 +1,5 @@
 /**
- * Alerts API — Replaces supabase.from('alerts').* calls.
+ * Alerts API module.
  */
 
 import { api } from './client';

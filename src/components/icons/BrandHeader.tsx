@@ -20,7 +20,7 @@ import { useFluentIcons } from '../../icons/useFluentIcons';
 import { SpotifyButton } from '../../SpotifyButton';
 import { MicVolumeIndicator } from '../../features/Mic/MicVolumeIndicator';
 import { VolumeControl } from '../../features/audio/VolumeControl';
-import { supabase } from '../../lib/supabase';
+import { roomsApi } from '../../api/rooms';
 import { liveKitService } from '../../services/livekit';
 import { shareService } from '../../sharing/shareService';
 import { useThemeStore } from '../../store/themeStore';
@@ -234,13 +234,8 @@ export function BrandHeader({
       // Fallback to database
       if (room?.id) {
         try {
-          const { count, error } = await supabase
-            .from('room_memberships')
-            .select('*', { count: 'exact', head: true })
-            .eq('room_id', room.id);
-          
-          if (error) throw error;
-          setParticipantCount(count || 0);
+          const members = await roomsApi.getMembers(room.id);
+          setParticipantCount(members.length);
         } catch (error) {
           console.error('[BrandHeader] Failed to get participant count:', error);
         }
