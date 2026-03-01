@@ -20,10 +20,10 @@ use crate::{
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/search", get(search_users))
-        .route("/:id", get(get_user))
-        .route("/:id", put(update_user))
-        .route("/:id/avatar", put(upload_avatar))
-        .route("/:id/profile", get(get_user_profile))
+        .route("/{id}", get(get_user))
+        .route("/{id}", put(update_user))
+        .route("/{id}/avatar", put(upload_avatar))
+        .route("/{id}/profile", get(get_user_profile))
 }
 
 #[derive(Debug, Deserialize)]
@@ -31,7 +31,7 @@ pub struct SearchQuery {
     pub q: Option<String>,
 }
 
-/// GET /:id -- get a user by ID.
+/// GET /{id} -- get a user by ID.
 async fn get_user(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -46,7 +46,7 @@ async fn get_user(
     Ok(Json(UserResponse::from(user)))
 }
 
-/// PUT /:id -- update own user profile.
+/// PUT /{id} -- update own user profile.
 async fn update_user(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -77,7 +77,7 @@ async fn update_user(
     Ok(Json(UserResponse::from(user)))
 }
 
-/// PUT /:id/avatar -- upload an avatar image via multipart.
+/// PUT /{id}/avatar -- upload an avatar image via multipart.
 async fn upload_avatar(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -160,7 +160,7 @@ async fn search_users(
     Ok(Json(results))
 }
 
-/// GET /:id/profile -- get public profile for a user.
+/// GET /{id}/profile -- get public profile for a user.
 async fn get_user_profile(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,

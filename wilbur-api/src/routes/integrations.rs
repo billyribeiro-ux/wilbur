@@ -17,11 +17,11 @@ use crate::{
 
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/:provider/config", get(get_provider_config))
-        .route("/:provider/connect", get(connect_provider))
-        .route("/:provider/exchange", post(exchange_token))
-        .route("/:provider/refresh", post(refresh_token))
-        .route("/:provider/disconnect", delete(disconnect_provider))
+        .route("/{provider}/config", get(get_provider_config))
+        .route("/{provider}/connect", get(connect_provider))
+        .route("/{provider}/exchange", post(exchange_token))
+        .route("/{provider}/refresh", post(refresh_token))
+        .route("/{provider}/disconnect", delete(disconnect_provider))
 }
 
 #[derive(Debug, Deserialize)]
@@ -46,7 +46,7 @@ fn validate_provider(provider: &str) -> AppResult<()> {
     }
 }
 
-/// GET /:provider/config -- get the OAuth configuration for a provider.
+/// GET /{provider}/config -- get the OAuth configuration for a provider.
 async fn get_provider_config(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -64,7 +64,7 @@ async fn get_provider_config(
     })))
 }
 
-/// GET /:provider/connect -- initiate an OAuth connection (returns redirect URL).
+/// GET /{provider}/connect -- initiate an OAuth connection (returns redirect URL).
 async fn connect_provider(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -83,7 +83,7 @@ async fn connect_provider(
     })))
 }
 
-/// POST /:provider/exchange -- exchange an authorization code for tokens.
+/// POST /{provider}/exchange -- exchange an authorization code for tokens.
 async fn exchange_token(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -100,7 +100,7 @@ async fn exchange_token(
     })))
 }
 
-/// POST /:provider/refresh -- refresh the provider's access token.
+/// POST /{provider}/refresh -- refresh the provider's access token.
 async fn refresh_token(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -116,7 +116,7 @@ async fn refresh_token(
     })))
 }
 
-/// DELETE /:provider/disconnect -- disconnect a provider integration.
+/// DELETE /{provider}/disconnect -- disconnect a provider integration.
 async fn disconnect_provider(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,

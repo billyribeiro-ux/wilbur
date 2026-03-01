@@ -29,10 +29,10 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/unban", post(unban_user))
         .route("/kick", post(kick_user))
         .route("/mute", post(mute_user))
-        .route("/log/:room_id", get(get_moderation_log))
-        .route("/banned/:room_id", get(get_banned_users))
+        .route("/log/{room_id}", get(get_moderation_log))
+        .route("/banned/{room_id}", get(get_banned_users))
         .route("/report", post(create_report))
-        .route("/report/:id/resolve", post(resolve_report))
+        .route("/report/{id}/resolve", post(resolve_report))
 }
 
 #[derive(Debug, Deserialize)]
@@ -286,7 +286,7 @@ async fn mute_user(
     })))
 }
 
-/// GET /log/:room_id -- get the moderation log for a room.
+/// GET /log/{room_id} -- get the moderation log for a room.
 async fn get_moderation_log(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -317,7 +317,7 @@ async fn get_moderation_log(
     })))
 }
 
-/// GET /banned/:room_id -- get all banned users for a room.
+/// GET /banned/{room_id} -- get all banned users for a room.
 async fn get_banned_users(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -382,7 +382,7 @@ async fn create_report(
     Ok((StatusCode::CREATED, Json(response_json)))
 }
 
-/// POST /report/:id/resolve -- resolve a report.
+/// POST /report/{id}/resolve -- resolve a report.
 async fn resolve_report(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,

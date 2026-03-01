@@ -73,8 +73,19 @@ async fn main() {
                 .filter_map(|o| o.parse().ok())
                 .collect::<Vec<_>>(),
         )
-        .allow_methods(Any)
-        .allow_headers(Any)
+        .allow_methods([
+            http::Method::GET,
+            http::Method::POST,
+            http::Method::PUT,
+            http::Method::DELETE,
+            http::Method::PATCH,
+            http::Method::OPTIONS,
+        ])
+        .allow_headers([
+            http::header::AUTHORIZATION,
+            http::header::CONTENT_TYPE,
+            http::header::ACCEPT,
+        ])
         .allow_credentials(true);
 
     // Build rate limiters
@@ -95,9 +106,9 @@ async fn main() {
         .nest("/ws", routes::ws::router())
         .nest("/api/v1/users", routes::users::router())
         .nest("/api/v1/rooms", routes::rooms::router())
-        .nest("/api/v1/rooms/:room_id/messages", routes::messages::router())
-        .nest("/api/v1/rooms/:room_id/alerts", routes::alerts::router())
-        .nest("/api/v1/rooms/:room_id/polls", routes::polls::router())
+        .nest("/api/v1/rooms/{room_id}/messages", routes::messages::router())
+        .nest("/api/v1/rooms/{room_id}/alerts", routes::alerts::router())
+        .nest("/api/v1/rooms/{room_id}/polls", routes::polls::router())
         .nest("/api/v1/integrations", routes::integrations::router())
         .nest("/api/v1/storage", routes::storage::router())
         .nest("/api/v1/themes", routes::themes::router())
@@ -106,7 +117,7 @@ async fn main() {
         .nest("/api/v1/moderation", routes::moderation::router())
         .nest("/api/v1/dm", routes::private_chats::router())
         .nest("/api/v1/notifications", routes::notifications::router())
-        .nest("/api/v1/rooms/:room_id/tracks", routes::media_tracks::router())
+        .nest("/api/v1/rooms/{room_id}/tracks", routes::media_tracks::router())
         .route_layer(axum_middleware::from_fn_with_state(
             api_limiter,
             middleware::rate_limit::api_rate_limit,

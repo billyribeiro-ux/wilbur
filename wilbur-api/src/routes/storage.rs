@@ -111,12 +111,12 @@ pub(crate) fn validate_upload(
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/upload", post(upload_file))
-        .route("/files/:id", get(serve_file))
-        .route("/files/:id", delete(delete_file))
-        .route("/rooms/:room_id/files", get(list_room_files))
-        .route("/rooms/:room_id/files", post(create_room_file))
-        .route("/rooms/:room_id/notes", get(list_room_notes))
-        .route("/rooms/:room_id/notes", post(create_room_note))
+        .route("/files/{id}", get(serve_file))
+        .route("/files/{id}", delete(delete_file))
+        .route("/rooms/{room_id}/files", get(list_room_files))
+        .route("/rooms/{room_id}/files", post(create_room_file))
+        .route("/rooms/{room_id}/notes", get(list_room_notes))
+        .route("/rooms/{room_id}/notes", post(create_room_note))
 }
 
 #[derive(Debug, Serialize)]
@@ -196,7 +196,7 @@ async fn upload_file(
     Err(AppError::BadRequest("No file field found in multipart body".into()))
 }
 
-/// GET /files/:id -- look up a file record and return its details.
+/// GET /files/{id} -- look up a file record and return its details.
 async fn serve_file(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -211,7 +211,7 @@ async fn serve_file(
     Ok(Json(file))
 }
 
-/// DELETE /files/:id -- delete a file (only the uploader can delete).
+/// DELETE /files/{id} -- delete a file (only the uploader can delete).
 async fn delete_file(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -230,7 +230,7 @@ async fn delete_file(
     Ok(StatusCode::NO_CONTENT)
 }
 
-/// GET /rooms/:room_id/files -- list files for a room.
+/// GET /rooms/{room_id}/files -- list files for a room.
 async fn list_room_files(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -246,7 +246,7 @@ async fn list_room_files(
     Ok(Json(files))
 }
 
-/// POST /rooms/:room_id/files -- associate a file with a room.
+/// POST /rooms/{room_id}/files -- associate a file with a room.
 async fn create_room_file(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -317,7 +317,7 @@ async fn create_room_file(
     Err(AppError::BadRequest("No file field found in multipart body".into()))
 }
 
-/// GET /rooms/:room_id/notes -- list notes for a room.
+/// GET /rooms/{room_id}/notes -- list notes for a room.
 async fn list_room_notes(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -333,7 +333,7 @@ async fn list_room_notes(
     Ok(Json(notes))
 }
 
-/// POST /rooms/:room_id/notes -- create a note in a room.
+/// POST /rooms/{room_id}/notes -- create a note in a room.
 async fn create_room_note(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,

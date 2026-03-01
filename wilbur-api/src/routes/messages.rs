@@ -28,11 +28,11 @@ pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(list_messages))
         .route("/", post(create_message))
-        .route("/:id", put(update_message))
-        .route("/:id", delete(delete_message))
-        .route("/:id/pin", post(pin_message))
-        .route("/:id/unpin", post(unpin_message))
-        .route("/:id/off-topic", post(mark_off_topic))
+        .route("/{id}", put(update_message))
+        .route("/{id}", delete(delete_message))
+        .route("/{id}/pin", post(pin_message))
+        .route("/{id}/unpin", post(unpin_message))
+        .route("/{id}/off-topic", post(mark_off_topic))
 }
 
 /// GET / -- list messages for a room (paginated). Room ID comes from the nested path.
@@ -118,7 +118,7 @@ async fn create_message(
     Ok((StatusCode::CREATED, Json(response)))
 }
 
-/// PUT /:id -- update a message.
+/// PUT /{id} -- update a message.
 async fn update_message(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -167,7 +167,7 @@ async fn update_message(
     Ok(Json(response))
 }
 
-/// DELETE /:id -- soft-delete a message.
+/// DELETE /{id} -- soft-delete a message.
 async fn delete_message(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -200,7 +200,7 @@ async fn delete_message(
     Ok(StatusCode::NO_CONTENT)
 }
 
-/// POST /:id/pin -- pin a message.
+/// POST /{id}/pin -- pin a message.
 async fn pin_message(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -232,7 +232,7 @@ async fn pin_message(
     Ok(Json(json!({ "message": "Message pinned" })))
 }
 
-/// POST /:id/unpin -- unpin a message.
+/// POST /{id}/unpin -- unpin a message.
 async fn unpin_message(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -264,7 +264,7 @@ async fn unpin_message(
     Ok(Json(json!({ "message": "Message unpinned" })))
 }
 
-/// POST /:id/off-topic -- mark a message as off-topic.
+/// POST /{id}/off-topic -- mark a message as off-topic.
 async fn mark_off_topic(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,

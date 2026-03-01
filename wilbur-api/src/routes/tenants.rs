@@ -20,11 +20,11 @@ use crate::{
 
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/:id", get(get_tenant))
-        .route("/:id", put(update_tenant))
-        .route("/:id/config", get(get_tenant_config))
-        .route("/:id/config", put(update_tenant_config))
-        .route("/:id/branding-history", get(get_branding_history))
+        .route("/{id}", get(get_tenant))
+        .route("/{id}", put(update_tenant))
+        .route("/{id}/config", get(get_tenant_config))
+        .route("/{id}/config", put(update_tenant_config))
+        .route("/{id}/branding-history", get(get_branding_history))
 }
 
 #[derive(Debug, Deserialize)]
@@ -54,7 +54,7 @@ struct BrandingAuditEntry {
     created_at: DateTime<Utc>,
 }
 
-/// GET /:id -- get a tenant by ID.
+/// GET /{id} -- get a tenant by ID.
 async fn get_tenant(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -69,7 +69,7 @@ async fn get_tenant(
     Ok(Json(TenantResponse::from(tenant)))
 }
 
-/// PUT /:id -- update a tenant.
+/// PUT /{id} -- update a tenant.
 async fn update_tenant(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -126,7 +126,7 @@ async fn update_tenant(
     Ok(Json(TenantResponse::from(tenant)))
 }
 
-/// GET /:id/config -- get all configuration key-value pairs for a tenant.
+/// GET /{id}/config -- get all configuration key-value pairs for a tenant.
 async fn get_tenant_config(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -142,7 +142,7 @@ async fn get_tenant_config(
     Ok(Json(configs))
 }
 
-/// PUT /:id/config -- upsert a tenant configuration key-value pair.
+/// PUT /{id}/config -- upsert a tenant configuration key-value pair.
 async fn update_tenant_config(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -167,7 +167,7 @@ async fn update_tenant_config(
     Ok(Json(config))
 }
 
-/// GET /:id/branding-history -- get the branding audit log for a tenant.
+/// GET /{id}/branding-history -- get the branding audit log for a tenant.
 async fn get_branding_history(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,

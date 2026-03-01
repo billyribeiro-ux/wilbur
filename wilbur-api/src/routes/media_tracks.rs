@@ -24,8 +24,8 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/", post(create_track))
         .route("/heartbeat", post(heartbeat))
         .route("/cleanup", post(cleanup))
-        .route("/:id", put(update_track))
-        .route("/:id", delete(delete_track))
+        .route("/{id}", put(update_track))
+        .route("/{id}", delete(delete_track))
 }
 
 #[derive(Debug, Deserialize)]
@@ -103,7 +103,7 @@ async fn create_track(
     Ok((StatusCode::CREATED, Json(response_json)))
 }
 
-/// PUT /:id -- update a media track (metadata and/or muted state).
+/// PUT /{id} -- update a media track (metadata and/or muted state).
 async fn update_track(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -140,7 +140,7 @@ async fn update_track(
     Ok(Json(response_json))
 }
 
-/// DELETE /:id -- remove a media track (soft-delete).
+/// DELETE /{id} -- remove a media track (soft-delete).
 async fn delete_track(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,

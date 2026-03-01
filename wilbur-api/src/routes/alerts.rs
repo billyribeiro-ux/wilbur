@@ -22,8 +22,8 @@ pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(list_alerts))
         .route("/", post(create_alert))
-        .route("/:id", delete(delete_alert))
-        .route("/:id/media", post(upload_alert_media))
+        .route("/{id}", delete(delete_alert))
+        .route("/{id}/media", post(upload_alert_media))
 }
 
 /// GET / -- list alerts for a room.
@@ -113,7 +113,7 @@ async fn create_alert(
     Ok((StatusCode::CREATED, Json(response_json)))
 }
 
-/// DELETE /:id -- delete an alert (soft-delete by setting is_active = false).
+/// DELETE /{id} -- delete an alert (soft-delete by setting is_active = false).
 async fn delete_alert(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -143,7 +143,7 @@ async fn delete_alert(
     Ok(StatusCode::NO_CONTENT)
 }
 
-/// POST /:id/media -- upload media for an alert via multipart.
+/// POST /{id}/media -- upload media for an alert via multipart.
 async fn upload_alert_media(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,

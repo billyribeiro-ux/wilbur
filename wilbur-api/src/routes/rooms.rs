@@ -28,14 +28,14 @@ pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(list_rooms))
         .route("/", post(create_room))
-        .route("/by-tenant/:tenant_id", get(list_rooms_by_tenant))
-        .route("/:id", get(get_room))
-        .route("/:id", put(update_room))
-        .route("/:id", delete(delete_room))
-        .route("/:id/members", get(list_members))
-        .route("/:id/members", post(invite_member))
-        .route("/:id/members/:user_id", delete(remove_member))
-        .route("/:id/members/:user_id/role", put(update_member_role))
+        .route("/by-tenant/{tenant_id}", get(list_rooms_by_tenant))
+        .route("/{id}", get(get_room))
+        .route("/{id}", put(update_room))
+        .route("/{id}", delete(delete_room))
+        .route("/{id}/members", get(list_members))
+        .route("/{id}/members", post(invite_member))
+        .route("/{id}/members/{user_id}", delete(remove_member))
+        .route("/{id}/members/{user_id}/role", put(update_member_role))
 }
 
 /// GET / -- list all rooms (paginated).
@@ -115,7 +115,7 @@ async fn create_room(
     Ok((StatusCode::CREATED, Json(RoomResponse::from(room))))
 }
 
-/// GET /:id -- get a single room by ID.
+/// GET /{id} -- get a single room by ID.
 async fn get_room(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -130,7 +130,7 @@ async fn get_room(
     Ok(Json(RoomResponse::from(room)))
 }
 
-/// PUT /:id -- update a room.
+/// PUT /{id} -- update a room.
 async fn update_room(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -181,7 +181,7 @@ async fn update_room(
     Ok(Json(RoomResponse::from(room)))
 }
 
-/// DELETE /:id -- soft-delete a room by deactivating it.
+/// DELETE /{id} -- soft-delete a room by deactivating it.
 async fn delete_room(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -202,7 +202,7 @@ async fn delete_room(
     Ok(StatusCode::NO_CONTENT)
 }
 
-/// GET /:id/members -- list members of a room.
+/// GET /{id}/members -- list members of a room.
 async fn list_members(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -219,7 +219,7 @@ async fn list_members(
     Ok(Json(results))
 }
 
-/// POST /:id/members -- invite/add a member to a room.
+/// POST /{id}/members -- invite/add a member to a room.
 async fn invite_member(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -257,7 +257,7 @@ async fn invite_member(
     Ok((StatusCode::CREATED, Json(MembershipResponse::from(membership))))
 }
 
-/// DELETE /:id/members/:user_id -- remove a member from a room.
+/// DELETE /{id}/members/{user_id} -- remove a member from a room.
 async fn remove_member(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -286,7 +286,7 @@ async fn remove_member(
     Ok(StatusCode::NO_CONTENT)
 }
 
-/// PUT /:id/members/:user_id/role -- update a member's role.
+/// PUT /{id}/members/{user_id}/role -- update a member's role.
 async fn update_member_role(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -313,7 +313,7 @@ async fn update_member_role(
     Ok(Json(MembershipResponse::from(membership)))
 }
 
-/// GET /by-tenant/:tenant_id -- list rooms belonging to a tenant.
+/// GET /by-tenant/{tenant_id} -- list rooms belonging to a tenant.
 async fn list_rooms_by_tenant(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,

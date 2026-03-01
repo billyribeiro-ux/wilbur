@@ -21,10 +21,10 @@ pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(list_polls))
         .route("/", post(create_poll))
-        .route("/:id", delete(delete_poll))
-        .route("/:id/vote", post(cast_vote))
-        .route("/:id/votes", get(get_votes))
-        .route("/:id/close", post(close_poll))
+        .route("/{id}", delete(delete_poll))
+        .route("/{id}/vote", post(cast_vote))
+        .route("/{id}/votes", get(get_votes))
+        .route("/{id}/close", post(close_poll))
 }
 
 /// GET / -- list polls for a room.
@@ -99,7 +99,7 @@ async fn create_poll(
     Ok((StatusCode::CREATED, Json(response_json)))
 }
 
-/// DELETE /:id -- delete a poll (only the creator can delete).
+/// DELETE /{id} -- delete a poll (only the creator can delete).
 async fn delete_poll(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -131,7 +131,7 @@ async fn delete_poll(
     Ok(StatusCode::NO_CONTENT)
 }
 
-/// POST /:id/vote -- cast a vote on a poll.
+/// POST /{id}/vote -- cast a vote on a poll.
 async fn cast_vote(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -166,7 +166,7 @@ async fn cast_vote(
     Ok(Json(response_json))
 }
 
-/// GET /:id/votes -- get all votes for a poll.
+/// GET /{id}/votes -- get all votes for a poll.
 async fn get_votes(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,
@@ -185,7 +185,7 @@ async fn get_votes(
     })))
 }
 
-/// POST /:id/close -- close a poll.
+/// POST /{id}/close -- close a poll.
 async fn close_poll(
     State(state): State<Arc<AppState>>,
     _auth_user: AuthUser,

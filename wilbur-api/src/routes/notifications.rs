@@ -20,8 +20,8 @@ pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(list_notifications))
         .route("/read-all", post(read_all_notifications))
-        .route("/:id/read", post(mark_read))
-        .route("/:id", delete(delete_notification))
+        .route("/{id}/read", post(mark_read))
+        .route("/{id}", delete(delete_notification))
 }
 
 /// GET / -- list notifications for the authenticated user.
@@ -53,7 +53,7 @@ async fn list_notifications(
     })))
 }
 
-/// POST /:id/read -- mark a notification as read.
+/// POST /{id}/read -- mark a notification as read.
 async fn mark_read(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -78,7 +78,7 @@ async fn mark_read(
     })))
 }
 
-/// DELETE /:id -- delete a notification.
+/// DELETE /{id} -- delete a notification.
 async fn delete_notification(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,

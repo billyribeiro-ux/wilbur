@@ -24,9 +24,9 @@ pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(list_chats))
         .route("/", post(create_chat))
-        .route("/user/:user_id", get(find_chat_by_user))
-        .route("/:id/messages", get(list_chat_messages))
-        .route("/:id/messages", post(send_chat_message))
+        .route("/user/{user_id}", get(find_chat_by_user))
+        .route("/{id}/messages", get(list_chat_messages))
+        .route("/{id}/messages", post(send_chat_message))
 }
 
 #[derive(Debug, Deserialize)]
@@ -115,7 +115,7 @@ async fn create_chat(
     Ok((StatusCode::CREATED, Json(response_json)))
 }
 
-/// GET /user/:user_id -- find an existing DM conversation with a specific user.
+/// GET /user/{user_id} -- find an existing DM conversation with a specific user.
 async fn find_chat_by_user(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -175,7 +175,7 @@ async fn require_chat_participant(
     Ok(chat)
 }
 
-/// GET /:id/messages -- list messages in a DM conversation.
+/// GET /{id}/messages -- list messages in a DM conversation.
 async fn list_chat_messages(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -214,7 +214,7 @@ async fn list_chat_messages(
     })))
 }
 
-/// POST /:id/messages -- send a message in a DM conversation.
+/// POST /{id}/messages -- send a message in a DM conversation.
 async fn send_chat_message(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,

@@ -22,9 +22,9 @@ pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(list_themes))
         .route("/", post(create_theme))
-        .route("/:id", get(get_theme))
-        .route("/:id", put(update_theme))
-        .route("/:id", delete(delete_theme))
+        .route("/{id}", get(get_theme))
+        .route("/{id}", put(update_theme))
+        .route("/{id}", delete(delete_theme))
 }
 
 #[derive(Debug, FromRow, Serialize)]
@@ -96,7 +96,7 @@ async fn create_theme(
     Ok((StatusCode::CREATED, Json(theme)))
 }
 
-/// GET /:id -- get a specific theme (must be owned by the user).
+/// GET /{id} -- get a specific theme (must be owned by the user).
 async fn get_theme(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -114,7 +114,7 @@ async fn get_theme(
     Ok(Json(theme))
 }
 
-/// PUT /:id -- update a theme (must be owned by the user).
+/// PUT /{id} -- update a theme (must be owned by the user).
 async fn update_theme(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
@@ -144,7 +144,7 @@ async fn update_theme(
     Ok(Json(theme))
 }
 
-/// DELETE /:id -- delete a theme (must be owned by the user).
+/// DELETE /{id} -- delete a theme (must be owned by the user).
 async fn delete_theme(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
