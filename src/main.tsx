@@ -2,7 +2,6 @@
  * main.tsx — Wilbur Trading Room (Entry Point)
  * - Validates environment configuration
  * - Initializes sound service on first user interaction
- * - Preloads Spotify SDK
  * - Renders the application with error boundary
  * - Tracks Web Vitals in production
  */
@@ -94,18 +93,7 @@ document.addEventListener('keydown', initializeAudioOnInteraction, { once: true,
 document.addEventListener('touchstart', initializeAudioOnInteraction, { once: true, passive: true });
 
 // ═══════════════════════════════════════════════════════════════
-// 4. Preload Spotify SDK
-// ═══════════════════════════════════════════════════════════════
-if (!document.querySelector('script[src*="spotify-player"]')) {
-  const spotifyScript = document.createElement('script');
-  spotifyScript.src = 'https://sdk.scdn.co/spotify-player.js';
-  spotifyScript.async = true;
-  spotifyScript.id = 'spotify-sdk-script';
-  document.head.appendChild(spotifyScript);
-}
-
-// ═══════════════════════════════════════════════════════════════
-// 5. Render Application
+// 4. Render Application
 // ═══════════════════════════════════════════════════════════════
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
@@ -114,7 +102,7 @@ createRoot(document.getElementById('root')!).render(
 );
 
 // ═══════════════════════════════════════════════════════════════
-// 6. Performance Monitoring (Production Only)
+// 5. Performance Monitoring (Production Only)
 // ═══════════════════════════════════════════════════════════════
 if (import.meta.env.PROD) {
   import('./lib/monitoring')
