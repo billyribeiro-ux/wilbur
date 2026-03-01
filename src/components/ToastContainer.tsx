@@ -75,7 +75,7 @@ const toastStyles: Record<ToastType, ToastStyle> = {
     bg: 'bg-amber-900/95',
     border: 'border-amber-600/50',
     iconColor: 'text-amber-400',
-    Icon: AlertTriangle,
+    Icon: Warning,
   },
   info: {
     bg: 'bg-blue-900/95',

@@ -11,7 +11,7 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Download, ZoomIn, ZoomOut } from '@phosphor-icons/react';
+import { X, Download, MagnifyingGlassPlus, MagnifyingGlassMinus } from '@phosphor-icons/react';
 import { useEffect, useState, useCallback, useRef } from 'react';
 
 import { downloadImage } from '../../utils/imageModal';
@@ -175,7 +175,7 @@ export function ImageModal() {
                   "
                   aria-label="Zoom out"
                 >
-                  <ZoomOut className="w-5 h-5" />
+                  <MagnifyingGlassMinus weight="regular" className="w-5 h-5" />
                 </button>
                 <span className="text-white text-sm font-medium min-w-[60px] text-center">
                   {Math.round(zoom * 100)}%
@@ -191,7 +191,7 @@ export function ImageModal() {
                   "
                   aria-label="Zoom in"
                 >
-                  <ZoomIn className="w-5 h-5" />
+                  <MagnifyingGlassPlus weight="regular" className="w-5 h-5" />
                 </button>
               </div>
 
