@@ -1,6 +1,4 @@
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ArrowClockwise, Users, Microphone, MicrophoneSlash, Video, VideoCameraSlash, SignOut, Palette, Sparkle, Gear as SettingsIcon, MonitorArrowUp, List } from '@phosphor-icons/react';
+import { ArrowLeft, ArrowClockwise, Users, Microphone, MicrophoneSlash, Video, VideoCameraSlash, SignOut, Palette, Sparkle, Gear as SettingsIcon, MonitorArrowUp, List, Record, SpeakerHigh, TwitterLogo, LinkedinLogo } from '@phosphor-icons/react';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { useFluentIcons } from '../../icons/useFluentIcons';
 
@@ -274,7 +272,7 @@ export function BrandHeader({
                   const C = I as React.ComponentType<Record<string, unknown>>;
                   return <C className={iconClasses} />;
                 }
-                return <FontAwesomeIcon icon={faArrowLeft} className={iconClasses} />;
+                return <ArrowLeft className={iconClasses} weight="regular" />;
               })()
             ) : (
               (() => {
@@ -390,9 +388,9 @@ export function BrandHeader({
                   return <C className={`${iconClasses} ${isRecording ? 'animate-pulse' : ''}`} />;
                 }
                 return (
-                  <FontAwesomeIcon
-                    icon={['far', 'dot-circle']}
+                  <Record
                     className={`${iconClasses} ${isRecording ? 'animate-pulse' : ''}`}
+                    weight="regular"
                   />
                 );
               })()}
@@ -434,7 +432,7 @@ export function BrandHeader({
           aria-label="X (Twitter)"
           disabled={xLoading}
         >
-          <FontAwesomeIcon icon={['fab', 'twitter']} className={iconClasses} />
+          <TwitterLogo className={iconClasses} weight="regular" />
         </button>
 
         {/* LinkedIn Button */}
@@ -449,7 +447,7 @@ export function BrandHeader({
           aria-label="LinkedIn"
           disabled={linkedinLoading || linkedinConnecting}
         >
-          <FontAwesomeIcon icon={['fab', 'linkedin']} className={iconClasses} />
+          <LinkedinLogo className={iconClasses} weight="regular" />
         </button>
 
         {/* Microphone Button */}
@@ -621,7 +619,7 @@ export function BrandHeader({
             {(() => {
               const I = fi?.Speaker224Regular || fi?.Speaker220Regular || fi?.Speaker24Regular || fi?.Speaker20Regular;
               if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className={iconClasses} />; }
-              return <FontAwesomeIcon icon={['fas', 'volume-high']} className={iconClasses} />;
+              return <SpeakerHigh className={iconClasses} weight="regular" />;
             })()}
           </button>
           <ul

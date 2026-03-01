@@ -3,7 +3,7 @@
  * Last Updated: October 30, 2025 @ 19:30 PST
  * Changes: Synchronized button sizing with BrandHeader for consistent UI
  */
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { SpotifyLogo } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 
 import { getOAuthConfig, disconnectOAuthProvider, connectOAuthProvider } from './services/oauthApi';
@@ -142,7 +142,7 @@ export function SpotifyButton() {
       {isConnecting ? (
         <span className={`${getResponsiveIconClasses()} inline-block rounded-full border-2 border-white/40 border-t-white animate-spin`} />
       ) : (
-        <FontAwesomeIcon icon={["fab", "spotify"]} className={getResponsiveIconClasses()} />
+        <SpotifyLogo className={getResponsiveIconClasses()} weight="regular" />
       )}
     </button>
   );

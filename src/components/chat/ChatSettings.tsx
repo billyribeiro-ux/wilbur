@@ -4,12 +4,11 @@
  */
 
 import {
-  faDownload,
-  faTrash,
-  faComments,
-  faSearch
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+  Download,
+  Trash,
+  Chat,
+  MagnifyingGlass
+} from '@phosphor-icons/react';
 
 import { PANEL_COLORS } from '../panelColors';
 
@@ -41,9 +40,9 @@ export function ChatSettings({
       aria-label="Chat settings"
     >
       <div className="relative">
-        <FontAwesomeIcon 
-          icon={faSearch} 
+        <MagnifyingGlass 
           className={`absolute left-3 top-1/2 -translate-y-1/2 ${PANEL_COLORS.text.secondary} w-4 h-4`}
+          weight="regular"
         />
         <input
           id="chat-search"
@@ -73,7 +72,7 @@ export function ChatSettings({
         onClick={onDownloadChat}
         className={`flex items-center gap-2 px-3 py-2 ${PANEL_COLORS.buttons.secondary.background} ${PANEL_COLORS.buttons.secondary.hover} ${PANEL_COLORS.text.primary} rounded text-sm transition-colors w-full focus:outline-none focus:ring-2 ${PANEL_COLORS.input.focus.ring}`}
       >
-        <FontAwesomeIcon icon={faDownload} className="w-4 h-4" />
+        <Download className="w-4 h-4" weight="regular" />
         Download Chat History
       </button>
 
@@ -81,7 +80,7 @@ export function ChatSettings({
         onClick={onEraseChat}
         className={`flex items-center gap-2 px-3 py-2 ${PANEL_COLORS.buttons.danger.background} ${PANEL_COLORS.buttons.danger.hover} ${PANEL_COLORS.text.primary} rounded text-sm transition-colors w-full focus:outline-none focus:ring-2 focus:ring-red-500`}
       >
-        <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
+        <Trash className="w-4 h-4" weight="regular" />
         Erase All Chat
       </button>
 
@@ -89,7 +88,7 @@ export function ChatSettings({
         onClick={onDetachChat}
         className={`flex items-center gap-2 px-3 py-2 ${PANEL_COLORS.buttons.secondary.background} ${PANEL_COLORS.buttons.secondary.hover} ${PANEL_COLORS.text.primary} rounded text-sm transition-colors w-full focus:outline-none focus:ring-2 ${PANEL_COLORS.input.focus.ring}`}
       >
-        <FontAwesomeIcon icon={faComments} className="w-4 h-4" />
+        <Chat className="w-4 h-4" weight="regular" />
         Detach Chat & Alerts
       </button>
     </section>

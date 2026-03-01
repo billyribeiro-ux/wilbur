@@ -226,13 +226,13 @@ export function TradingRoomContainer({
         // Real-time subscriptions
         try {
           subscribeToRoomChat(room.id);
-        } catch {}
+        } catch { /* no-op */ }
         try {
           subscribeToRoomAlerts(room.id);
-        } catch {}
+        } catch { /* no-op */ }
         try {
           subscribeToRoomTracks(room.id);
-        } catch {}
+        } catch { /* no-op */ }
 
         // LiveKit connect
         try {
@@ -268,20 +268,20 @@ export function TradingRoomContainer({
       cancelled = true;
 
       for (const u of unsubs) {
-        try { u(); } catch {}
+        try { u(); } catch { /* no-op */ }
       }
 
       try {
         unsubscribeFromRoom();
-      } catch {}
+      } catch { /* no-op */ }
 
       try {
         liveKitService.disconnect();
-      } catch {}
+      } catch { /* no-op */ }
     };
     // Intentionally minimal deps: only user/room IDs trigger re-init
     // Zustand setters, logger, addToast are stable and excluded to prevent infinite loop
-  }, [user?.id, user?.email, room?.id]);
+  }, [user?.id, user?.email, room?.id, addToast, logger, room, setAlerts, setCurrentRoom, setIsRefreshing, setMembership, setMessages, setRoomReady, setTracks]);
 
   // =========================================================
   // INTEGRATION MANAGEMENT
@@ -320,10 +320,10 @@ export function TradingRoomContainer({
   // =========================================================
   const handleLeave = useCallback(async () => {
     logger.info('Leaving TradingRoom');
-    try { await liveKitService.disconnect(); } catch {}
-    try { audioVideoCleanup(); } catch {}
-    try { screenShareCleanup(); } catch {}
-    try { clearMicrosoftCache('all', { resetStores: true }); } catch {}
+    try { await liveKitService.disconnect(); } catch { /* no-op */ }
+    try { audioVideoCleanup(); } catch { /* no-op */ }
+    try { screenShareCleanup(); } catch { /* no-op */ }
+    try { clearMicrosoftCache('all', { resetStores: true }); } catch { /* no-op */ }
     onLeave();
   }, [logger, onLeave, audioVideoCleanup, screenShareCleanup]);
 
@@ -452,27 +452,27 @@ export function TradingRoomContainer({
   // UI handlers
   const handleCustomizeClick = useCallback(() => {
     setShowBranding(true);
-  }, []);
+  }, [setShowBranding]);
 
   const handleOpenSettings = useCallback(() => {
     setShowSettings(true);
-  }, []);
+  }, [setShowSettings]);
 
   const handleShowConnectivityCheck = useCallback(() => {
     setShowConnectivityCheck(true);
-  }, []);
+  }, [setShowConnectivityCheck]);
 
   const handleShowMobileAppInfo = useCallback(() => {
     setShowMobileAppInfo(true);
-  }, []);
+  }, [setShowMobileAppInfo]);
 
   const handleCloseConnectivityCheck = useCallback(() => {
     setShowConnectivityCheck(false);
-  }, []);
+  }, [setShowConnectivityCheck]);
 
   const handleCloseMobileAppInfo = useCallback(() => {
     setShowMobileAppInfo(false);
-  }, []);
+  }, [setShowMobileAppInfo]);
 
   // FIXED: Removed hacky useEffect to force-close modal
   // The initial state should be set to `false` in useTradingRoomState
@@ -480,27 +480,27 @@ export function TradingRoomContainer({
   // Modal handlers
   const handleShowAlertModalClose = useCallback(() => {
     setShowAlertModal(false);
-  }, []);
+  }, [setShowAlertModal]);
 
   const handleShowAlertModalOpen = useCallback(() => {
     setShowAlertModal(true);
-  }, []);
+  }, [setShowAlertModal]);
 
   const handleShowPollModalClose = useCallback(() => {
     setShowPollModal(false);
-  }, []);
+  }, [setShowPollModal]);
 
   const handleShowPollModalOpen = useCallback(() => {
     setShowPollModal(true);
-  }, []);
+  }, [setShowPollModal]);
 
   const handleThemePanelClose = useCallback(() => {
     setShowThemePanel(false);
-  }, []);
+  }, [setShowThemePanel]);
 
   const handleCameraWindowClose = useCallback(() => {
     setShowCameraWindow(false);
-  }, []);
+  }, [setShowCameraWindow]);
 
   // =========================================================
   // MODERATION HANDLERS - For Alerts
@@ -838,7 +838,7 @@ export function TradingRoomContainer({
   // LAYOUT RESET HANDLER
   // =========================================================
   const handleResetLayout = useCallback(() => {
-    try { resetLayout(); } catch {}
+    try { resetLayout(); } catch { /* no-op */ }
   }, [resetLayout]);
 
   // =========================================================

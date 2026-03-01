@@ -3,8 +3,7 @@
 // Shows tabs for each shared screen with preview thumbnails
 // ============================================================================
 
-import { faDesktop, faTimes, faChevronDown } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Desktop, X, CaretDown } from '@phosphor-icons/react';
 import { memo } from 'react';
 
 // ============================================================================
@@ -61,9 +60,9 @@ export const ScreenShareTabs = memo<ScreenShareTabsProps>(function ScreenShareTa
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <FontAwesomeIcon 
-                    icon={faDesktop} 
+                  <Desktop 
                     className="text-slate-500 text-sm"
+                    weight="regular"
                   />
                 </div>
               )}
@@ -75,9 +74,9 @@ export const ScreenShareTabs = memo<ScreenShareTabsProps>(function ScreenShareTa
             </span>
 
             {/* Dropdown Arrow */}
-            <FontAwesomeIcon 
-              icon={faChevronDown} 
+            <CaretDown 
               className="text-xs ml-1"
+              weight="regular"
             />
 
             {/* Close Button */}
@@ -89,9 +88,9 @@ export const ScreenShareTabs = memo<ScreenShareTabsProps>(function ScreenShareTa
               className="ml-2 p-1 hover:bg-white/20 rounded transition-colors"
               aria-label={`Remove ${screen.name}`}
             >
-              <FontAwesomeIcon 
-                icon={faTimes} 
+              <X 
                 className="text-xs"
+                weight="regular"
               />
             </button>
           </button>

@@ -1,9 +1,8 @@
 import {
-  faExclamationTriangle,
-  faSpinner,
-  faThumbtack
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+  Warning,
+  Spinner,
+  PushPin
+} from '@phosphor-icons/react';
 import { isSameDay } from 'date-fns';
 import debounce from 'lodash/debounce';
 import type {
@@ -436,9 +435,9 @@ export function ChatPanel() {
             const I = fi?.SpinnerIos24Regular || fi?.SpinnerIos20Regular || fi?.ArrowClockwise24Regular || fi?.ArrowClockwise20Regular;
             if (I) { return <I className="animate-spin text-blue-500 text-3xl mb-4" />; }
             return (
-              <FontAwesomeIcon 
-                icon={faSpinner} 
+              <Spinner 
                 className="animate-spin text-blue-500 text-3xl mb-4"
+                weight="regular"
               />
             );
           })()}
@@ -477,9 +476,9 @@ export function ChatPanel() {
                 const I = fi?.Pin24Regular || fi?.Pin20Regular;
                 if (I) { return <I className={`w-3 h-3 ${PANEL_COLORS.text.link.normal} flex-shrink-0 mt-1`} />; }
                 return (
-                  <FontAwesomeIcon 
-                    icon={faThumbtack} 
+                  <PushPin 
                     className={`w-3 h-3 ${PANEL_COLORS.text.link.normal} flex-shrink-0 mt-1`}
+                    weight="regular"
                   />
                 );
               })()}
@@ -697,9 +696,9 @@ class ChatPanelErrorBoundary extends Component<ChatPanelErrorBoundaryProps, Chat
               const I = Icons?.Warning24Regular || Icons?.Warning20Regular;
               if (I) { return <I className="w-16 h-16 text-red-500 mb-4 mx-auto" />; }
               return (
-                <FontAwesomeIcon 
-                  icon={faExclamationTriangle} 
+                <Warning 
                   className="w-16 h-16 text-red-500 mb-4 mx-auto"
+                  weight="regular"
                 />
               );
             })()}

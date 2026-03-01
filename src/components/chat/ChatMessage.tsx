@@ -4,19 +4,18 @@
  */
 
 import { 
-  faThumbtack, 
-  faTrash, 
-  faReply, 
-  faExternalLinkAlt,
-  faBan,
-  faVolumeMute,
-  faUserSlash,
-  faCopy,
-  faFlag,
-  faComments
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { DotsNine } from '@phosphor-icons/react';
+  PushPin, 
+  Trash, 
+  ArrowBendUpLeft, 
+  ArrowSquareOut,
+  Prohibit,
+  SpeakerSlash,
+  UserMinus,
+  Copy,
+  Flag,
+  Chat,
+  DotsNine
+} from '@phosphor-icons/react';
 
 import type { Database } from '../../types/database.types';
 import { MessageType, UserRoleType } from './constants';
@@ -147,12 +146,12 @@ export function ChatMessage({
                 {author.display_name || author.email?.split('@')[0] || `User ${author.id.slice(0, 8)}`}
               </span>
               {message.pinned_by && (
-                <FontAwesomeIcon 
-                  icon={faThumbtack} 
-                  className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-400 flex-shrink-0"
-                  title="Pinned message"
-                  aria-label="Pinned"
-                />
+                <span title="Pinned message" aria-label="Pinned">
+                  <PushPin 
+                    className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-400 flex-shrink-0"
+                    weight="regular"
+                  />
+                </span>
               )}
               {isSpeaking && (
                 <span 
@@ -199,7 +198,7 @@ export function ChatMessage({
                     className="w-full px-3 py-1.5 text-left text-xs sm:text-sm text-white hover:bg-slate-600 transition-colors flex items-center gap-2 touch-manipulation"
                     role="menuitem"
                   >
-                    <FontAwesomeIcon icon={faReply} className="w-3 h-3 flex-shrink-0" />
+                    <ArrowBendUpLeft className="w-3 h-3 flex-shrink-0" weight="regular" />
                     <span>Mention</span>
                   </button>
                 </li>
@@ -217,7 +216,7 @@ export function ChatMessage({
                       className="w-full px-3 py-1.5 text-left text-xs sm:text-sm text-green-400 hover:bg-slate-600 transition-colors flex items-center gap-2 touch-manipulation"
                       role="menuitem"
                     >
-                      <FontAwesomeIcon icon={faComments} className="w-3 h-3 flex-shrink-0" />
+                      <Chat className="w-3 h-3 flex-shrink-0" weight="regular" />
                       <span>Private Chat</span>
                     </button>
                   </li>
@@ -235,7 +234,7 @@ export function ChatMessage({
                     className="w-full px-3 py-1.5 text-left text-xs sm:text-sm text-white hover:bg-slate-600 transition-colors flex items-center gap-2 touch-manipulation"
                     role="menuitem"
                   >
-                    <FontAwesomeIcon icon={faCopy} className="w-3 h-3 flex-shrink-0" />
+                    <Copy className="w-3 h-3 flex-shrink-0" weight="regular" />
                     <span>Copy</span>
                   </button>
                 </li>
@@ -249,7 +248,7 @@ export function ChatMessage({
                     className="w-full px-3 py-1.5 text-left text-xs sm:text-sm text-white hover:bg-slate-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                     role="menuitem"
                   >
-                    <FontAwesomeIcon icon={faThumbtack} className="w-3 h-3 flex-shrink-0" />
+                    <PushPin className="w-3 h-3 flex-shrink-0" weight="regular" />
                     <span>{message.pinned_by ? 'Unpin' : 'Pin'}</span>
                   </button>
                 </li>
@@ -267,7 +266,7 @@ export function ChatMessage({
                         className="w-full px-3 py-1.5 text-left text-xs sm:text-sm text-yellow-400 hover:bg-slate-600 transition-colors flex items-center gap-2 touch-manipulation"
                         role="menuitem"
                       >
-                        <FontAwesomeIcon icon={faVolumeMute} className="w-3 h-3 flex-shrink-0" />
+                        <SpeakerSlash className="w-3 h-3 flex-shrink-0" weight="regular" />
                         <span>Mute</span>
                       </button>
                     </li>
@@ -285,7 +284,7 @@ export function ChatMessage({
                         className="w-full px-3 py-1.5 text-left text-xs sm:text-sm text-orange-400 hover:bg-slate-600 transition-colors flex items-center gap-2 touch-manipulation"
                         role="menuitem"
                       >
-                        <FontAwesomeIcon icon={faUserSlash} className="w-3 h-3 flex-shrink-0" />
+                        <UserMinus className="w-3 h-3 flex-shrink-0" weight="regular" />
                         <span>Kick</span>
                       </button>
                     </li>
@@ -303,7 +302,7 @@ export function ChatMessage({
                         className="w-full px-3 py-1.5 text-left text-xs sm:text-sm text-red-400 hover:bg-slate-600 transition-colors flex items-center gap-2 touch-manipulation"
                         role="menuitem"
                       >
-                        <FontAwesomeIcon icon={faBan} className="w-3 h-3 flex-shrink-0" />
+                        <Prohibit className="w-3 h-3 flex-shrink-0" weight="regular" />
                         <span>Ban</span>
                       </button>
                     </li>
@@ -322,7 +321,7 @@ export function ChatMessage({
                         className="w-full px-3 py-1.5 text-left text-xs sm:text-sm text-red-400 hover:bg-slate-600 transition-colors flex items-center gap-2 touch-manipulation"
                         role="menuitem"
                       >
-                        <FontAwesomeIcon icon={faFlag} className="w-3 h-3 flex-shrink-0" />
+                        <Flag className="w-3 h-3 flex-shrink-0" weight="regular" />
                         <span>Report</span>
                       </button>
                     </li>
@@ -338,7 +337,7 @@ export function ChatMessage({
                         className="w-full px-3 py-1.5 text-left text-xs sm:text-sm text-red-400 hover:bg-red-600/20 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                         role="menuitem"
                       >
-                        <FontAwesomeIcon icon={faTrash} className="w-3 h-3 flex-shrink-0" />
+                        <Trash className="w-3 h-3 flex-shrink-0" weight="regular" />
                         <span>Delete</span>
                       </button>
                     </li>
@@ -382,7 +381,7 @@ export function ChatMessage({
                   className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded text-xs text-blue-400 hover:text-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                   aria-label="Open link in new tab"
                 >
-                  <FontAwesomeIcon icon={faExternalLinkAlt} className="w-3 h-3" />
+                  <ArrowSquareOut className="w-3 h-3" weight="regular" />
                   <span className="truncate max-w-[200px]">Open link</span>
                 </a>
               )}
@@ -400,7 +399,7 @@ export function ChatMessage({
                   className="inline-flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded text-xs text-blue-400 hover:text-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                   aria-label="Open PDF in new tab"
                 >
-                  <FontAwesomeIcon icon={faExternalLinkAlt} className="w-3.5 h-3.5" />
+                  <ArrowSquareOut className="w-3.5 h-3.5" weight="regular" />
                   <span>Open PDF</span>
                 </a>
               ) : isVideoUrl(message.file_url) ? (
@@ -421,7 +420,7 @@ export function ChatMessage({
                   className="inline-flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded text-xs text-blue-400 hover:text-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                   aria-label="Download file"
                 >
-                  <FontAwesomeIcon icon={faExternalLinkAlt} className="w-3.5 h-3.5" />
+                  <ArrowSquareOut className="w-3.5 h-3.5" weight="regular" />
                   <span>Download file</span>
                 </a>
               )}

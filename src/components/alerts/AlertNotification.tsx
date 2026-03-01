@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExclamationTriangle, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { Warning, X } from '@phosphor-icons/react';
 
 interface AlertNotificationProps {
   alert: {
@@ -56,9 +55,9 @@ export function AlertNotification({
       <div className="bg-red-600 rounded-lg shadow-2xl px-6 py-4 flex items-center gap-4 border-2 border-red-700">
         {/* Warning Icon */}
         <div className="flex-shrink-0">
-          <FontAwesomeIcon 
-            icon={faExclamationTriangle} 
+          <Warning 
             className="text-white text-3xl" 
+            weight="regular"
           />
         </div>
 
@@ -78,7 +77,7 @@ export function AlertNotification({
           className="flex-shrink-0 text-white hover:text-red-200 transition-colors p-1"
           aria-label="Close notification"
         >
-          <FontAwesomeIcon icon={faTimes} className="text-xl" />
+          <X className="text-xl" weight="regular" />
         </button>
       </div>
     </div>

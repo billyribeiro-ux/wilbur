@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { X, MagnifyingGlass } from '@phosphor-icons/react';
 
 interface AlertReportModalProps {
   alertId: string;
@@ -29,7 +28,7 @@ export function AlertReportModal({ alertId, onClose }: AlertReportModalProps) {
             onClick={onClose}
             className="text-gray-400 hover:text-white text-2xl"
           >
-            <FontAwesomeIcon icon={faTimes} />
+            <X weight="regular" />
           </button>
         </div>
 
@@ -54,7 +53,7 @@ export function AlertReportModal({ alertId, onClose }: AlertReportModalProps) {
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900"
               />
               <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600">
-                <FontAwesomeIcon icon={faSearch} />
+                <MagnifyingGlass weight="regular" />
               </button>
             </div>
           </div>

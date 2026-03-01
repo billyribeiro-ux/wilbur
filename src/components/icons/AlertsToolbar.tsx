@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { memo } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faQuestionCircle, faPlusCircle, faCog, faCaretDown } from '@fortawesome/free-solid-svg-icons';
+import { Bell, Question, PlusCircle, Gear, CaretDown } from '@phosphor-icons/react';
 import { useFluentIcons } from '../../icons/useFluentIcons';
 
 interface Counts { total: number; unread: number }
@@ -51,9 +50,9 @@ function AlertsToolbarBase({
           const I = fi?.Alert24Regular || fi?.Alert20Regular || fi?.AlertOn24Regular || fi?.AlertOn20Regular;
           if (I) { return <I className="text-white w-5 h-5" aria-label="Alerts" />; }
           return (
-            <FontAwesomeIcon
-              icon={faBell}
+            <Bell
               className="text-white w-5 h-5"
+              weight="regular"
               aria-label="Alerts"
             />
           );
@@ -75,9 +74,9 @@ function AlertsToolbarBase({
             const I = fi?.QuestionCircle24Regular || fi?.QuestionCircle20Regular;
             if (I) { return <I className="text-white w-5 h-5" />; }
             return (
-              <FontAwesomeIcon
-                icon={faQuestionCircle}
+              <Question
                 className="text-white w-5 h-5"
+                weight="regular"
               />
             );
           })()}
@@ -94,9 +93,9 @@ function AlertsToolbarBase({
             const I = fi?.AddCircle24Regular || fi?.AddCircle20Regular || fi?.Add24Regular || fi?.Add20Regular;
             if (I) { return <I className="text-white w-5 h-5" />; }
             return (
-              <FontAwesomeIcon
-                icon={faPlusCircle}
+              <PlusCircle
                 className="text-white w-5 h-5"
+                weight="regular"
               />
             );
           })()}
@@ -112,12 +111,12 @@ function AlertsToolbarBase({
           {(() => {
             const I = fi?.Settings24Regular || fi?.Settings20Regular;
             if (I) { return <I className="text-white w-5 h-5" />; }
-            return <FontAwesomeIcon icon={faCog} className="text-white w-5 h-5" />;
+            return <Gear className="text-white w-5 h-5" weight="regular" />;
           })()}
           {(() => {
             const I = fi?.CaretDown24Regular || fi?.CaretDown20Regular || fi?.ChevronDown24Regular || fi?.ChevronDown20Regular;
             if (I) { return <I className="text-white w-3 h-3" />; }
-            return <FontAwesomeIcon icon={faCaretDown} className="text-white w-3 h-3" />;
+            return <CaretDown className="text-white w-3 h-3" weight="regular" />;
           })()}
         </button>
       </div>

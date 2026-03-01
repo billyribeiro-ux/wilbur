@@ -4,15 +4,14 @@
 
 import { useWhiteboardStore } from '../state/whiteboardStore';
 import { TEXT_FONT_FAMILIES, TEXT_FONT_SIZES, TEXT_FONT_WEIGHTS } from '../types';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faBold,
-  faItalic,
-  faUnderline,
-  faAlignLeft,
-  faAlignCenter,
-  faAlignRight,
-} from '@fortawesome/free-solid-svg-icons';
+  TextB,
+  TextItalic,
+  TextUnderline,
+  TextAlignLeft,
+  TextAlignCenter,
+  TextAlignRight,
+} from '@phosphor-icons/react';
 
 export function TextOptionsBar() {
   const fontFamily = useWhiteboardStore((s) => s.fontFamily);
@@ -83,7 +82,7 @@ export function TextOptionsBar() {
         }`}
         title="Bold (Cmd/Ctrl+B)"
       >
-        <FontAwesomeIcon icon={faBold} />
+        <TextB weight="regular" />
       </button>
       
       {/* Italic */}
@@ -96,7 +95,7 @@ export function TextOptionsBar() {
         }`}
         title="Italic (Cmd/Ctrl+I)"
       >
-        <FontAwesomeIcon icon={faItalic} />
+        <TextItalic weight="regular" />
       </button>
       
       {/* Underline */}
@@ -109,7 +108,7 @@ export function TextOptionsBar() {
         }`}
         title="Underline (Cmd/Ctrl+U)"
       >
-        <FontAwesomeIcon icon={faUnderline} />
+        <TextUnderline weight="regular" />
       </button>
       
       {/* Divider */}
@@ -125,7 +124,7 @@ export function TextOptionsBar() {
         }`}
         title="Align Left"
       >
-        <FontAwesomeIcon icon={faAlignLeft} />
+        <TextAlignLeft weight="regular" />
       </button>
       
       {/* Align Center */}
@@ -138,7 +137,7 @@ export function TextOptionsBar() {
         }`}
         title="Align Center"
       >
-        <FontAwesomeIcon icon={faAlignCenter} />
+        <TextAlignCenter weight="regular" />
       </button>
       
       {/* Align Right */}
@@ -151,7 +150,7 @@ export function TextOptionsBar() {
         }`}
         title="Align Right"
       >
-        <FontAwesomeIcon icon={faAlignRight} />
+        <TextAlignRight weight="regular" />
       </button>
       
       {/* Divider */}

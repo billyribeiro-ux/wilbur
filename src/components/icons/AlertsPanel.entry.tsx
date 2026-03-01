@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useEffect, useCallback, useMemo, useRef, useLayoutEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faTrash, faBell, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { Download, Trash, Bell, MagnifyingGlass } from '@phosphor-icons/react';
 import { useFluentIcons } from '../../icons/useFluentIcons';
 
 import type { Alert, AlertId, AlertPayload } from './alerts.types';
@@ -291,9 +290,9 @@ export function AlertsPanelEntry({
             const I = fi?.Search24Regular || fi?.Search20Regular;
             if (I) { return <I className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />; }
             return (
-              <FontAwesomeIcon 
-                icon={faSearch} 
+              <MagnifyingGlass 
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4"
+                weight="regular"
               />
             );
           })()}
@@ -328,7 +327,7 @@ export function AlertsPanelEntry({
           {(() => {
             const I = fi?.ArrowDownload24Regular || fi?.ArrowDownload20Regular;
             if (I) { return <I className="w-4 h-4" />; }
-            return <FontAwesomeIcon icon={faDownload} className="w-4 h-4" />;
+            return <Download className="w-4 h-4" weight="regular" />;
           })()}
           Download Alerts History
         </button>
@@ -340,7 +339,7 @@ export function AlertsPanelEntry({
           {(() => {
             const I = fi?.Delete24Regular || fi?.Delete20Regular;
             if (I) { return <I className="w-4 h-4" />; }
-            return <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />;
+            return <Trash className="w-4 h-4" weight="regular" />;
           })()}
           Erase All Alerts
         </button>
@@ -352,7 +351,7 @@ export function AlertsPanelEntry({
           {(() => {
             const I = fi?.Alert24Regular || fi?.Alert20Regular || fi?.AlertOn24Regular || fi?.AlertOn20Regular;
             if (I) { return <I className="w-4 h-4" />; }
-            return <FontAwesomeIcon icon={faBell} className="w-4 h-4" />;
+            return <Bell className="w-4 h-4" weight="regular" />;
           })()}
           Detach Chat & Alerts
         </button>

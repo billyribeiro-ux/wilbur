@@ -1,9 +1,7 @@
 import * as React from 'react';
 import { memo, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { DotsNine } from '@phosphor-icons/react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faVolumeMute, faBan, faSignOutAlt, faFlag, faAt, faUser, faComments, faBullhorn } from '@fortawesome/free-solid-svg-icons';
+import { DotsNine, Trash, SpeakerSlash, Prohibit, SignOut, Flag, At, User, Chat, Megaphone, type Icon } from '@phosphor-icons/react';
 import * as Icons from '@fluentui/react-icons';
 import { useFluentIcons } from '../../icons/useFluentIcons';
 
@@ -248,15 +246,15 @@ function AlertsListBase({
               const authorName = getAuthorDisplayName(alert.author);
               
               const items: AlertMenuItem[] = [
-                onDelete && { icon: faTrash, label: 'Delete Message', color: 'text-red-400 hover:bg-red-600/20', action: () => { setDeleteConfirm({ id: alert.id, authorName, message: alert.title || alert.body || '' }); setActiveMenu(null); } },
-                onMute && { icon: faVolumeMute, label: 'Mute User', color: 'text-slate-400 hover:bg-slate-600', action: () => { onMute(alert.author?.id || '', authorName); setActiveMenu(null); } },
-                onBan && { icon: faBan, label: 'Ban User', color: 'text-red-400 hover:bg-red-600/20', action: () => { onBan(alert.author?.id || '', authorName); setActiveMenu(null); } },
-                onKick && { icon: faSignOutAlt, label: 'Kick User', color: 'text-red-400 hover:bg-red-600/20', action: () => { onKick(alert.author?.id || '', authorName); setActiveMenu(null); } },
-                onReport && { icon: faFlag, label: 'Report', color: 'text-yellow-400 hover:bg-yellow-600/20', action: () => { onReport(alert.id); setActiveMenu(null); } },
-                onMention && { icon: faAt, label: 'Mention User', color: 'text-blue-400 hover:bg-blue-600/20', action: () => { onMention(authorName); setActiveMenu(null); } },
-                onUserInfo && { icon: faUser, label: 'User Info', color: 'text-slate-400 hover:bg-slate-600', action: () => { onUserInfo(alert.author?.id || '', authorName); setActiveMenu(null); } },
-                onPrivateChat && { icon: faComments, label: 'Private Chat', color: 'text-green-400 hover:bg-green-600/20', action: () => { onPrivateChat(alert.author?.id || '', authorName); setActiveMenu(null); } },
-                onShowToAll && { icon: faBullhorn, label: 'Show to All', color: 'text-purple-400 hover:bg-purple-600/20', action: () => { onShowToAll(alert.id); setActiveMenu(null); } },
+                onDelete && { icon: 'trash', label: 'Delete Message', color: 'text-red-400 hover:bg-red-600/20', action: () => { setDeleteConfirm({ id: alert.id, authorName, message: alert.title || alert.body || '' }); setActiveMenu(null); } },
+                onMute && { icon: 'volume-mute', label: 'Mute User', color: 'text-slate-400 hover:bg-slate-600', action: () => { onMute(alert.author?.id || '', authorName); setActiveMenu(null); } },
+                onBan && { icon: 'ban', label: 'Ban User', color: 'text-red-400 hover:bg-red-600/20', action: () => { onBan(alert.author?.id || '', authorName); setActiveMenu(null); } },
+                onKick && { icon: 'sign-out', label: 'Kick User', color: 'text-red-400 hover:bg-red-600/20', action: () => { onKick(alert.author?.id || '', authorName); setActiveMenu(null); } },
+                onReport && { icon: 'flag', label: 'Report', color: 'text-yellow-400 hover:bg-yellow-600/20', action: () => { onReport(alert.id); setActiveMenu(null); } },
+                onMention && { icon: 'at', label: 'Mention User', color: 'text-blue-400 hover:bg-blue-600/20', action: () => { onMention(authorName); setActiveMenu(null); } },
+                onUserInfo && { icon: 'user', label: 'User Info', color: 'text-slate-400 hover:bg-slate-600', action: () => { onUserInfo(alert.author?.id || '', authorName); setActiveMenu(null); } },
+                onPrivateChat && { icon: 'comments', label: 'Private Chat', color: 'text-green-400 hover:bg-green-600/20', action: () => { onPrivateChat(alert.author?.id || '', authorName); setActiveMenu(null); } },
+                onShowToAll && { icon: 'bullhorn', label: 'Show to All', color: 'text-purple-400 hover:bg-purple-600/20', action: () => { onShowToAll(alert.id); setActiveMenu(null); } },
               ].filter(Boolean) as AlertMenuItem[];
               
               return items.map((item, index) => (
@@ -268,20 +266,32 @@ function AlertsListBase({
                   <span className="w-4 flex-shrink-0">
                     {(() => {
                       const m: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>> | undefined> = {
-                        [faTrash.iconName]: Icons?.Delete24Regular || Icons?.Delete20Regular,
-                        [faVolumeMute.iconName]: Icons?.SpeakerMute24Regular || Icons?.SpeakerMute20Regular,
-                        [faBan.iconName]: Icons?.Prohibited24Regular || Icons?.Prohibited20Regular,
-                        [faSignOutAlt.iconName]: Icons?.SignOut24Regular || Icons?.SignOut20Regular,
-                        [faFlag.iconName]: Icons?.Flag24Regular || Icons?.Flag20Regular,
-                        [faAt.iconName]: Icons?.Mention24Regular || Icons?.Mention20Regular,
-                        [faUser.iconName]: Icons?.Person24Regular || Icons?.Person20Regular,
-                        [faComments.iconName]: Icons?.Chat24Regular || Icons?.Chat20Regular,
-                        [faBullhorn.iconName]: Icons?.Megaphone24Regular || Icons?.Megaphone20Regular,
+                        'trash': Icons?.Delete24Regular || Icons?.Delete20Regular,
+                        'volume-mute': Icons?.SpeakerMute24Regular || Icons?.SpeakerMute20Regular,
+                        'ban': Icons?.Prohibited24Regular || Icons?.Prohibited20Regular,
+                        'sign-out': Icons?.SignOut24Regular || Icons?.SignOut20Regular,
+                        'flag': Icons?.Flag24Regular || Icons?.Flag20Regular,
+                        'at': Icons?.Mention24Regular || Icons?.Mention20Regular,
+                        'user': Icons?.Person24Regular || Icons?.Person20Regular,
+                        'comments': Icons?.Chat24Regular || Icons?.Chat20Regular,
+                        'bullhorn': Icons?.Megaphone24Regular || Icons?.Megaphone20Regular,
                       };
-                      const key = item.icon.iconName;
-                      const I = m[key];
+                      const I = m[item.icon];
                       if (I) { return <I className="w-4 h-4" />; }
-                      return <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />;
+                      // Fallback to Phosphor icons
+                      const phosphorMap: Record<string, Icon> = {
+                        'trash': Trash,
+                        'volume-mute': SpeakerSlash,
+                        'ban': Prohibit,
+                        'sign-out': SignOut,
+                        'flag': Flag,
+                        'at': At,
+                        'user': User,
+                        'comments': Chat,
+                        'bullhorn': Megaphone,
+                      };
+                      const PhosphorIcon = phosphorMap[item.icon];
+                      return PhosphorIcon ? <PhosphorIcon weight="regular" className="w-4 h-4" /> : null;
                     })()}
                   </span>
                   <span>{item.label}</span>

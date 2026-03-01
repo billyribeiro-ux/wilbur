@@ -4,14 +4,13 @@
  */
 
 import {
-  faPaperPlane,
-  faImage,
-  faSmile,
-  faTimes,
-  faSpinner,
-  faCheckCircle
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+  PaperPlane,
+  Image,
+  Smiley,
+  X,
+  Spinner,
+  CheckCircle
+} from '@phosphor-icons/react';
 import React, { useRef } from 'react';
 
 import { EmojiPicker } from '../icons/EmojiPicker';
@@ -92,20 +91,20 @@ export function ChatInput({
                   className={`absolute -top-1 -right-1 p-0.5 ${PANEL_COLORS.buttons.danger.background} hover:${PANEL_COLORS.buttons.danger.hover} rounded-full ${PANEL_COLORS.text.primary} transition-colors focus:outline-none focus:ring-2 focus:ring-red-500`}
                   aria-label="Remove file"
                 >
-                  <FontAwesomeIcon icon={faTimes} className="w-3 h-3" />
+                  <X className="w-3 h-3" weight="regular" />
                 </button>
               </div>
             ) : pendingFile ? (
               <div className="flex items-center gap-2 flex-shrink-0">
                 <div className={`p-2 ${PANEL_COLORS.input.background} rounded`}>
-                  <FontAwesomeIcon icon={faImage} className={`w-5 h-5 ${PANEL_COLORS.text.secondary}`} />
+                  <Image className={`w-5 h-5 ${PANEL_COLORS.text.secondary}`} weight="regular" />
                 </div>
                 <button
                   onClick={onCancelFile}
                   className={`p-1 ${PANEL_COLORS.buttons.danger.background} hover:${PANEL_COLORS.buttons.danger.hover} rounded-full ${PANEL_COLORS.text.primary} transition-colors focus:outline-none focus:ring-2 focus:ring-red-500`}
                   aria-label="Remove file"
                 >
-                  <FontAwesomeIcon icon={faTimes} className="w-3 h-3" />
+                  <X className="w-3 h-3" weight="regular" />
                 </button>
               </div>
             ) : null}
@@ -136,7 +135,7 @@ export function ChatInput({
               
               {uploadingState === LoadingState.Success && (
                 <div className={`flex items-center gap-1 ${PANEL_COLORS.accents.success} mt-0.5`}>
-                  <FontAwesomeIcon icon={faCheckCircle} className="w-3 h-3" />
+                  <CheckCircle className="w-3 h-3" weight="regular" />
                   <span className="text-xs">Ready</span>
                 </div>
               )}
@@ -167,9 +166,9 @@ export function ChatInput({
             aria-label="Upload file"
           >
             {uploadingState === LoadingState.Loading ? (
-              <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+              <Spinner className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" weight="regular" />
             ) : (
-              <FontAwesomeIcon icon={faImage} className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Image className="w-4 h-4 sm:w-5 sm:h-5" weight="regular" />
             )}
           </button>
           
@@ -181,7 +180,7 @@ export function ChatInput({
               aria-label="Add emoji"
               aria-expanded={showEmojiPicker}
             >
-              <FontAwesomeIcon icon={faSmile} className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Smiley className="w-4 h-4 sm:w-5 sm:h-5" weight="regular" />
             </button>
             {showEmojiPicker && (
               <EmojiPicker
@@ -216,9 +215,9 @@ export function ChatInput({
             aria-label="Send message"
           >
             {sendingState === LoadingState.Loading ? (
-              <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+              <Spinner className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" weight="regular" />
             ) : (
-              <FontAwesomeIcon icon={faPaperPlane} className="w-4 h-4 sm:w-5 sm:h-5" />
+              <PaperPlane className="w-4 h-4 sm:w-5 sm:h-5" weight="regular" />
             )}
           </button>
         </form>

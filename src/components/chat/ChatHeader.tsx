@@ -1,10 +1,9 @@
 /**
  * ChatHeader Component - Microsoft Enterprise Pattern
  * Displays chat navigation with tabs, settings, and responsive design
- * SSOT Pattern: FontAwesome icons, clean responsive classes, no external color imports
+ * SSOT Pattern: Phosphor icons, clean responsive classes, no external color imports
  */
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faComments, faCog, faCaretDown } from '@fortawesome/free-solid-svg-icons';
+import { Chat, Gear, CaretDown } from '@phosphor-icons/react';
 import { COLOR_THEME } from '../panelColors';
 
 export enum ChatTab {
@@ -42,9 +41,9 @@ export function ChatHeader({
       />
       {/* Left icon (chat bubble) - Intrinsic width */}
       <div className="flex-shrink-0 pb-2">
-        <FontAwesomeIcon 
-          icon={faComments} 
+        <Chat 
           className="text-white w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5"
+          weight="regular"
           aria-hidden="true"
         />
       </div>
@@ -110,15 +109,15 @@ export function ChatHeader({
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && onToggleSettings()}
       >
-        <FontAwesomeIcon 
-          icon={faCog} 
+        <Gear 
           className="w-3.5 h-3.5 sm:w-4 sm:h-4"
           style={{ color: COLOR_THEME.header.chat.icon }}
+          weight="regular"
         />
-        <FontAwesomeIcon 
-          icon={faCaretDown} 
+        <CaretDown 
           className="w-2.5 h-2.5"
           style={{ color: COLOR_THEME.header.chat.icon }}
+          weight="regular"
         />
       </div>
     </header>

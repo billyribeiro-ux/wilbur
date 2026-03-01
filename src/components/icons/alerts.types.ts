@@ -5,7 +5,6 @@
  */
 
 import type { Alert as DbAlert } from '../../types/database.types';
-import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
 
 // ---------------------------------------------------------------------------
 // Primitives
@@ -237,7 +236,7 @@ export type {
  * Defines the structure for alert context menu items
  */
 export interface AlertMenuItem {
-  readonly icon: IconDefinition; // FontAwesome icon definition
+  readonly icon: string; // Phosphor icon name
   readonly label: string;
   readonly color: string;
   readonly action: () => void;

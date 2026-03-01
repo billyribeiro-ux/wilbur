@@ -5,26 +5,26 @@
 // ============================================================================
 
 import { useState, useCallback } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faPen,
-  faHighlighter,
-  faEraser,
-  faSquare,
-  faCircle,
-  faArrowRight,
-  faFont,
-  faSmile,
-  faMousePointer,
-  faHand,
-  faUndo,
-  faRedo,
-  faTrash,
-  faDownload,
-  faTimes,
-  faGripLines,
-  faPalette,
-} from '@fortawesome/free-solid-svg-icons';
+  Pencil,
+  Highlighter,
+  Eraser,
+  Square,
+  Circle,
+  ArrowRight,
+  TextT,
+  Smiley,
+  Cursor,
+  Hand,
+  ArrowCounterClockwise,
+  ArrowClockwise,
+  Trash,
+  Download,
+  X,
+  List,
+  Palette,
+  type Icon,
+} from '@phosphor-icons/react';
 import { useWhiteboardStore } from '../state/whiteboardStore';
 import { exportToPNG, downloadBlob } from '../utils/exporters';
 import { useDraggable } from '../hooks/useDraggable';
@@ -40,23 +40,23 @@ interface WhiteboardToolbarProps {
 
 interface ToolConfig {
   tool: WhiteboardTool;
-  icon: typeof faPen;
+  icon: Icon;
   label: string;
   testId?: string;
 }
 
 const TOOLS: Array<ToolConfig> = [
-  { tool: 'select',      icon: faMousePointer, label: 'Select (V)',    testId: 'tool-select' },
-  { tool: 'hand',        icon: faHand,         label: 'Pan (H)',       testId: 'tool-hand' },
-  { tool: 'pen',         icon: faPen,          label: 'Pen (P)',       testId: 'tool-pen' },
-  { tool: 'highlighter', icon: faHighlighter,  label: 'Highlighter',   testId: 'tool-highlighter' },
-  { tool: 'eraser',      icon: faEraser,       label: 'Eraser (E)',    testId: 'tool-eraser' },
-  { tool: 'line',        icon: faGripLines,    label: 'Line (L)',      testId: 'tool-line' },
-  { tool: 'rectangle',   icon: faSquare,       label: 'Rectangle (R)', testId: 'tool-rectangle' },
-  { tool: 'circle',      icon: faCircle,       label: 'Circle (C)',    testId: 'tool-circle' },
-  { tool: 'arrow',       icon: faArrowRight,   label: 'Arrow (A)',     testId: 'tool-arrow' },
-  { tool: 'text',        icon: faFont,         label: 'Text (T)',      testId: 'tool-text' },
-  { tool: 'stamp',       icon: faSmile,        label: 'Emoji',         testId: 'tool-emoji' },
+  { tool: 'select',      icon: Cursor, label: 'Select (V)',    testId: 'tool-select' },
+  { tool: 'hand',        icon: Hand,         label: 'Pan (H)',       testId: 'tool-hand' },
+  { tool: 'pen',         icon: Pencil,          label: 'Pen (P)',       testId: 'tool-pen' },
+  { tool: 'highlighter', icon: Highlighter,  label: 'Highlighter',   testId: 'tool-highlighter' },
+  { tool: 'eraser',      icon: Eraser,       label: 'Eraser (E)',    testId: 'tool-eraser' },
+  { tool: 'line',        icon: List,    label: 'Line (L)',      testId: 'tool-line' },
+  { tool: 'rectangle',   icon: Square,       label: 'Rectangle (R)', testId: 'tool-rectangle' },
+  { tool: 'circle',      icon: Circle,       label: 'Circle (C)',    testId: 'tool-circle' },
+  { tool: 'arrow',       icon: ArrowRight,   label: 'Arrow (A)',     testId: 'tool-arrow' },
+  { tool: 'text',        icon: TextT,         label: 'Text (T)',      testId: 'tool-text' },
+  { tool: 'stamp',       icon: Smiley,        label: 'Emoji',         testId: 'tool-emoji' },
 ];
 
 const COLORS = [
@@ -130,7 +130,8 @@ export function WhiteboardToolbar({ onClose, canManageRoom }: WhiteboardToolbarP
         return <IconComp width={size} height={size} />;
       }
     }
-    return <FontAwesomeIcon icon={t.icon} />;
+    const IconComp = t.icon;
+    return <IconComp weight="regular" className="w-5 h-5" />;
   }, [fluentIcons]);
   
   const canUndo = historyIndex > 0;
@@ -174,7 +175,7 @@ export function WhiteboardToolbar({ onClose, canManageRoom }: WhiteboardToolbarP
   
   return (
     <div 
-      className="wb-presenter-only wb-toolbar fixed bg-slate-800 rounded-lg shadow-xl px-2 py-2 flex flex-col gap-2 z-50 relative"
+      className="wb-presenter-only wb-toolbar fixed bg-slate-800 rounded-lg shadow-xl px-2 py-2 flex flex-col gap-2 z-50"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -216,9 +217,9 @@ export function WhiteboardToolbar({ onClose, canManageRoom }: WhiteboardToolbarP
             {fluentIcons && (fluentIcons.Dismiss24Regular || fluentIcons.Dismiss20Regular)
               ? (() => {
                   const I = (fluentIcons.Dismiss24Regular || fluentIcons.Dismiss20Regular) as FluentIconComponent | undefined;
-                  return I ? <I /> : <FontAwesomeIcon icon={faTimes} />;
+                  return I ? <I /> : <X weight="regular" className="w-5 h-5" />;
                 })()
-              : <FontAwesomeIcon icon={faTimes} />}
+              : <X weight="regular" className="w-5 h-5" />}
           </button>
         </div>
       </div>
@@ -251,9 +252,9 @@ export function WhiteboardToolbar({ onClose, canManageRoom }: WhiteboardToolbarP
           {fluentIcons && (fluentIcons.Color24Regular || fluentIcons.Color20Regular)
             ? (() => {
                 const I = (fluentIcons.Color24Regular || fluentIcons.Color20Regular) as FluentIconComponent | undefined;
-                return I ? <I className="w-3 h-3" /> : <FontAwesomeIcon icon={faPalette} className="w-3 h-3" />;
+                return I ? <I className="w-3 h-3" /> : <Palette weight="regular" className="w-3 h-3" />;
               })()
-            : <FontAwesomeIcon icon={faPalette} className="w-3 h-3" />}
+            : <Palette weight="regular" className="w-3 h-3" />}
           <span>Color</span>
         </div>
         <div className="flex items-center gap-2">
@@ -314,9 +315,9 @@ export function WhiteboardToolbar({ onClose, canManageRoom }: WhiteboardToolbarP
             {fluentIcons && (fluentIcons.Color24Regular || fluentIcons.Color20Regular)
               ? (() => {
                   const I = (fluentIcons.Color24Regular || fluentIcons.Color20Regular) as FluentIconComponent | undefined;
-                  return I ? <I className="text-slate-400" /> : <FontAwesomeIcon icon={faPalette} className="text-slate-400" />;
+                  return I ? <I className="text-slate-400" /> : <Palette weight="regular" className="text-slate-400" />;
                 })()
-              : <FontAwesomeIcon icon={faPalette} className="text-slate-400" />}
+              : <Palette weight="regular" className="text-slate-400" />}
             <span className="text-xs text-slate-300">Gradient (Default)</span>
           </div>
           <div className="text-xs text-slate-500">
@@ -441,9 +442,9 @@ export function WhiteboardToolbar({ onClose, canManageRoom }: WhiteboardToolbarP
             {fluentIcons && (fluentIcons.ArrowUndo24Regular || fluentIcons.ArrowUndo20Regular)
               ? (() => {
                   const I = (fluentIcons.ArrowUndo24Regular || fluentIcons.ArrowUndo20Regular) as FluentIconComponent | undefined;
-                  return I ? <I /> : <FontAwesomeIcon icon={faUndo} />;
+                  return I ? <I /> : <ArrowCounterClockwise weight="regular" className="w-5 h-5" />;
                 })()
-              : <FontAwesomeIcon icon={faUndo} />}
+              : <ArrowCounterClockwise weight="regular" className="w-5 h-5" />}
           </button>
           <button
             onClick={redo}
@@ -454,9 +455,9 @@ export function WhiteboardToolbar({ onClose, canManageRoom }: WhiteboardToolbarP
             {fluentIcons && (fluentIcons.ArrowRedo24Regular || fluentIcons.ArrowRedo20Regular)
               ? (() => {
                   const I = (fluentIcons.ArrowRedo24Regular || fluentIcons.ArrowRedo20Regular) as FluentIconComponent | undefined;
-                  return I ? <I /> : <FontAwesomeIcon icon={faRedo} />;
+                  return I ? <I /> : <ArrowClockwise weight="regular" className="w-5 h-5" />;
                 })()
-              : <FontAwesomeIcon icon={faRedo} />}
+              : <ArrowClockwise weight="regular" className="w-5 h-5" />}
           </button>
         </div>
         
@@ -475,9 +476,9 @@ export function WhiteboardToolbar({ onClose, canManageRoom }: WhiteboardToolbarP
           {fluentIcons && (fluentIcons.ArrowDownload24Regular || fluentIcons.ArrowDownload20Regular)
             ? (() => {
                 const I = (fluentIcons.ArrowDownload24Regular || fluentIcons.ArrowDownload20Regular) as FluentIconComponent | undefined;
-                return I ? <I className="mr-2" /> : <FontAwesomeIcon icon={faDownload} className="mr-2" />;
+                return I ? <I className="mr-2" /> : <Download weight="regular" className="mr-2 w-5 h-5" />;
               })()
-            : <FontAwesomeIcon icon={faDownload} className="mr-2" />}
+            : <Download weight="regular" className="mr-2 w-5 h-5" />}
           Export
         </button>
         
@@ -490,9 +491,9 @@ export function WhiteboardToolbar({ onClose, canManageRoom }: WhiteboardToolbarP
             {fluentIcons && (fluentIcons.Delete24Regular || fluentIcons.Delete20Regular)
               ? (() => {
                   const I = (fluentIcons.Delete24Regular || fluentIcons.Delete20Regular) as FluentIconComponent | undefined;
-                  return I ? <I className="mr-2" /> : <FontAwesomeIcon icon={faTrash} className="mr-2" />;
+                  return I ? <I className="mr-2" /> : <Trash weight="regular" className="mr-2 w-5 h-5" />;
                 })()
-              : <FontAwesomeIcon icon={faTrash} className="mr-2" />}
+              : <Trash weight="regular" className="mr-2 w-5 h-5" />}
             Clear All
           </button>
         )}

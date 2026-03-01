@@ -3,8 +3,7 @@
 // Shows visual indicator when user's microphone is active
 // ============================================================================
 
-import { faMicrophone } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Microphone } from '@phosphor-icons/react';
 import { memo } from 'react';
 import { useFluentIcons } from '../icons/useFluentIcons';
 
@@ -82,9 +81,9 @@ export const TalkingIndicator = memo<TalkingIndicatorProps>(function TalkingIndi
           return <C width={px} height={px} className="text-white" />;
         }
         return (
-          <FontAwesomeIcon 
-            icon={faMicrophone} 
+          <Microphone 
             className="text-white" 
+            weight="regular"
             style={{ fontSize: size === 'sm' ? '8px' : size === 'md' ? '10px' : '12px' }}
           />
         );
