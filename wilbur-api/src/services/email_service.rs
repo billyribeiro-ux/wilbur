@@ -63,7 +63,7 @@ impl EmailService {
         Ok(())
     }
 
-#[allow(dead_code)]
+    #[allow(dead_code)]
     pub async fn send_password_reset_email(
         &self,
         to: &str,
