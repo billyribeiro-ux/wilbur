@@ -85,35 +85,58 @@
          ========================================================== -->
 
     <!-- ==========================================================
-         🔧 DEPRECATION FIX: Patch unload event before Spotify SDK loads
-         jQuery uses deprecated unload event - patch to use pagehide instead
+         🔧 DEPRECATION FIX: Aggressive unload event patch for jQuery/Spotify SDK
          ========================================================== -->
     <script>
       (function() {
-        // Patch addEventListener to intercept unload and redirect to pagehide
+        // Patch 1: Intercept addEventListener
         const originalAddEventListener = window.addEventListener;
         window.addEventListener = function(type, listener, options) {
           if (type === 'unload') {
-            console.log('[Deprecation Patch] Redirecting unload event to pagehide');
+            console.log('[Deprecation Patch] Redirecting unload → pagehide via addEventListener');
             return originalAddEventListener.call(this, 'pagehide', listener, options);
           }
           return originalAddEventListener.call(this, type, listener, options);
         };
         
-        // Also patch document-level events for older jQuery
-        if (document.addEventListener) {
-          const docOriginalAddEventListener = document.addEventListener;
-          document.addEventListener = function(type, listener, options) {
-            if (type === 'unload') {
-              console.log('[Deprecation Patch] Redirecting document unload to pagehide');
-              return docOriginalAddEventListener.call(this, 'pagehide', listener, options);
+        // Patch 2: Intercept attachEvent (IE legacy used by older jQuery)
+        if (window.attachEvent) {
+          const originalAttachEvent = window.attachEvent;
+          window.attachEvent = function(type, listener) {
+            if (type === 'onunload') {
+              console.log('[Deprecation Patch] Redirecting attachEvent onunload → onpagehide');
+              return originalAttachEvent.call(this, 'onpagehide', listener);
             }
-            return docOriginalAddEventListener.call(this, type, listener, options);
+            return originalAttachEvent.call(this, type, listener);
           };
         }
         
-        // Mark that we've patched
+        // Patch 3: Block direct window.onunload assignment via defineProperty
+        var originalOnunload = null;
+        Object.defineProperty(window, 'onunload', {
+          get: function() { return originalOnunload; },
+          set: function(value) {
+            console.log('[Deprecation Patch] Blocking window.onunload assignment, using pagehide instead');
+            originalOnunload = value;
+            // Actually attach to pagehide
+            window.addEventListener('pagehide', value);
+          },
+          configurable: true
+        });
+        
+        // Patch 4: Also patch document methods
+        if (document.addEventListener) {
+          const docAddEventListener = document.addEventListener;
+          document.addEventListener = function(type, listener, options) {
+            if (type === 'unload') {
+              return docAddEventListener.call(this, 'pagehide', listener, options);
+            }
+            return docAddEventListener.call(this, type, listener, options);
+          };
+        }
+        
         window.__unloadPatchApplied = true;
+        console.log('[Deprecation Patch] Unload event patch initialized');
       })();
     </script>
 
