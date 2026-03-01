@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
 
-#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, PartialEq)]
 #[sqlx(type_name = "integration_type", rename_all = "lowercase")]
 #[serde(rename_all = "lowercase")]
@@ -13,7 +12,6 @@ pub enum IntegrationType {
     Linkedin,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Clone, FromRow, Serialize)]
 pub struct UserIntegration {
     pub id: Uuid,
@@ -31,7 +29,6 @@ pub struct UserIntegration {
 }
 
 /// Integration response (excludes sensitive tokens).
-#[allow(dead_code)]
 #[derive(Debug, Serialize)]
 pub struct IntegrationResponse {
     pub id: Uuid,

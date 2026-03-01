@@ -23,5 +23,4 @@ impl PaginationParams {
     }
 }
 
-#[allow(dead_code)]
 pub type Pagination = Query<PaginationParams>;

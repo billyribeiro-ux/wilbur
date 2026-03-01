@@ -4,14 +4,12 @@ use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 
 use crate::config::AppConfig;
 
-#[allow(dead_code)]
 pub struct EmailService {
     mailer: AsyncSmtpTransport<Tokio1Executor>,
     from: String,
 }
 
 impl EmailService {
-#[allow(dead_code)]
     pub fn new(config: &AppConfig) -> Result<Self, String> {
         if config.smtp_host.is_empty() {
             return Err("SMTP not configured".to_string());
@@ -31,7 +29,6 @@ impl EmailService {
         })
     }
 
-#[allow(dead_code)]
     pub async fn send_verification_email(
         &self,
         to: &str,
@@ -63,7 +60,6 @@ impl EmailService {
         Ok(())
     }
 
-    #[allow(dead_code)]
     pub async fn send_password_reset_email(
         &self,
         to: &str,
