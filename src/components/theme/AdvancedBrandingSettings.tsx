@@ -206,7 +206,7 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
         return false;
       }
 
-      const membershipData = data as { role: string; joined_at: string };
+      const membershipData = data as unknown as { role: string; joined_at: string };
       setMembership({ role: membershipData.role });
 
       if (membershipData.role !== 'admin') {
@@ -221,7 +221,7 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
       }
 
       // Rate limiting is now server-enforced
-      const withinLimits = rateLimiter.current.check();
+      const withinLimits = rateLimiter.current.attempt();
 
       if (!withinLimits) {
         addToast('Rate limit exceeded. Maximum 10 changes per hour.', 'error');
@@ -1316,7 +1316,6 @@ const iconThemes = [
 
 export function AdvancedBrandingSettingsPhase2({ onClose: _onClose }: AdvancedBrandingSettingsProps) {
   const { uiStyle, setUIStyle } = useThemeStore();
-  const user = useAuthStore(state => state.user);
   const [formData, setFormData] = useState({
     iconTheme: uiStyle.iconTheme || 'lucide',
     borderRadius: uiStyle.borderRadius || 0.5,
@@ -1360,6 +1359,7 @@ export function AdvancedBrandingSettingsPhase2({ onClose: _onClose }: AdvancedBr
       await loadPresets();
       alert('Preset saved!');
     } catch (err) {
+      console.error('[AdvancedBrandingSettings] Failed to save preset:', err);
     } finally {
       // Only clear loading if this is still the latest request
       if (reqId === presetReqId.current) {
@@ -1371,7 +1371,7 @@ export function AdvancedBrandingSettingsPhase2({ onClose: _onClose }: AdvancedBr
   const loadPresets = async () => {
     try {
       const data = await themesApi.list();
-      if (data) setPresets(data);
+      if (data) setPresets(data as unknown as Array<Record<string, unknown>>);
     } catch (err) {
       console.error('[AdvancedBrandingSettings] Failed to load presets:', err);
     }
