@@ -11,17 +11,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import {
-  Mic,
-  Monitor,
-  Video,
-  MessageSquare,
-  Wrench,
-  Pencil,
-  AtSign,
-  MessageCircle,
-  UserPlus,
-} from 'lucide-react';
+import { Microphone, Monitor, Video, MessageSquare, Wrench, Pencil, AtSign, MessageCircle, UserPlus,  } from '@phosphor-icons/react';
 
 import { ModalBase } from './ModalBase';
 
@@ -376,7 +366,7 @@ export function UserInfoModal({ user, onClose, isOpen = true }: UserInfoModalPro
                   <PermissionCheckbox
                     id="perm-mic"
                     label="Microphone"
-                    icon={<Mic className="w-5 h-5" />}
+                    icon={<Microphone className="w-5 h-5" />}
                     checked={permissions.microphone}
                     onChange={(v) => handlePermissionChange('microphone', v)}
                   />

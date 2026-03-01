@@ -1,5 +1,5 @@
 // NOTE: DetachedChatWindow uses an isolated alertsHeight state; it does not write to main TradingRoom sizes.
-import { GripHorizontal } from 'lucide-react';
+import { DotsNine } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 
 import { useAuthStore } from '../../store/authStore';
@@ -89,7 +89,7 @@ export function DetachedChatWindow() {
               document.body.style.userSelect = 'none';
             }}
           >
-            <GripHorizontal className="w-5 h-5 text-slate-500 group-hover:text-slate-300 transition-colors opacity-0 group-hover:opacity-100" />
+            <DotsNine className="w-5 h-5 text-slate-500 group-hover:text-slate-300 transition-colors opacity-0 group-hover:opacity-100" weight="regular"/>
           </div>
 
           <div

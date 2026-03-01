@@ -1,5 +1,5 @@
 // src/components/CameraWindow.tsx
-import { X, Minimize2, Maximize2, Video, Mic, MicOff } from 'lucide-react';
+import { X, ArrowsIn, ArrowsOut, Video, Microphone, MicrophoneSlash } from '@phosphor-icons/react';
 import { useState, useEffect, useRef } from 'react';
 
 // Vendor-prefixed CSS properties - using type assertions for non-standard properties
@@ -189,7 +189,7 @@ export function CameraWindow({ stream, isActive, onClose }: CameraWindowProps) {
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-slate-800 border-b border-slate-700 rounded-t-lg">
         <div className="flex items-center gap-2">
-          <Video className="w-4 h-4 text-blue-400" />
+          <Video className="w-4 h-4 text-blue-400" weight="regular"/>
           <span className="text-xs font-medium text-white">Your Camera</span>
         </div>
         <div className="flex items-center gap-1">
@@ -199,9 +199,9 @@ export function CameraWindow({ stream, isActive, onClose }: CameraWindowProps) {
             title={isMuted ? 'Unmute' : 'Mute'}
           >
             {isMuted ? (
-              <MicOff className="w-3 h-3 text-red-400" />
+              <MicrophoneSlash className="w-3 h-3 text-red-400" weight="regular"/>
             ) : (
-              <Mic className="w-3 h-3 text-slate-400" />
+              <Microphone className="w-3 h-3 text-slate-400" weight="regular"/>
             )}
           </button>
           <button
@@ -210,9 +210,9 @@ export function CameraWindow({ stream, isActive, onClose }: CameraWindowProps) {
             title={isMinimized ? 'Expand' : 'Minimize'}
           >
             {isMinimized ? (
-              <Maximize2 className="w-3 h-3 text-slate-400" />
+              <ArrowsOut className="w-3 h-3 text-slate-400" weight="regular"/>
             ) : (
-              <Minimize2 className="w-3 h-3 text-slate-400" />
+              <ArrowsIn className="w-3 h-3 text-slate-400" weight="regular"/>
             )}
           </button>
           <button
@@ -220,7 +220,7 @@ export function CameraWindow({ stream, isActive, onClose }: CameraWindowProps) {
             className="p-1 hover:bg-red-600/20 rounded transition-colors group"
             title="Close camera"
           >
-            <X className="w-3 h-3 text-slate-400 group-hover:text-red-400" />
+            <X className="w-3 h-3 text-slate-400 group-hover:text-red-400" weight="regular"/>
           </button>
         </div>
       </div>
@@ -244,7 +244,7 @@ export function CameraWindow({ stream, isActive, onClose }: CameraWindowProps) {
             </div>
             {isMuted && (
               <div className="px-2 py-1 bg-slate-800/90 backdrop-blur-sm rounded">
-                <MicOff className="w-3 h-3 text-red-400" />
+                <MicrophoneSlash className="w-3 h-3 text-red-400" weight="regular"/>
               </div>
             )}
           </div>
@@ -269,7 +269,7 @@ export function CameraWindow({ stream, isActive, onClose }: CameraWindowProps) {
             <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
             <span className="text-xs text-slate-400">Camera active</span>
           </div>
-          {isMuted && <MicOff className="w-3 h-3 text-red-400" />}
+          {isMuted && <MicrophoneSlash className="w-3 h-3 text-red-400" weight="regular"/>}
         </div>
       )}
     </div>

@@ -6,7 +6,7 @@
 * • Applies selected theme via themeStore.applyThemeByJson()
 */
 
-import { Loader2 } from "lucide-react";
+import { CircleNotch } from '@phosphor-icons/react';
 import { useState, useEffect } from "react";
 
 import { themesApi } from '../../api/themes';
@@ -62,7 +62,7 @@ console.error("[ThemeGallery] Apply failed:", err);
 if (loading) {
 return (
 <div className="flex items-center justify-center p-12 text-slate-400">
-<Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading themes...
+<CircleNotch className="w-5 h-5 animate-spin mr-2" weight="regular"/> Loading themes...
 </div>
 );
 }

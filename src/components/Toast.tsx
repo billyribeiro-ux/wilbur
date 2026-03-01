@@ -13,7 +13,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, Info, X } from 'lucide-react';
+import { CheckCircle, XCircle, Info, X } from '@phosphor-icons/react';
 import { useEffect, useCallback } from 'react';
 
 // ============================================================================
@@ -115,7 +115,7 @@ export function Toast({ id, message, type, onClose, duration = 4000 }: ToastProp
         "
         aria-label="Dismiss notification"
       >
-        <X className="w-4 h-4" />
+        <X className="w-4 h-4" weight="regular"/>
       </button>
     </motion.div>
   );

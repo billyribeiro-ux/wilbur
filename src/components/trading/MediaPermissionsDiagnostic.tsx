@@ -1,4 +1,4 @@
-import { Video, Mic, CheckCircle, XCircle, AlertCircle, Lock } from 'lucide-react';
+import { Video, Microphone, CheckCircle, XCircle, WarningCircle, Lock } from '@phosphor-icons/react';
 import { useFluentIcons } from '../../icons/useFluentIcons';
 import { useState, useEffect } from 'react';
 
@@ -72,21 +72,21 @@ export function MediaPermissionsDiagnostic() {
     if (!supported) {
       const I = fi?.DismissCircle24Regular || fi?.DismissCircle20Regular;
       if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-5 h-5 text-red-400" />; }
-      return <XCircle className="w-5 h-5 text-red-400" />;
+      return <XCircle className="w-5 h-5 text-red-400" weight="regular"/>;
     }
     if (status === 'granted') {
       const I = fi?.CheckmarkCircle24Regular || fi?.CheckmarkCircle20Regular;
       if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-5 h-5 text-green-400" />; }
-      return <CheckCircle className="w-5 h-5 text-green-400" />;
+      return <CheckCircle className="w-5 h-5 text-green-400" weight="regular"/>;
     }
     if (status === 'denied') {
       const I = fi?.DismissCircle24Regular || fi?.DismissCircle20Regular;
       if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-5 h-5 text-red-400" />; }
-      return <XCircle className="w-5 h-5 text-red-400" />;
+      return <XCircle className="w-5 h-5 text-red-400" weight="regular"/>;
     }
     const I = fi?.Warning24Regular || fi?.Warning20Regular;
     if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-5 h-5 text-yellow-400" />; }
-    return <AlertCircle className="w-5 h-5 text-yellow-400" />;
+    return <WarningCircle className="w-5 h-5 text-yellow-400" weight="regular"/>;
   };
 
   return (
@@ -107,7 +107,7 @@ export function MediaPermissionsDiagnostic() {
           {(() => {
             const I = fi?.Camera24Regular || fi?.Camera20Regular || fi?.Video24Regular || fi?.Video20Regular;
             if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-5 h-5 text-blue-400 mt-0.5" />; }
-            return <Video className="w-5 h-5 text-blue-400 mt-0.5" />;
+            return <Video className="w-5 h-5 text-blue-400 mt-0.5" weight="regular"/>;
           })()}
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
@@ -128,7 +128,7 @@ export function MediaPermissionsDiagnostic() {
           {(() => {
             const I = fi?.Mic24Regular || fi?.Mic20Regular;
             if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-5 h-5 text-green-400 mt-0.5" />; }
-            return <Mic className="w-5 h-5 text-green-400 mt-0.5" />;
+            return <Microphone className="w-5 h-5 text-green-400 mt-0.5" weight="regular"/>;
           })()}
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
@@ -156,7 +156,7 @@ export function MediaPermissionsDiagnostic() {
                 {(() => {
                   const I = fi?.LockClosed24Regular || fi?.LockClosed20Regular || fi?.LockShield24Regular || fi?.LockShield20Regular;
                   if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />; }
-                  return <Lock className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />;
+                  return <Lock className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" weight="regular"/>;
                 })()}
                 <p className="text-yellow-300">Camera and microphone require HTTPS or localhost</p>
               </div>

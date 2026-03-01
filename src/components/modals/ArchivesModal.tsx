@@ -1,7 +1,7 @@
 // ============================================================================
 // ARCHIVES MODAL - Microsoft Enterprise Standard
 // ============================================================================
-import { ChevronDown } from 'lucide-react';
+import { CaretDown } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 interface ArchivesModalProps {
@@ -39,7 +39,7 @@ export function ArchivesModal({ onClose }: ArchivesModalProps) {
             className="p-2 hover:bg-slate-200 rounded-lg transition-colors text-slate-600 hover:text-slate-800"
             aria-label="Close"
           >
-            <ChevronDown className="w-5 h-5" />
+            <CaretDown className="w-5 h-5" weight="regular"/>
           </button>
         </div>
 

@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, Settings } from 'lucide-react';
+import { CaretDown, Gear } from '@phosphor-icons/react';
 import { useFluentIcons } from '../../icons/useFluentIcons';
 import { PollModal } from '../../features/PollModal';
 import { PostAlertModal } from '../../features/PostAlertModal';
@@ -337,14 +337,14 @@ export function TradingRoomLayout({
                   {(() => {
                     const I = fi?.Settings24Regular || fi?.Settings20Regular;
                     if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-5 h-5 text-white" />; }
-                    return <Settings className="w-5 h-5 text-white" strokeWidth={2.5} />;
+                    return <Gear className="w-5 h-5 text-white" strokeWidth={2.5} weight="regular"/>;
                   })()}
                 </span>
                 <span className="chevron-toggle cursor-pointer">
                   {(() => {
                     const I = fi?.ChevronDown24Regular || fi?.ChevronDown20Regular || fi?.CaretDown24Regular || fi?.CaretDown20Regular;
                     if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className={`w-5 h-5 text-white transition-transform duration-300 ${showNotesDropdown ? 'rotate-180' : ''}`} />; }
-                    return <ChevronDown className={`w-5 h-5 text-white transition-transform duration-300 ${showNotesDropdown ? 'rotate-180' : ''}`} style={{ strokeWidth: 3 }} />;
+                    return <CaretDown className={`w-5 h-5 text-white transition-transform duration-300 ${showNotesDropdown ? 'rotate-180' : ''}`} style={{ strokeWidth: 3 }} weight="regular"/>;
                   })()}
                 </span>
               </button>

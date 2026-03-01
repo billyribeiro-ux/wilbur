@@ -5,7 +5,7 @@
 /* ORIGINAL CODE END */
 
 // FIX NOTE – TS6133 unused variable corrected: Comment out unused import
-import { X, Loader2, Radio, Upload } from 'lucide-react';
+import { X, CircleNotch, RadioButton, Upload } from '@phosphor-icons/react';
 import type { FormEvent } from 'react';
 import { useState, useCallback, useMemo } from 'react';
 
@@ -246,7 +246,7 @@ export function CreateRoomModal({ sourceRoom, mode = 'create', onClose, onCreate
         <div className="flex items-center justify-between p-3 sm:p-4 md:p-6 border-b border-slate-700">
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="p-1.5 sm:p-2 bg-blue-600 rounded-lg">
-              <Radio className="w-5 h-5 text-white" />
+              <RadioButton className="w-5 h-5 text-white" weight="regular"/>
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">
@@ -262,7 +262,7 @@ export function CreateRoomModal({ sourceRoom, mode = 'create', onClose, onCreate
             className="p-1.5 sm:p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors touch-manipulation"
             disabled={creating}
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" weight="regular"/>
           </button>
         </div>
 
@@ -405,19 +405,19 @@ export function CreateRoomModal({ sourceRoom, mode = 'create', onClose, onCreate
                 {formData.iconUrl ? (
                   <img src={formData.iconUrl} alt="Room icon" className="w-full h-full object-cover" />
                 ) : (
-                  <Radio className="w-8 h-8 text-slate-600" />
+                  <RadioButton className="w-8 h-8 text-slate-600" weight="regular"/>
                 )}
               </div>
               <label className="flex-1">
                 <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-white cursor-pointer transition-colors">
                   {uploading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <CircleNotch className="w-4 h-4 animate-spin" weight="regular"/>
                       <span>Uploading...</span>
                     </>
                   ) : (
                     <>
-                      <Upload className="w-4 h-4" />
+                      <Upload className="w-4 h-4" weight="regular"/>
                       <span>Upload Icon</span>
                     </>
                   )}
@@ -636,7 +636,7 @@ export function CreateRoomModal({ sourceRoom, mode = 'create', onClose, onCreate
             >
               {creating ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <CircleNotch className="w-4 h-4 animate-spin" weight="regular"/>
                   <span>{isEditing ? 'Updating...' : 'Creating...'}</span>
                 </>
               ) : (

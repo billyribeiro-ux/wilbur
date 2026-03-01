@@ -1,6 +1,6 @@
 // AuthCallback.tsx — Auth callback handler
 
-import { CheckCircle, XCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowRight, CircleNotch } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 
 import { authApi } from '../../api/auth';
@@ -110,7 +110,7 @@ export function AuthCallback() {
           {status === 'loading' && (
             <div className="text-center">
               <div className="flex justify-center mb-6">
-                <Loader2 className="w-16 h-16 text-purple-600 animate-spin" />
+                <CircleNotch className="w-16 h-16 text-purple-600 animate-spin" weight="regular"/>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 Verifying Your Email
@@ -124,7 +124,7 @@ export function AuthCallback() {
           {status === 'success' && (
             <div className="text-center">
               <div className="flex justify-center mb-6">
-                <CheckCircle className="w-16 h-16 text-green-500" />
+                <CheckCircle className="w-16 h-16 text-green-500" weight="regular"/>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 Email Verified Successfully!
@@ -152,7 +152,7 @@ export function AuthCallback() {
                 className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg px-6 py-3 font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2 group"
               >
                 Go to Login
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" weight="regular"/>
               </button>
             </div>
           )}
@@ -160,7 +160,7 @@ export function AuthCallback() {
           {status === 'error' && (
             <div className="text-center">
               <div className="flex justify-center mb-6">
-                <XCircle className="w-16 h-16 text-red-500" />
+                <XCircle className="w-16 h-16 text-red-500" weight="regular"/>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 Verification Failed
@@ -185,7 +185,7 @@ export function AuthCallback() {
                 className="mt-6 w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg px-6 py-3 font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2 group"
               >
                 Go to Login
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" weight="regular"/>
               </button>
               <p className="text-gray-500 text-xs mt-4">
                 If you continue to have issues, please contact support.

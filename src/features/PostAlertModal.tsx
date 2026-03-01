@@ -1,4 +1,4 @@
-import { X, Link as LinkIcon, Upload, Image as ImageIcon } from 'lucide-react';
+import { X, Link as LinkIcon, Upload, Image as ImageIcon } from '@phosphor-icons/react';
 import { useState, useRef, useEffect } from 'react';
 
 import { ValidationError } from '../lib/errors';
@@ -361,7 +361,7 @@ export function PostAlertModal({ onClose }: PostAlertModalProps) {
               className="p-1.5 hover:bg-slate-700 rounded-lg transition-colors touch-manipulation"
               disabled={isPosting}
             >
-              <X className="w-5 h-5 text-slate-400 hover:text-white" />
+              <X className="w-5 h-5 text-slate-400 hover:text-white" weight="regular"/>
             </button>
           </div>
         </div>
@@ -517,7 +517,7 @@ export function PostAlertModal({ onClose }: PostAlertModalProps) {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-3">
-                    <Upload className="w-12 h-12 text-slate-500" />
+                    <Upload className="w-12 h-12 text-slate-500" weight="regular"/>
                     <div>
                       <p className="text-sm text-white font-medium">Click to select images to upload</p>
                       <p className="text-xs text-slate-400 mt-1">or drop an image here</p>

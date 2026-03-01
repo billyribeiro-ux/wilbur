@@ -10,7 +10,7 @@
  * @updated 2026-01-24
  */
 
-import { X, Search, ArrowUpDown, RefreshCw, Settings, User, AtSign, MessageSquare } from 'lucide-react';
+import { X, Search, ArrowUpDown, ArrowClockwise, Gear, User, AtSign, MessageSquare } from '@phosphor-icons/react';
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 
 import { useRoomStore } from '../../store/roomStore';
@@ -118,7 +118,7 @@ export function UsersPanelModal({ onClose, isOpen = true }: UsersPanelModalProps
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center">
-            <User className="w-5 h-5 text-slate-300" />
+            <User className="w-5 h-5 text-slate-300" weight="regular"/>
           </div>
           <div>
             <h2 className="text-lg font-semibold text-white">Room Members</h2>
@@ -134,7 +134,7 @@ export function UsersPanelModal({ onClose, isOpen = true }: UsersPanelModalProps
           "
           aria-label="Close panel"
         >
-          <X className="w-5 h-5 text-slate-400" />
+          <X className="w-5 h-5 text-slate-400" weight="regular"/>
         </button>
       </div>
 
@@ -182,7 +182,7 @@ export function UsersPanelModal({ onClose, isOpen = true }: UsersPanelModalProps
           "
           aria-label="Refresh users"
         >
-          <RefreshCw className={`w-5 h-5 text-white ${isRefreshing ? 'animate-spin' : ''}`} />
+          <ArrowClockwise className={`w-5 h-5 text-white ${isRefreshing ? 'animate-spin' : ''}`} weight="regular"/>
         </button>
 
         <button
@@ -195,7 +195,7 @@ export function UsersPanelModal({ onClose, isOpen = true }: UsersPanelModalProps
           "
           aria-label="Panel settings"
         >
-          <Settings className="w-5 h-5 text-slate-300" />
+          <Gear className="w-5 h-5 text-slate-300" weight="regular"/>
         </button>
       </div>
     </div>
@@ -253,7 +253,7 @@ export function UsersPanelModal({ onClose, isOpen = true }: UsersPanelModalProps
               "
               aria-label="Clear search"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" weight="regular"/>
             </button>
           )}
         </div>
@@ -342,7 +342,7 @@ export function UsersPanelModal({ onClose, isOpen = true }: UsersPanelModalProps
                       "
                       role="menuitem"
                     >
-                      <User className="w-5 h-5 text-slate-400" />
+                      <User className="w-5 h-5 text-slate-400" weight="regular"/>
                       <span className="text-white">View Info</span>
                     </button>
                     <button

@@ -1,19 +1,6 @@
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  RefreshCw,
-  Users,
-  Mic,
-  MicOff,
-  Video,
-  VideoOff,
-  LogOut,
-  Palette,
-  Sparkles,
-  Settings as SettingsIcon,
-  MonitorUp,
-  Menu,
-} from 'lucide-react';
+import { ArrowClockwise, Users, Microphone, MicrophoneSlash, Video, VideoSlash, LogOut, Palette, Sparkles, Gear as SettingsIcon, MonitorUp, Menu,  } from '@phosphor-icons/react';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { useFluentIcons } from '../../icons/useFluentIcons';
 
@@ -480,13 +467,13 @@ export function BrandHeader({
             (() => {
               const I = fi?.Mic24Regular || fi?.Mic20Regular;
               if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className={iconClasses} />; }
-              return <Mic className={iconClasses} />;
+              return <Microphone className={iconClasses} weight="regular"/>;
             })()
           ) : (
             (() => {
               const I = fi?.MicOff24Regular || fi?.MicOff20Regular;
               if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className={iconClasses} />; }
-              return <MicOff className={iconClasses} />;
+              return <MicrophoneSlash className={iconClasses} weight="regular"/>;
             })()
           )}
           {isMicEnabled && audioStream && (
@@ -512,13 +499,13 @@ export function BrandHeader({
             (() => {
               const I = fi?.Camera24Regular || fi?.Camera20Regular || fi?.Video24Regular || fi?.Video20Regular;
               if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className={iconClasses} />; }
-              return <Video className={iconClasses} />;
+              return <Video className={iconClasses} weight="regular"/>;
             })()
           ) : (
             (() => {
               const I = fi?.CameraOff24Regular || fi?.CameraOff20Regular || fi?.VideoOff24Regular || fi?.VideoOff20Regular;
               if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className={iconClasses} />; }
-              return <VideoOff className={iconClasses} />;
+              return <VideoSlash className={iconClasses} weight="regular"/>;
             })()
           )}
         </button>
@@ -674,7 +661,7 @@ export function BrandHeader({
             {(() => {
               const I = fi?.Color24Regular || fi?.Color20Regular;
               if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className={iconClasses} />; }
-              return <Palette className={iconClasses} />;
+              return <Palette className={iconClasses} weight="regular"/>;
             })()}
           </button>
         )}
@@ -726,7 +713,7 @@ export function BrandHeader({
             {(() => {
               const I = fi?.ArrowClockwise24Regular || fi?.ArrowClockwise20Regular || fi?.ArrowSync24Regular || fi?.ArrowSync20Regular;
               if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className={`${iconClasses} ${isRefreshing ? 'animate-spin text-yellow-300' : 'text-white'} transition-colors`} />; }
-              return <RefreshCw className={`${iconClasses} ${isRefreshing ? 'animate-spin text-yellow-300' : 'text-white'} transition-colors`} />;
+              return <ArrowClockwise className={`${iconClasses} ${isRefreshing ? 'animate-spin text-yellow-300' : 'text-white'} transition-colors`} weight="regular"/>;
             })()}
           </button>
           {isRefreshing && (

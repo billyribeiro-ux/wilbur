@@ -1,4 +1,4 @@
-import { Blend, RefreshCw } from "lucide-react";
+import { Gradient, ArrowClockwise } from '@phosphor-icons/react';
 import { useEffect, useState } from "react";
 
 import { useThemeStore } from "../../store/themeStore";
@@ -51,7 +51,7 @@ setAnimated(true);
 return (
 <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-5 space-y-6">
 <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-<Blend className="w-5 h-5 text-blue-400" />
+<Gradient className="w-5 h-5 text-blue-400" weight="regular"/>
 Accent Gradient
 </h3>
 
@@ -134,7 +134,7 @@ Animate subtle shimmer
 onClick={reset}
 className="ml-auto inline-flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm"
 >
-<RefreshCw className="w-4 h-4" />
+<ArrowClockwise className="w-4 h-4" weight="regular"/>
 Reset
 </button>
 </div>

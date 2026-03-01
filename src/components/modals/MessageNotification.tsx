@@ -11,7 +11,7 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X } from 'lucide-react';
+import { MessageCircle, X } from '@phosphor-icons/react';
 import { useCallback } from 'react';
 
 // ============================================================================
@@ -157,7 +157,7 @@ export function MessageNotification({
                 "
                 aria-label="Dismiss notification"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" weight="regular"/>
               </button>
             )}
           </div>

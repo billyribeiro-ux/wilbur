@@ -1,4 +1,4 @@
-import { Mail, AlertCircle, CheckCircle, Loader2, Copy, RefreshCw, ArrowLeft } from 'lucide-react';
+import { Envelope, WarningCircle, CheckCircle, CircleNotch, Copy, ArrowClockwise, ArrowLeft } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 import { sendEmail } from '../../lib/emailService';
@@ -104,11 +104,11 @@ export function EmailTestPage({ onBack }: { onBack: () => void }) {
               onClick={onBack}
               className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4" weight="regular"/>
               Back
             </button>
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-              <Mail className="w-8 h-8 text-blue-400" />
+              <Envelope className="w-8 h-8 text-blue-400" weight="regular"/>
               Email Service Test & Diagnostics
             </h1>
           </div>
@@ -118,7 +118,7 @@ export function EmailTestPage({ onBack }: { onBack: () => void }) {
           <div className="space-y-6">
             <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
               <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                <Mail className="w-5 h-5 text-blue-400" />
+                <Envelope className="w-5 h-5 text-blue-400" weight="regular"/>
                 Send Test Email
               </h2>
 
@@ -169,12 +169,12 @@ export function EmailTestPage({ onBack }: { onBack: () => void }) {
                 >
                   {isSending ? (
                     <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <CircleNotch className="w-5 h-5 animate-spin" weight="regular"/>
                       Sending Email...
                     </>
                   ) : (
                     <>
-                      <Mail className="w-5 h-5" />
+                      <Envelope className="w-5 h-5" weight="regular"/>
                       Send Test Email
                     </>
                   )}
@@ -226,7 +226,7 @@ export function EmailTestPage({ onBack }: { onBack: () => void }) {
                     onClick={handleClearCache}
                     className="text-xs text-slate-400 hover:text-white transition-colors flex items-center gap-1"
                   >
-                    <RefreshCw className="w-3 h-3" />
+                    <ArrowClockwise className="w-3 h-3" weight="regular"/>
                     Clear Cache
                   </button>
                 </div>
@@ -235,9 +235,9 @@ export function EmailTestPage({ onBack }: { onBack: () => void }) {
                   <div className={`p-3 rounded-lg ${healthStatus.available ? 'bg-green-500/10 border border-green-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
                     <div className="flex items-center gap-2 mb-1">
                       {healthStatus.available ? (
-                        <CheckCircle className="w-4 h-4 text-green-400" />
+                        <CheckCircle className="w-4 h-4 text-green-400" weight="regular"/>
                       ) : (
-                        <AlertCircle className="w-4 h-4 text-red-400" />
+                        <WarningCircle className="w-4 h-4 text-red-400" weight="regular"/>
                       )}
                       <span className={`text-sm font-medium ${healthStatus.available ? 'text-green-400' : 'text-red-400'}`}>
                         {healthStatus.available ? 'Service Available' : 'Service Unavailable'}
@@ -261,7 +261,7 @@ export function EmailTestPage({ onBack }: { onBack: () => void }) {
                 >
                   {isCheckingHealth ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <CircleNotch className="w-4 h-4 animate-spin" weight="regular"/>
                       Checking...
                     </>
                   ) : (
@@ -278,7 +278,7 @@ export function EmailTestPage({ onBack }: { onBack: () => void }) {
 
               {testResults.length === 0 ? (
                 <div className="text-center py-8">
-                  <Mail className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                  <Envelope className="w-12 h-12 text-slate-600 mx-auto mb-3" weight="regular"/>
                   <p className="text-slate-400">No tests run yet</p>
                   <p className="text-xs text-slate-500 mt-1">Send a test email to see results here</p>
                 </div>
@@ -296,9 +296,9 @@ export function EmailTestPage({ onBack }: { onBack: () => void }) {
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
                           {result.success ? (
-                            <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                            <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" weight="regular"/>
                           ) : (
-                            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                            <WarningCircle className="w-5 h-5 text-red-400 flex-shrink-0" weight="regular"/>
                           )}
                           <span className={`font-semibold ${result.success ? 'text-green-400' : 'text-red-400'}`}>
                             {result.success ? 'Success' : 'Failed'}
@@ -339,7 +339,7 @@ export function EmailTestPage({ onBack }: { onBack: () => void }) {
                                 onClick={() => copyToClipboard(JSON.stringify(result.response, null, 2))}
                                 className="text-xs text-slate-400 hover:text-white transition-colors flex items-center gap-1"
                               >
-                                <Copy className="w-3 h-3" />
+                                <Copy className="w-3 h-3" weight="regular"/>
                                 Copy
                               </button>
                             </div>
@@ -361,7 +361,7 @@ export function EmailTestPage({ onBack }: { onBack: () => void }) {
 
         <div className="mt-6 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+            <WarningCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" weight="regular"/>
             <div className="text-sm text-slate-300">
               <p className="font-semibold text-blue-400 mb-1">Important Notes:</p>
               <ul className="list-disc list-inside space-y-1 text-slate-400">

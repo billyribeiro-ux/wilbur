@@ -1,7 +1,7 @@
 // ============================================================================
 // MUTED CHAT USERS MODAL - Microsoft Enterprise Standard
 // ============================================================================
-import { X } from 'lucide-react';
+import { X } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 
 interface MutedUsersModalProps {
@@ -56,7 +56,7 @@ export function MutedUsersModal({ onClose }: MutedUsersModalProps) {
             className="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white"
             aria-label="Close"
           >
-            <X className="w-6 h-6" />
+            <X className="w-6 h-6" weight="regular"/>
           </button>
         </div>
 

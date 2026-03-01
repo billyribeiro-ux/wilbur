@@ -1,5 +1,5 @@
 // src/components/PollModal.tsx
-import { BarChart3, Plus, X, Trash2, Clock, Users } from 'lucide-react';
+import { BarChart3, Plus, X, Trash, Clock, Users } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 import { createPoll } from '../services/api';
@@ -143,7 +143,7 @@ export function PollModal({ onClose }: PollModalProps) {
               className="p-1 sm:p-1.5 hover:bg-white/20 rounded-lg transition-colors touch-manipulation"
               disabled={isCreating}
             >
-              <X className="w-5 h-5 text-white" />
+              <X className="w-5 h-5 text-white" weight="regular"/>
             </button>
           </div>
         </div>
@@ -199,7 +199,7 @@ export function PollModal({ onClose }: PollModalProps) {
                         onClick={() => handleRemoveOption(index)}
                         className="flex-shrink-0 p-1.5 sm:p-2 bg-red-600/20 hover:bg-red-600/30 active:bg-red-600/40 rounded-lg text-red-400 transition-colors touch-manipulation"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash className="w-4 h-4" weight="regular"/>
                       </button>
                     )}
                   </div>
@@ -220,7 +220,7 @@ export function PollModal({ onClose }: PollModalProps) {
             {/* Duration */}
             <div>
               <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-1.5 sm:mb-2">
-                <Clock className="w-4 h-4 inline mr-1" />
+                <Clock className="w-4 h-4 inline mr-1" weight="regular"/>
                 Poll Duration
               </label>
               <select

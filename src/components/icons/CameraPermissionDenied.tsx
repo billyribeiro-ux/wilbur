@@ -2,11 +2,11 @@
 /* ORIGINAL CODE START — reason: Unused imports causing TS6133 warnings
    Date: 2025-01-21 21:00:00
 */
-// import { Video, AlertTriangle, RefreshCw, X, ExternalLink } from 'lucide-react';
+// import { Video, Warning, ArrowClockwise, X, ArrowSquareOut } from '@phosphor-icons/react';
 /* ORIGINAL CODE END */
 
 // FIX NOTE – TS6133 unused variable corrected: Comment out unused imports
-import { AlertTriangle, RefreshCw, X } from 'lucide-react';
+import { Warning, ArrowClockwise, X } from '@phosphor-icons/react';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 // const Video  = undefined; /* UNUSED IMPORT – preserved for reference */
@@ -35,7 +35,7 @@ export function CameraPermissionDeniedModal({
         <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-lg">
-              <AlertTriangle className="w-6 h-6 text-white" />
+              <Warning className="w-6 h-6 text-white" weight="regular"/>
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">Camera Access Denied</h2>
@@ -46,7 +46,7 @@ export function CameraPermissionDeniedModal({
 
         <div className="p-6 space-y-4">
           <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-            <X className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+            <X className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" weight="regular"/>
             <div className="flex-1">
               <p className="text-sm text-red-200 font-medium mb-1">Camera Access Blocked</p>
               <p className="text-xs text-red-300/90">
@@ -110,7 +110,7 @@ export function CameraPermissionDeniedModal({
               onClick={onRetry}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-lg"
             >
-              <RefreshCw className="w-5 h-5" />
+              <ArrowClockwise className="w-5 h-5" weight="regular"/>
               <span>Try Again</span>
             </button>
 

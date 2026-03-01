@@ -11,7 +11,7 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Minus, Send } from 'lucide-react';
+import { MessageSquare, X, Minus, Send } from '@phosphor-icons/react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { privateChatsApi } from '../../api/private_chats';
@@ -229,7 +229,7 @@ export function PrivateChatModal({
               className="p-1 text-slate-400 hover:text-white transition-colors"
               aria-label="Close private chat"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" weight="regular"/>
             </span>
           </div>
         </button>

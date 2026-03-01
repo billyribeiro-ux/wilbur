@@ -1,5 +1,5 @@
 // src/components/CameraPermissionRequestModal.tsx
-import { Video, Lock, CheckCircle2, XCircle } from 'lucide-react';
+import { Video, Lock, CheckCircle, XCircle } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 import { cameraPermissions } from '../../lib/cameraPermissions';
@@ -53,7 +53,7 @@ export function CameraPermissionRequestModal({
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-lg">
-              <Video className="w-6 h-6 text-white" />
+              <Video className="w-6 h-6 text-white" weight="regular"/>
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">Camera Access Required</h2>
@@ -64,7 +64,7 @@ export function CameraPermissionRequestModal({
 
         <div className="p-6 space-y-4">
           <div className="flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-            <Lock className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+            <Lock className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" weight="regular"/>
             <div className="flex-1">
               <p className="text-sm text-blue-200 font-medium mb-1">Your Privacy Matters</p>
               <p className="text-xs text-blue-300/90">
@@ -77,15 +77,15 @@ export function CameraPermissionRequestModal({
             <p className="text-sm text-slate-300 font-medium">What you'll be able to do:</p>
             <ul className="space-y-2">
               <li className="flex items-start gap-2 text-sm text-slate-400">
-                <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" weight="regular"/>
                 <span>Share your video with other participants</span>
               </li>
               <li className="flex items-start gap-2 text-sm text-slate-400">
-                <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" weight="regular"/>
                 <span>Use camera in the trading room</span>
               </li>
               <li className="flex items-start gap-2 text-sm text-slate-400">
-                <CheckCircle2 className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" weight="regular"/>
                 <span>Preview your camera in settings</span>
               </li>
             </ul>
@@ -93,7 +93,7 @@ export function CameraPermissionRequestModal({
 
           {error && (
             <div className="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-              <XCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+              <XCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" weight="regular"/>
               <p className="text-sm text-red-200">{error}</p>
             </div>
           )}

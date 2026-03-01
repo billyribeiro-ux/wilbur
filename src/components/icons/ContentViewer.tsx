@@ -1,7 +1,7 @@
 // Fixed: 2025-01-24 - Eradicated 1 null usage(s) - Microsoft TypeScript standards
 // Replaced null with undefined, removed unnecessary null checks, used optional types
 
-import { Files } from 'lucide-react';
+import { Files } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 
 import { shareStore } from '../../sharing/shareStore';
@@ -103,7 +103,7 @@ export function ContentViewer({ activeTab = 'screens', addToast }: ContentViewer
       {currentTab === 'files' && (
         <div className="flex items-center justify-center min-h-full p-4 sm:p-6 md:p-8 lg:p-12">
           <div className="text-center max-w-2xl w-full">
-            <Files className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto mb-4 sm:mb-6 text-slate-400" />
+            <Files className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto mb-4 sm:mb-6 text-slate-400" weight="regular"/>
             <h2 className="text-white font-semibold text-lg sm:text-xl md:text-2xl mb-2 sm:mb-4">
               Files
             </h2>

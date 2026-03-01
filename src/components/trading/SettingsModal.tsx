@@ -1,7 +1,7 @@
 // src/components/trading/SettingsModal.tsx
 // Microsoft Windows-Style Settings Modal - Enterprise Grade
 // ============================================================================
-import { X, Settings, Volume2, Video, Monitor, Bell, Save, Shield, RotateCcw, Check, RefreshCw } from 'lucide-react';
+import { X, Gear, SpeakerHigh, Video, Monitor, Bell, FloppyDisk, Shield, ArrowCounterClockwise, Check, ArrowClockwise } from '@phosphor-icons/react';
 import { useFluentIcons } from '../../icons/useFluentIcons';
 import { useState, useEffect, useCallback } from 'react';
 
@@ -250,7 +250,7 @@ function SettingsModalContent({ onClose, userId }: { onClose: () => void; userId
                 {(() => {
                   const I = fi?.Settings24Regular || fi?.Settings20Regular;
                   if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-5 h-5 sm:w-6 sm:h-6 text-white" />; }
-                  return <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-white" />;
+                  return <Gear className="w-5 h-5 sm:w-6 sm:h-6 text-white" weight="regular"/>;
                 })()}
               </div>
               <div>
@@ -266,7 +266,7 @@ function SettingsModalContent({ onClose, userId }: { onClose: () => void; userId
               {(() => {
                 const I = fi?.Dismiss24Regular || fi?.Dismiss20Regular;
                 if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-5 h-5 sm:w-6 sm:h-6 text-white" />; }
-                return <X className="w-5 h-5 sm:w-6 sm:h-6 text-white" />;
+                return <X className="w-5 h-5 sm:w-6 sm:h-6 text-white" weight="regular"/>;
               })()}
             </button>
           </div>
@@ -281,7 +281,7 @@ function SettingsModalContent({ onClose, userId }: { onClose: () => void; userId
                 {(() => {
                   const I = fi?.Shield24Regular || fi?.Shield20Regular;
                   if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />; }
-                  return <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />;
+                  return <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" weight="regular"/>;
                 })()}
                 <h3 className="text-base sm:text-lg font-semibold text-white">Permissions</h3>
               </div>
@@ -293,7 +293,7 @@ function SettingsModalContent({ onClose, userId }: { onClose: () => void; userId
                 {(() => {
                   const I = fi?.Speaker224Regular || fi?.Speaker220Regular || fi?.Speaker24Regular || fi?.Speaker20Regular;
                   if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />; }
-                  return <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />;
+                  return <SpeakerHigh className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" weight="regular"/>;
                 })()}
                 <h3 className="text-base sm:text-lg font-semibold text-white">Audio Settings</h3>
               </div>
@@ -358,7 +358,7 @@ function SettingsModalContent({ onClose, userId }: { onClose: () => void; userId
                 {(() => {
                   const I = fi?.Camera24Regular || fi?.Camera20Regular || fi?.Video24Regular || fi?.Video20Regular;
                   if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />; }
-                  return <Video className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />;
+                  return <Video className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" weight="regular"/>;
                 })()}
                 <h3 className="text-base sm:text-lg font-semibold text-white">Video Settings</h3>
               </div>
@@ -427,7 +427,7 @@ function SettingsModalContent({ onClose, userId }: { onClose: () => void; userId
                 {(() => {
                   const I = fi?.Alert24Regular || fi?.Alert20Regular || fi?.AlertOff24Regular || fi?.AlertOff20Regular;
                   if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />; }
-                  return <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />;
+                  return <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" weight="regular"/>;
                 })()}
                 <h3 className="text-base sm:text-lg font-semibold text-white">Notifications</h3>
               </div>
@@ -493,7 +493,7 @@ function SettingsModalContent({ onClose, userId }: { onClose: () => void; userId
                 {(() => {
                   const I = fi?.Desktop24Regular || fi?.Desktop20Regular || fi?.Display24Regular || fi?.Display20Regular;
                   if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />; }
-                  return <Monitor className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />;
+                  return <Monitor className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" weight="regular"/>;
                 })()}
                 <h3 className="text-base sm:text-lg font-semibold text-white">Display</h3>
               </div>
@@ -549,7 +549,7 @@ function SettingsModalContent({ onClose, userId }: { onClose: () => void; userId
             {(() => {
               const I = fi?.Desktop24Regular || fi?.Desktop20Regular;
               if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />; }
-              return <Monitor className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />;
+              return <Monitor className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" weight="regular"/>;
             })()}
             <h3 className="text-base sm:text-lg font-semibold text-white">Environment</h3>
           </div>
@@ -573,7 +573,7 @@ function SettingsModalContent({ onClose, userId }: { onClose: () => void; userId
         <div className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 bg-slate-900/50 border-t border-slate-700">
           {hasUnsavedChanges && (
             <div className="mb-3 px-3 py-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center gap-2">
-              <Bell className="w-4 h-4 text-yellow-500" />
+              <Bell className="w-4 h-4 text-yellow-500" weight="regular"/>
               <span className="text-xs sm:text-sm text-yellow-200">You have unsaved changes</span>
             </div>
           )}
@@ -587,7 +587,7 @@ function SettingsModalContent({ onClose, userId }: { onClose: () => void; userId
                 {(() => {
                   const I = fi?.ArrowClockwise24Regular || fi?.ArrowClockwise20Regular || fi?.ArrowSync24Regular || fi?.ArrowSync20Regular;
                   if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className={`w-4 h-4 text-white ${isRefreshing ? 'animate-spin' : ''}`} />; }
-                  return <RefreshCw className={`w-4 h-4 text-white ${isRefreshing ? 'animate-spin' : ''}`} />;
+                  return <ArrowClockwise className={`w-4 h-4 text-white ${isRefreshing ? 'animate-spin' : ''}`} weight="regular"/>;
                 })()}
                 <span className="text-white">{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
               </button>
@@ -598,7 +598,7 @@ function SettingsModalContent({ onClose, userId }: { onClose: () => void; userId
                 {(() => {
                   const I = fi?.ArrowCounterclockwise24Regular || fi?.ArrowCounterclockwise20Regular || fi?.ArrowReset24Regular || fi?.ArrowReset20Regular;
                   if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-4 h-4 text-white" />; }
-                  return <RotateCcw className="w-4 h-4 text-white" />;
+                  return <ArrowCounterClockwise className="w-4 h-4 text-white" weight="regular"/>;
                 })()}
                 <span className="text-white">Reset to Defaults</span>
               </button>
@@ -618,7 +618,7 @@ function SettingsModalContent({ onClose, userId }: { onClose: () => void; userId
                 {(() => {
                   const I = fi?.Checkmark24Regular || fi?.Checkmark20Regular;
                   if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-4 h-4 text-white" />; }
-                  return <Check className="w-4 h-4 text-white" />;
+                  return <Check className="w-4 h-4 text-white" weight="regular"/>;
                 })()}
                 <span className="text-white">Apply</span>
               </button>
@@ -629,7 +629,7 @@ function SettingsModalContent({ onClose, userId }: { onClose: () => void; userId
                 {(() => {
                   const I = fi?.Save24Regular || fi?.Save20Regular;
                   if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className="w-4 h-4 text-white" />; }
-                  return <Save className="w-4 h-4 text-white" />;
+                  return <FloppyDisk className="w-4 h-4 text-white" weight="regular"/>;
                 })()}
                 <span className="text-white">OK</span>
               </button>

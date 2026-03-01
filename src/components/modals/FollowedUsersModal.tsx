@@ -1,7 +1,7 @@
 // ============================================================================
 // FOLLOWED CHAT USERS MODAL - Microsoft Enterprise Standard
 // ============================================================================
-import { X, Edit, Trash2 } from 'lucide-react';
+import { X, PencilSimple, Trash } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 
 interface FollowedUsersModalProps {
@@ -67,7 +67,7 @@ export function FollowedUsersModal({ onClose }: FollowedUsersModalProps) {
             className="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white"
             aria-label="Close"
           >
-            <X className="w-6 h-6" />
+            <X className="w-6 h-6" weight="regular"/>
           </button>
         </div>
 
@@ -111,14 +111,14 @@ export function FollowedUsersModal({ onClose }: FollowedUsersModalProps) {
                       className="p-3 border-2 border-green-600 hover:bg-green-600 text-green-600 hover:text-white rounded-lg transition-colors"
                       aria-label="Edit"
                     >
-                      <Edit className="w-5 h-5" />
+                      <PencilSimple className="w-5 h-5" weight="regular"/>
                     </button>
                     <button
                       onClick={() => handleUnfollow(user.id)}
                       className="p-3 border-2 border-red-600 hover:bg-red-600 text-red-600 hover:text-white rounded-lg transition-colors"
                       aria-label="Unfollow"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <Trash className="w-5 h-5" weight="regular"/>
                     </button>
                   </div>
                 </div>

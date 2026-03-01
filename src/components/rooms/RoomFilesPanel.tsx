@@ -3,8 +3,7 @@
 // Integrated with Service Layer (roomFiles.ts), ThemeStore, and ToastStore
 // ══════════════════════════════════════════════════════════════════════════════
 
-import {
-// Fixed: 2025-10-24 - React component type fixes
+import { // Fixed: 2025-10-24 - React component type fixes
 // Microsoft TypeScript standards - proper ref and element types
 
 
@@ -12,16 +11,7 @@ import {
 // Microsoft TypeScript standards - corrected field references
 
 
-  FileText,
-  Files as FilesIcon,
-  Image,
-  Music,
-  Search,
-  RefreshCw,
-  Upload,
-  Download,
-  Trash2,
-} from "lucide-react";
+  FileText, Files as FilesIcon, Image, Music, Search, ArrowClockwise, Upload, Download, Trash,  } from '@phosphor-icons/react';
 import { useState, useRef, useEffect } from "react";
 
 import { useAuthStore } from "../../store/authStore";
@@ -355,7 +345,7 @@ export function RoomFilesPanel({
                 disabled={isUploading || !user}
                 className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition disabled:opacity-50"
               >
-                <Upload className="w-4 h-4" />
+                <Upload className="w-4 h-4" weight="regular"/>
                 {isUploading ? "Uploading..." : "Upload"}
               </button>
               <button
@@ -363,7 +353,7 @@ export function RoomFilesPanel({
                 disabled={isLoading}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition disabled:opacity-50"
               >
-                <RefreshCw className={`${isLoading ? "animate-spin" : ""} w-4 h-4`} />
+                <ArrowClockwise className={`${isLoading ? "animate-spin" : ""} w-4 h-4`} weight="regular"/>
                 Refresh
               </button>
               <input
@@ -379,7 +369,7 @@ export function RoomFilesPanel({
             <div className="flex-1 overflow-y-auto">
               {isLoading ? (
                 <div className="flex items-center justify-center h-full text-text-muted">
-                  <RefreshCw className="w-12 h-12 animate-spin text-text-muted" />
+                  <ArrowClockwise className="w-12 h-12 animate-spin text-text-muted" weight="regular"/>
                 </div>
               ) : filteredFiles.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-text-muted">
@@ -421,14 +411,14 @@ export function RoomFilesPanel({
                           onClick={() => handleDownload(file)}
                           className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded text-sm transition"
                         >
-                          <Download className="w-4 h-4" /> Download
+                          <Download className="w-4 h-4" weight="regular"/> Download
                         </button>
                         {user && file.user_id === user.id && (
                           <button
                             onClick={() => handleDelete(file)}
                             className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition"
                           >
-                            <Trash2 className="w-4 h-4" /> Delete
+                            <Trash className="w-4 h-4" weight="regular"/> Delete
                           </button>
                         )}
                       </div>

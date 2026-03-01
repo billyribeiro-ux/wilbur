@@ -1,7 +1,20 @@
 /** SSOT: Primary implementation. Do not duplicate. */
-import { X, Check, Loader2, Palette, Circle, Square, Save, RefreshCw, Upload, Download, RefreshCcwDot, Sun, Moon, Zap, ShieldCheck, Shield, Lock , Type, Eye, Radio } from 'lucide-react';
-import * as Icons from 'lucide-react';
+import { X, Check, CircleNotch, Palette, Circle, Square, FloppyDisk, ArrowClockwise, Upload, Download, ArrowsClockwise, Sun, Moon, Lightning, ShieldCheck, Shield, Lock, TextAa, Eye, Circle as RadioIcon, RadioButton, TrendUp, ChartBar, ChartLine, Pulse, Briefcase, Buildings, CurrencyDollar, Target } from '@phosphor-icons/react';
 import React, { useEffect, useState, useCallback, useRef, Profiler } from "react";
+
+// Icon mapping for dynamic icon selection
+const PHOSPHOR_ICONS = {
+  RadioButton,
+  TrendUp,
+  ChartBar,
+  ChartLine,
+  Pulse,
+  Briefcase,
+  Buildings,
+  CurrencyDollar,
+  Target,
+  Lightning,
+};
 // Fixed: 2025-10-24 - Database schema alignment fixes
 // Microsoft TypeScript standards - corrected field references
 
@@ -43,16 +56,16 @@ const FONT_OPTIONS = [
 ];
 
 const ICON_OPTIONS = [
-  'Radio',
-  'TrendingUp',
-  'BarChart3',
-  'LineChart',
-  'Activity',
+  'RadioButton',
+  'TrendUp',
+  'ChartBar',
+  'ChartLine',
+  'Pulse',
   'Briefcase',
-  'Building2',
-  'DollarSign',
+  'Buildings',
+  'CurrencyDollar',
   'Target',
-  'Zap',
+  'Lightning',
 ];
 
 interface AdvancedBrandingSettingsProps {
@@ -151,7 +164,7 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
    * UI INTEGRATION:
    * - Upload button: disabled={uploadingLogo}
    * - Button text: {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
-   * - Loader2 icon: <Loader2 className="animate-spin" /> when true
+   * - Loader2 icon: <CircleNotch className="animate-spin" weight="regular"/> when true
    * 
    * ROLLBACK:
    * Comment out this line if removing logo upload feature
@@ -552,7 +565,7 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-slate-800 rounded-xl p-8">
             <div className="flex items-center gap-3">
-              <Shield className="w-6 h-6 animate-pulse text-blue-500" />
+              <Shield className="w-6 h-6 animate-pulse text-blue-500" weight="regular"/>
               <span className="text-white">Verifying permissions...</span>
             </div>
           </div>
@@ -563,7 +576,7 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-slate-800 rounded-xl p-8 max-w-md">
             <div className="flex items-start gap-3">
-              <Lock className="w-6 h-6 text-red-400 mt-1" />
+              <Lock className="w-6 h-6 text-red-400 mt-1" weight="regular"/>
               <div>
                 <h3 className="text-lg font-semibold text-white mb-2">Admin Access Required</h3>
                 <p className="text-slate-300 mb-4">Only administrators can modify branding settings.</p>
@@ -600,7 +613,7 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
                 aria-label="Close advanced branding settings"
                 type="button"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5" weight="regular"/>
               </button>
             </div>
 
@@ -619,7 +632,7 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
          * STYLING:
          * - Active tab: bg-slate-700 + border-b-2 border-blue-500
          * - Inactive tabs: text-slate-400 + hover effects
-         * - Icons: Type, Eye, Radio icons from lucide-react
+         * - Icons: TextT, Eye, RadioButton icons from @phosphor-icons/react
          * 
          * INTERACTION:
          * - onPointerDown: Universal input support (mouse/touch/pen)
@@ -637,9 +650,9 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
         <div className="flex border-b border-slate-700">
           {[
             { id: 'basic', label: 'Basic', icon: Eye },
-            { id: 'colors', label: 'Colors', icon: Eye },
-            { id: 'typography', label: 'Typography', icon: Type },
-            { id: 'icons', label: 'Icons', icon: Radio },
+            { id: 'colors', label: 'Colors', icon: Palette },
+            { id: 'typography', label: 'Typography', icon: TextAa },
+            { id: 'icons', label: 'Icons', icon: RadioIcon },
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -735,12 +748,12 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
                     >
                       {uploadingLogo ? (
                         <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <CircleNotch className="w-4 h-4 animate-spin" weight="regular"/>
                           Uploading…
                         </>
                       ) : (
                         <>
-                          <Upload className="w-5 h-5" />
+                          <Upload className="w-5 h-5" weight="regular"/>
                           Upload Logo
                         </>
                       )}
@@ -1137,7 +1150,7 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
                 </label>
                 <div className="grid grid-cols-5 gap-3">
                   {ICON_OPTIONS.map((iconName) => {
-                    const IconComponent = (Icons as unknown as Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>> | undefined>)[iconName];
+                    const IconComponent = PHOSPHOR_ICONS[iconName as keyof typeof PHOSPHOR_ICONS];
                     return (
                       <button
                         key={iconName}
@@ -1172,10 +1185,7 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
                   <div className="p-3 bg-blue-600 rounded-lg">
                     {(() => {
                       const SelectedIcon =
-                        (Icons as unknown as Record<
-                          string,
-                          React.ComponentType<React.SVGProps<SVGSVGElement>> | undefined
-                        >)[formData.roomIcon] || Icons.Radio;
+                        PHOSPHOR_ICONS[formData.roomIcon as keyof typeof PHOSPHOR_ICONS] || RadioButton;
                       return SelectedIcon ? (
                         <SelectedIcon
                           style={{
@@ -1266,12 +1276,12 @@ export function AdvancedBrandingSettings({ onClose }: AdvancedBrandingSettingsPr
           >
             {saving ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <CircleNotch className="w-5 h-5 animate-spin" weight="regular"/>
                 Saving...
               </>
             ) : (
               <>
-                <Check className="w-5 h-5" />
+                <Check className="w-5 h-5" weight="regular"/>
                 Save Changes
               </>
             )}
@@ -1404,7 +1414,7 @@ export function AdvancedBrandingSettingsPhase2({ onClose: _onClose }: AdvancedBr
                   : 'border-slate-700 hover:border-blue-500 text-slate-300 hover:text-white'
               }`}
             >
-              <Palette className="w-4 h-4" />
+              <Palette className="w-4 h-4" weight="regular"/>
               {theme.name}
             </button>
           ))}
@@ -1462,14 +1472,14 @@ export function AdvancedBrandingSettingsPhase2({ onClose: _onClose }: AdvancedBr
             disabled={savingPreset}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
           >
-            <Save className="w-4 h-4" />
+            <FloppyDisk className="w-4 h-4" weight="regular"/>
             {savingPreset ? 'Saving...' : 'Save Preset'}
           </button>
           <button
             onClick={loadPresets}
             className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
           >
-            <RefreshCw className="w-4 h-4" />
+            <ArrowClockwise className="w-4 h-4" weight="regular"/>
             Refresh
           </button>
         </div>
@@ -1554,7 +1564,7 @@ export function AdvancedBrandingSettingsPhase3({ onClose: _onClose }: AdvancedBr
     { name: 'Light', value: 'light', icon: <Sun className="w-4 h-4" /> },
     { name: 'Dark', value: 'dark', icon: <Moon className="w-4 h-4" /> },
     { name: 'High Contrast', value: 'contrast', icon: <ShieldCheck className="w-4 h-4" /> },
-    { name: 'Custom', value: 'custom', icon: <Zap className="w-4 h-4" /> },
+    { name: 'Custom', value: 'custom', icon: <Lightning weight="regular" className="w-4 h-4" /> },
   ];
 
   const motionOptions = [
@@ -1724,7 +1734,7 @@ export function AdvancedBrandingSettingsPhase3({ onClose: _onClose }: AdvancedBr
                   : 'border-slate-700 hover:border-blue-500 text-slate-300 hover:text-white'
               }`}
             >
-              <Zap className="w-4 h-4" />
+              <Lightning weight="regular" className="w-4 h-4" />
               <span className="text-sm">{opt.name}</span>
               <span className="text-[11px] text-slate-400">{opt.desc}</span>
             </button>
@@ -1740,11 +1750,11 @@ export function AdvancedBrandingSettingsPhase3({ onClose: _onClose }: AdvancedBr
             onClick={handleExport}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
           >
-            <Download className="w-4 h-4" /> Export JSON
+            <Download className="w-4 h-4" weight="regular"/> Export JSON
           </button>
 
           <label className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg cursor-pointer transition-colors">
-            <Upload className="w-4 h-4" />
+            <Upload className="w-4 h-4" weight="regular"/>
             {importing ? 'Importing...' : 'Import JSON'}
             <input
               type="file"
@@ -1759,7 +1769,7 @@ export function AdvancedBrandingSettingsPhase3({ onClose: _onClose }: AdvancedBr
             onClick={handleReset}
             className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
           >
-            <RefreshCcwDot className="w-4 h-4" /> Reset Defaults
+            <ArrowsClockwise weight="regular" className="w-4 h-4" /> Reset Defaults
           </button>
         </div>
       </section>

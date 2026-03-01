@@ -1,7 +1,7 @@
 // ============================================================================
 // GET RANDOM USER MODAL - Microsoft Enterprise Standard
 // ============================================================================
-import { X } from 'lucide-react';
+import { X } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 import { useRoomStore, type RoomMember } from '../../store/roomStore';
@@ -67,7 +67,7 @@ export function GetRandomUserModal({ onClose }: GetRandomUserModalProps) {
                 className="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white"
                 aria-label="Close"
               >
-                <X className="w-6 h-6" />
+                <X className="w-6 h-6" weight="regular"/>
               </button>
             </div>
 
@@ -99,7 +99,7 @@ export function GetRandomUserModal({ onClose }: GetRandomUserModalProps) {
                 className="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white"
                 aria-label="Close"
               >
-                <X className="w-6 h-6" />
+                <X className="w-6 h-6" weight="regular"/>
               </button>
             </div>
 

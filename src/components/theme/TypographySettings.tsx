@@ -1,4 +1,4 @@
-import { Type } from 'lucide-react';
+import { TextT } from '@phosphor-icons/react';
 import { useEffect } from 'react';
 
 import { useThemeStore } from '../../store/themeStore';
@@ -79,7 +79,7 @@ export function TypographySettings() {
   return (
     <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-5 space-y-6">
       <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-        <Type className="w-5 h-5 text-blue-400" />
+        <TextT className="w-5 h-5 text-blue-400" weight="regular"/>
         Typography
       </h3>
 

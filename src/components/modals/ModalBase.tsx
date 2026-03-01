@@ -15,7 +15,7 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X } from '@phosphor-icons/react';
 import {
   useEffect,
   useRef,
@@ -320,7 +320,7 @@ export function ModalBase({
                       "
                       aria-label="Close modal"
                     >
-                      <X className="w-5 h-5" />
+                      <X className="w-5 h-5" weight="regular"/>
                     </button>
                   )}
                 </div>

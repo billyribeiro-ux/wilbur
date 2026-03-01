@@ -11,7 +11,7 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Download, ZoomIn, ZoomOut } from 'lucide-react';
+import { X, Download, ZoomIn, ZoomOut } from '@phosphor-icons/react';
 import { useEffect, useState, useCallback, useRef } from 'react';
 
 import { downloadImage } from '../../utils/imageModal';
@@ -207,7 +207,7 @@ export function ImageModal() {
                 "
                 aria-label="Close image viewer"
               >
-                <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                <X className="w-5 h-5 sm:w-6 sm:h-6" weight="regular"/>
               </button>
             </div>
 
@@ -239,7 +239,7 @@ export function ImageModal() {
                   focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
                 "
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4" weight="regular"/>
                 {isDownloading ? 'Downloading...' : 'Download'}
               </button>
             </div>

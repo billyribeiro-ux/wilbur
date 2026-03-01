@@ -7,7 +7,7 @@
  * - Safe API + Toast integration (2025-10 edition)
  */
 
-import * as Icons from 'lucide-react';
+import { Users, Palette, Plus, SignOut, DotsThreeVertical, PencilSimple, Copy, Trash } from '@phosphor-icons/react';
 import { useEffect, useState, useCallback } from 'react';
 
 import { tenantsApi } from '../../api/tenants';
@@ -24,7 +24,7 @@ import { DeleteRoomModal } from './DeleteRoomModal';
 // Microsoft TypeScript standards - corrected field references
 
 // Room icon component
-const getRoomIcon = Icons.Users;
+const getRoomIcon = Users;
 
 
 // Fixed: 2025-01-24 - Eradicated 4 null usage(s) - Microsoft TypeScript standards
@@ -176,7 +176,7 @@ export function RoomSelector({ onSelectRoom }: RoomSelectorProps) {
             onClick={() => setShowBranding(true)}
             className="flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-white/10 hover:bg-white/15 active:bg-white/20 backdrop-blur-xl border border-white/20 rounded-lg text-white text-sm sm:text-base font-medium transition-all duration-200 hover:shadow-lg hover:shadow-white/10 touch-manipulation"
           >
-            <Icons.Palette className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Palette weight="regular" className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>Theme</span>
           </button>
 
@@ -184,7 +184,7 @@ export function RoomSelector({ onSelectRoom }: RoomSelectorProps) {
             onClick={() => handleCreateRoom()}
             className="flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 active:from-blue-700 active:to-blue-600 rounded-lg text-white text-sm sm:text-base font-semibold transition-all duration-200 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105 touch-manipulation"
           >
-            <Icons.Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Plus weight="regular" className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>Create New Room</span>
           </button>
 
@@ -203,21 +203,21 @@ export function RoomSelector({ onSelectRoom }: RoomSelectorProps) {
             className="p-2.5 sm:p-3 hover:bg-white/15 active:bg-white/20 backdrop-blur-xl border border-white/20 rounded-lg text-slate-300 hover:text-white transition-all duration-200 flex items-center justify-center touch-manipulation"
             title="Sign out"
           >
-            <Icons.LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+            <SignOut weight="regular" className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {/* No Rooms */}
         {rooms.length === 0 ? (
           <div className="max-w-md mx-auto bg-white/5 backdrop-blur-xl rounded-2xl p-12 sm:p-16 text-center border border-white/10 shadow-2xl">
-            <Icons.Users className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+            <Users weight="regular" className="w-12 h-12 text-slate-500 mx-auto mb-4" />
             <h2 className="text-lg font-semibold text-white mb-2">No Rooms Available</h2>
             <p className="text-slate-400 text-sm mb-6">You don’t have access to any rooms yet.</p>
             <button
               onClick={() => handleCreateRoom()}
               className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm font-semibold transition shadow-lg"
             >
-              <Icons.Plus className="w-5 h-5" />
+              <Plus weight="regular" className="w-5 h-5" />
               <span>Create Your First Room</span>
             </button>
           </div>
@@ -325,7 +325,7 @@ export function RoomSelector({ onSelectRoom }: RoomSelectorProps) {
                       className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 hover:bg-white/10 active:bg-white/20 backdrop-blur-xl rounded-lg text-slate-400 hover:text-white transition-all duration-200 touch-manipulation"
                       title="Room options"
                     >
-                      <Icons.MoreVertical className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <DotsThreeVertical weight="regular" className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
 
                     {showMenuRoomId === room.id && (
@@ -337,14 +337,14 @@ export function RoomSelector({ onSelectRoom }: RoomSelectorProps) {
                           onClick={() => handleEditRoom(room)}
                           className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-700 text-left"
                         >
-                          <Icons.Edit className="w-4 h-4 text-blue-400" />
+                          <PencilSimple weight="regular" className="w-4 h-4 text-blue-400" />
                           <span className="text-white text-sm">Edit Room</span>
                         </button>
                         <button
                           onClick={() => handleCreateRoom(room)}
                           className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-700 text-left"
                         >
-                          <Icons.Copy className="w-4 h-4 text-green-400" />
+                          <Copy weight="regular" className="w-4 h-4 text-green-400" />
                           <span className="text-white text-sm">Clone Room</span>
                         </button>
                         <div className="border-t border-slate-700"></div>
@@ -356,7 +356,7 @@ export function RoomSelector({ onSelectRoom }: RoomSelectorProps) {
                           }}
                           className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-900/50 text-left"
                         >
-                          <Icons.Trash2 className="w-4 h-4 text-red-400" />
+                          <Trash weight="regular" className="w-4 h-4 text-red-400" />
                           <span className="text-red-200 text-sm">Delete Room</span>
                         </button>
                       </div>

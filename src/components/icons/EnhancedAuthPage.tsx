@@ -5,7 +5,7 @@
  * Presentation logic only - business logic lives in use cases.
  */
 
-import { LogIn, Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
+import { SignIn, Envelope, Lock, Eye, EyeSlash, User } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 
 import {
@@ -283,7 +283,7 @@ export function EnhancedAuthPage() {
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
-              <LogIn className="w-8 h-8 text-white" />
+              <SignIn className="w-8 h-8 text-white" weight="regular"/>
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">Trading Room</h1>
             <p className="text-slate-300">Professional live trading platform</p>
@@ -299,7 +299,7 @@ export function EnhancedAuthPage() {
                         Email Address
                       </label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <Envelope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                         <input
                           id="password-login-email"
                           name="password-login-email"
@@ -320,7 +320,7 @@ export function EnhancedAuthPage() {
                         Password
                       </label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                         <input
                           type={showPassword ? 'text' : 'password'}
                           value={password}
@@ -335,7 +335,7 @@ export function EnhancedAuthPage() {
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
                         >
-                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          {showPassword ? <EyeSlash className="w-5 h-5" weight="regular"/> : <Eye className="w-5 h-5" weight="regular"/>}
                         </button>
                       </div>
                     </div>
@@ -382,7 +382,7 @@ export function EnhancedAuthPage() {
                         Email Address
                       </label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <Envelope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                         <input
                           id="pin-request-email"
                           name="pin-request-email"
@@ -428,7 +428,7 @@ export function EnhancedAuthPage() {
                         Enter PIN from Email
                       </label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                         <input
                           id="pin-code"
                           name="pin-code"
@@ -549,7 +549,7 @@ export function EnhancedAuthPage() {
                   Display Name
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                   <input
                     type="text"
                     value={displayName}
@@ -568,7 +568,7 @@ export function EnhancedAuthPage() {
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Envelope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                   <input
                     type="email"
                     value={email}
@@ -586,7 +586,7 @@ export function EnhancedAuthPage() {
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
@@ -601,7 +601,7 @@ export function EnhancedAuthPage() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? <EyeSlash className="w-5 h-5" weight="regular"/> : <Eye className="w-5 h-5" weight="regular"/>}
                   </button>
                 </div>
                 <p className="text-xs text-slate-400 mt-1">
@@ -614,7 +614,7 @@ export function EnhancedAuthPage() {
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
@@ -629,7 +629,7 @@ export function EnhancedAuthPage() {
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
                   >
-                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showConfirmPassword ? <EyeSlash className="w-5 h-5" weight="regular"/> : <Eye className="w-5 h-5" weight="regular"/>}
                   </button>
                 </div>
               </div>
@@ -672,7 +672,7 @@ export function EnhancedAuthPage() {
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Envelope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                   <input
                     type="email"
                     value={email}

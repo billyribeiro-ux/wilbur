@@ -16,7 +16,7 @@ import {
   faComments
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { GripVertical } from 'lucide-react';
+import { DotsNine } from '@phosphor-icons/react';
 
 import type { Database } from '../../types/database.types';
 import { MessageType, UserRoleType } from './constants';
@@ -181,7 +181,7 @@ export function ChatMessage({
               aria-expanded={isMenuOpen}
               data-message-menu
             >
-              <GripVertical className="w-4 h-4 sm:w-5 sm:h-5" />
+              <DotsNine className="w-4 h-4 sm:w-5 sm:h-5" weight="regular"/>
             </button>
             
             {isMenuOpen && (

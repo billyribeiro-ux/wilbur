@@ -6,7 +6,7 @@
  * - Includes ESC key handling, error display, and disable guards
  */
 
-import { AlertTriangle, Trash2, X } from 'lucide-react';
+import { Warning, Trash, X } from '@phosphor-icons/react';
 import { useState, useEffect, useCallback } from 'react';
 // Fixed: 2025-10-24 - Emergency null/undefined fixes for production
 // Microsoft TypeScript standards applied - null → undefined, using optional types
@@ -62,7 +62,7 @@ export function DeleteRoomModal({ roomTitle, onConfirm, onCancel }: DeleteRoomMo
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
               <div className="p-1.5 sm:p-2 bg-white/20 rounded-lg">
-                <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                <Warning className="w-5 h-5 sm:w-6 sm:h-6 text-white" weight="regular"/>
               </div>
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-white">Delete Room</h2>
@@ -75,7 +75,7 @@ export function DeleteRoomModal({ roomTitle, onConfirm, onCancel }: DeleteRoomMo
               className="p-1.5 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50 touch-manipulation"
               aria-label="Close modal"
             >
-              <X className="w-5 h-5 text-white" />
+              <X className="w-5 h-5 text-white" weight="regular"/>
             </button>
           </div>
         </div>
@@ -90,7 +90,7 @@ export function DeleteRoomModal({ roomTitle, onConfirm, onCancel }: DeleteRoomMo
 
           <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <Trash2 className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+              <Trash className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" weight="regular"/>
               <div>
                 <p className="text-sm text-red-200 font-medium mb-1">
                   You are about to permanently delete:
@@ -158,7 +158,7 @@ export function DeleteRoomModal({ roomTitle, onConfirm, onCancel }: DeleteRoomMo
                 </>
               ) : (
                 <>
-                  <Trash2 className="w-4 h-4" />
+                  <Trash className="w-4 h-4" weight="regular"/>
                   <span>Delete Room</span>
                 </>
               )}

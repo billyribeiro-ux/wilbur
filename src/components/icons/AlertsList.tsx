@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { memo, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { GripVertical } from 'lucide-react';
+import { DotsNine } from '@phosphor-icons/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faVolumeMute, faBan, faSignOutAlt, faFlag, faAt, faUser, faComments, faBullhorn } from '@fortawesome/free-solid-svg-icons';
 import * as Icons from '@fluentui/react-icons';
@@ -145,7 +145,7 @@ function AlertsListBase({
                   {(() => {
                     const I = fi?.ReOrderDotsVertical24Regular || fi?.ReOrderDotsVertical20Regular || fi?.MoreVertical24Regular || fi?.MoreVertical20Regular;
                     if (I) { return <I className="w-5 h-5" />; }
-                    return <GripVertical className="w-5 h-5" />;
+                    return <DotsNine className="w-5 h-5" weight="regular"/>;
                   })()}
                 </button>
               </div>

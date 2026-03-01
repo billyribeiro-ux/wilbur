@@ -10,7 +10,7 @@
  * @updated 2026-01-24
  */
 
-import { AlertTriangle } from 'lucide-react';
+import { Warning } from '@phosphor-icons/react';
 
 import { ModalBase } from './ModalBase';
 
@@ -84,7 +84,7 @@ export function DeleteConfirmDialog({
         <div className="flex items-start gap-4">
           {/* Warning Icon */}
           <div className="flex-shrink-0 w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
-            <AlertTriangle className="w-6 h-6 text-red-400" />
+            <Warning className="w-6 h-6 text-red-400" weight="regular"/>
           </div>
 
           {/* Content */}

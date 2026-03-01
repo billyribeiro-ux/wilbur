@@ -1,4 +1,4 @@
-import { Eye, Sun, Moon, Palette } from 'lucide-react';
+import { Eye, Sun, Moon, Palette } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 import { useThemeStore } from '../store/themeStore';
@@ -46,7 +46,7 @@ export function ThemeSwitcher() {
         className="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all hover:scale-110"
         title="Theme Switcher"
       >
-        <Eye className="w-5 h-5" />
+        <Eye className="w-5 h-5" weight="regular"/>
       </button>
 
       {/* Palette Panel */}
@@ -58,7 +58,7 @@ export function ThemeSwitcher() {
           />
           <div className="absolute bottom-16 right-0 bg-slate-800 rounded-lg shadow-xl border border-slate-700 p-4 w-64 z-50 animate-in fade-in slide-in-from-bottom-4">
             <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-              <Palette className="w-4 h-4" />
+              <Palette className="w-4 h-4" weight="regular"/>
               Color Themes
             </h3>
             <div className="grid grid-cols-2 gap-2">

@@ -1,4 +1,4 @@
-import { Upload, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Upload, CircleNotch, Image as ImageIcon } from '@phosphor-icons/react';
 import { useState, useRef } from 'react';
 
 import { UPLOAD_CONFIG, LIMITS, STORAGE_BUCKETS } from '../../config/constants';
@@ -163,12 +163,12 @@ export function BrandingSettings() {
         >
           {uploadingLogo ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <CircleNotch className="w-4 h-4 animate-spin" weight="regular"/>
               Uploading...
             </>
           ) : (
             <>
-              <Upload className="w-4 h-4" />
+              <Upload className="w-4 h-4" weight="regular"/>
               {logoUrl ? 'Replace Logo' : 'Upload Logo'}
             </>
           )}

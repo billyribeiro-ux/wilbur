@@ -1,4 +1,4 @@
-import { Upload, Check, User } from 'lucide-react';
+import { Upload, Check, User } from '@phosphor-icons/react';
 import { useState, useRef } from 'react';
 
 import { usersApi } from '../../api/users';
@@ -100,7 +100,7 @@ export function AvatarSelector({ currentAvatarUrl, onAvatarChange }: AvatarSelec
             disabled={uploading}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
           >
-            <Upload className="w-4 h-4" />
+            <Upload className="w-4 h-4" weight="regular"/>
             <span className="text-sm font-medium">
               {uploading ? 'Uploading...' : 'Upload Image'}
             </span>
@@ -141,7 +141,7 @@ export function AvatarSelector({ currentAvatarUrl, onAvatarChange }: AvatarSelec
               {isPresetSelected(avatarUrl) && (
                 <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
                   <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-                    <Check className="w-5 h-5 text-white" />
+                    <Check className="w-5 h-5 text-white" weight="regular"/>
                   </div>
                 </div>
               )}
@@ -158,7 +158,7 @@ export function AvatarSelector({ currentAvatarUrl, onAvatarChange }: AvatarSelec
               Automatically synced from gravatar.com
             </p>
           </div>
-          <User className="w-8 h-8 text-slate-400" />
+          <User className="w-8 h-8 text-slate-400" weight="regular"/>
         </div>
         <p className="text-xs text-slate-500 mt-2">
           Your Gravatar is based on your email address. To change it, visit{' '}

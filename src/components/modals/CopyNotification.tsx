@@ -11,7 +11,7 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Clipboard } from 'lucide-react';
+import { Check, Clipboard } from '@phosphor-icons/react';
 
 // ============================================================================
 // TYPES
@@ -89,7 +89,7 @@ export function CopyNotification({
             ">
               <div className="relative">
                 <Clipboard className="w-5 h-5 text-white" />
-                <Check className="w-3 h-3 text-white absolute -bottom-0.5 -right-0.5" />
+                <Check className="w-3 h-3 text-white absolute -bottom-0.5 -right-0.5" weight="regular"/>
               </div>
             </div>
 

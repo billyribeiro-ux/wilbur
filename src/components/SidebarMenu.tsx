@@ -6,20 +6,7 @@
  * Purpose: Extracted from BrandHeader for easier maintenance and development
  */
 
-import {
-  Archive,
-  ArrowUpDown,
-  CheckCircle2,
-  ChevronDown,
-  MoreVertical,
-  Search,
-  Settings as SettingsIcon,
-  Shuffle,
-  Star,
-  Users,
-  VolumeX,
-  Wifi,
-} from 'lucide-react';
+import { Archive, ArrowUpDown, CheckCircle, CaretDown, MoreVertical, Search, Gear as SettingsIcon, Shuffle, Star, Users, VolumeX, Wifi,  } from '@phosphor-icons/react';
 import { useEffect, useRef } from 'react';
 
 // ============================================================================
@@ -159,7 +146,7 @@ export function SidebarMenu({
         </div>
         <div className="flex items-center gap-2 text-xs text-slate-300">
           <span>Chat</span>
-          <CheckCircle2 className="w-3 h-3 text-green-500" />
+          <CheckCircle className="w-3 h-3 text-green-500" weight="regular"/>
         </div>
       </div>
 
@@ -197,7 +184,7 @@ export function SidebarMenu({
             <Archive className="w-4 h-4 text-slate-400" />
             <span className="text-slate-200">Archives</span>
           </div>
-          <ChevronDown className="w-3 h-3 text-slate-400" />
+          <CaretDown className="w-3 h-3 text-slate-400" weight="regular"/>
         </button>
 
         {/* Manage Muted Users */}
@@ -261,7 +248,7 @@ export function SidebarMenu({
               className="p-1.5 hover:bg-slate-600 rounded transition-colors"
               aria-label="Online status"
             >
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
+              <CheckCircle className="w-4 h-4 text-green-500" weight="regular"/>
             </button>
             <button
               className="p-1.5 hover:bg-slate-600 rounded transition-colors"

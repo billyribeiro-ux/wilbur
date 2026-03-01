@@ -1,4 +1,4 @@
-import { Upload, Play, Trash2 } from 'lucide-react';
+import { Upload, Play, Trash } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 import { storageApi } from '../../api/storage';
@@ -155,7 +155,7 @@ export function CustomSoundUpload() {
                 ? 'bg-slate-600 cursor-not-allowed'
                 : 'bg-blue-600 hover:bg-blue-700'
             }`}>
-              <Upload className="w-5 h-5 text-white" />
+              <Upload className="w-5 h-5 text-white" weight="regular"/>
               <span className="text-white font-medium">
                 {uploading ? 'Uploading...' : 'Upload Sound File'}
               </span>
@@ -181,14 +181,14 @@ export function CustomSoundUpload() {
                     className="p-2 bg-slate-600 hover:bg-slate-500 rounded text-white transition-colors"
                     title="Preview"
                   >
-                    <Play className="w-4 h-4" />
+                    <Play className="w-4 h-4" weight="regular"/>
                   </button>
                   <button
                     onClick={() => handleDelete(sound.id, sound.file_url)}
                     className="p-2 bg-red-600 hover:bg-red-700 rounded text-white transition-colors"
                     title="Delete"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash className="w-4 h-4" weight="regular"/>
                   </button>
                 </div>
               </div>

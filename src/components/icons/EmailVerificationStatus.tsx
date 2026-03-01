@@ -1,4 +1,4 @@
-import { Mail, CheckCircle, XCircle, Clock, RefreshCw } from 'lucide-react';
+import { Envelope, CheckCircle, XCircle, Clock, ArrowClockwise } from '@phosphor-icons/react';
 import { useState, useEffect } from 'react';
 
 import { resendVerificationEmail } from '../../lib/auth';
@@ -46,7 +46,7 @@ export function EmailVerificationStatus({ email, onBack }: EmailVerificationStat
       <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500/20 rounded-full mb-4">
-            <Mail className="w-8 h-8 text-blue-400" />
+            <Envelope className="w-8 h-8 text-blue-400" weight="regular"/>
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Check Your Email</h1>
           <p className="text-slate-300">We've sent a verification link to</p>
@@ -56,7 +56,7 @@ export function EmailVerificationStatus({ email, onBack }: EmailVerificationStat
         <div className="space-y-4 mb-8">
           <div className="bg-white/5 rounded-lg p-4">
             <div className="flex items-start space-x-3">
-              <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" weight="regular"/>
               <div>
                 <p className="text-white font-medium">Check your inbox</p>
                 <p className="text-sm text-slate-400 mt-1">
@@ -68,7 +68,7 @@ export function EmailVerificationStatus({ email, onBack }: EmailVerificationStat
 
           <div className="bg-white/5 rounded-lg p-4">
             <div className="flex items-start space-x-3">
-              <Clock className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+              <Clock className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" weight="regular"/>
               <div>
                 <p className="text-white font-medium">Check your spam folder</p>
                 <p className="text-sm text-slate-400 mt-1">
@@ -80,7 +80,7 @@ export function EmailVerificationStatus({ email, onBack }: EmailVerificationStat
 
           <div className="bg-white/5 rounded-lg p-4">
             <div className="flex items-start space-x-3">
-              <RefreshCw className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+              <ArrowClockwise className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" weight="regular"/>
               <div>
                 <p className="text-white font-medium">Didn't receive it?</p>
                 <p className="text-sm text-slate-400 mt-1">
@@ -99,17 +99,17 @@ export function EmailVerificationStatus({ email, onBack }: EmailVerificationStat
           >
             {loading ? (
               <>
-                <RefreshCw className="w-5 h-5 animate-spin" />
+                <ArrowClockwise className="w-5 h-5 animate-spin" weight="regular"/>
                 <span>Sending...</span>
               </>
             ) : countdown > 0 ? (
               <>
-                <Clock className="w-5 h-5" />
+                <Clock className="w-5 h-5" weight="regular"/>
                 <span>Resend in {countdown}s</span>
               </>
             ) : (
               <>
-                <Mail className="w-5 h-5" />
+                <Envelope className="w-5 h-5" weight="regular"/>
                 <span>Resend Verification Email</span>
               </>
             )}
@@ -125,7 +125,7 @@ export function EmailVerificationStatus({ email, onBack }: EmailVerificationStat
 
         <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
           <div className="flex items-start space-x-3">
-            <XCircle className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+            <XCircle className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" weight="regular"/>
             <div className="text-sm">
               <p className="text-yellow-200 font-medium">Still having issues?</p>
               <p className="text-yellow-300/80 mt-1">

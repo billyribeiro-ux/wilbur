@@ -1,4 +1,4 @@
-import { Trash2, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Trash, Warning, CheckCircle, XCircle } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 import type { UserCount } from '../../utils/deleteAllUsers';
@@ -64,7 +64,7 @@ export function AdminDeleteUsers() {
     <div className="fixed top-4 right-4 z-50">
       <div className="bg-red-900/90 backdrop-blur-sm border-2 border-red-500 rounded-lg p-4 shadow-lg max-w-md">
         <div className="flex items-center gap-2 mb-4">
-          <AlertTriangle className="text-red-400" size={24} />
+          <Warning className="text-red-400" size={24} weight="regular"/>
           <h3 className="text-lg font-bold text-red-100">Admin: Delete All Users</h3>
         </div>
 
@@ -94,7 +94,7 @@ export function AdminDeleteUsers() {
               disabled={isDeleting}
               className="w-full px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded transition-colors font-semibold flex items-center justify-center gap-2"
             >
-              <Trash2 size={16} />
+              <Trash size={16} weight="regular"/>
               Delete All Users
             </button>
           </div>
@@ -164,9 +164,9 @@ export function AdminDeleteUsers() {
             }`}>
               <div className="flex items-center gap-2 mb-2">
                 {result.success ? (
-                  <CheckCircle className="text-green-400" size={20} />
+                  <CheckCircle className="text-green-400" size={20} weight="regular"/>
                 ) : (
-                  <XCircle className="text-yellow-400" size={20} />
+                  <XCircle className="text-yellow-400" size={20} weight="regular"/>
                 )}
                 <h4 className="font-semibold text-white">
                   {result.success ? 'Deletion Complete' : 'Deletion Completed with Warnings'}
