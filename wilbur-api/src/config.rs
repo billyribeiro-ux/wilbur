@@ -12,6 +12,7 @@ pub struct AppConfig {
     pub jwt_refresh_token_expiry_secs: i64,
 
     // Server
+    #[allow(dead_code)]
     pub host: String,
     pub port: u16,
     pub allowed_origins: Vec<String>,
@@ -35,6 +36,7 @@ pub struct AppConfig {
 
     // OAuth — Spotify
     pub spotify_client_id: String,
+    #[allow(dead_code)]
     pub spotify_client_secret: String,
 }
 

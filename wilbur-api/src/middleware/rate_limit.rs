@@ -1,8 +1,7 @@
-use std::net::IpAddr;
 use std::sync::Arc;
 
 use axum::{
-    extract::{ConnectInfo, Request, State},
+    extract::{Request, State},
     http::StatusCode,
     middleware::Next,
     response::{IntoResponse, Response},

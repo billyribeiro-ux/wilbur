@@ -9,6 +9,7 @@ use uuid::Uuid;
 use crate::config::AppConfig;
 use crate::extractors::auth::Claims;
 
+#[allow(dead_code)]
 /// Hash a password using Argon2id.
 pub fn hash_password(password: &str) -> Result<String, String> {
     let salt = SaltString::generate(&mut OsRng);
@@ -19,6 +20,7 @@ pub fn hash_password(password: &str) -> Result<String, String> {
         .map_err(|e| format!("Failed to hash password: {e}"))
 }
 
+#[allow(dead_code)]
 /// Verify a password against a stored hash.
 pub fn verify_password(password: &str, hash: &str) -> Result<bool, String> {
     let parsed_hash = PasswordHash::new(hash).map_err(|e| format!("Invalid password hash: {e}"))?;
@@ -27,6 +29,7 @@ pub fn verify_password(password: &str, hash: &str) -> Result<bool, String> {
         .is_ok())
 }
 
+#[allow(dead_code)]
 /// Generate a JWT access token.
 pub fn generate_access_token(
     config: &AppConfig,
@@ -51,6 +54,7 @@ pub fn generate_access_token(
     .map_err(|e| format!("Failed to generate token: {e}"))
 }
 
+#[allow(dead_code)]
 /// Generate a random refresh token.
 pub fn generate_refresh_token() -> String {
     use base64::Engine;
@@ -59,6 +63,7 @@ pub fn generate_refresh_token() -> String {
     base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(bytes)
 }
 
+#[allow(dead_code)]
 /// Hash a refresh token for storage (never store plaintext).
 pub fn hash_refresh_token(token: &str) -> String {
     use std::collections::hash_map::DefaultHasher;

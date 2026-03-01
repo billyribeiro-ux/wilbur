@@ -6,7 +6,7 @@ use axum::{
     routing::{delete, get, post, put},
     Router,
 };
-use serde_json::{json, Value};
+use serde_json::Value;
 use uuid::Uuid;
 use validator::Validate;
 

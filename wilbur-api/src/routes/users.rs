@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use axum::{
     extract::{Json, Multipart, Path, Query, State},
-    http::StatusCode,
     routing::{get, put},
     Router,
 };

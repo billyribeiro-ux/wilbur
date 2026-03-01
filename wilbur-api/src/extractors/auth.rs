@@ -59,6 +59,7 @@ impl FromRequestParts<Arc<AppState>> for AuthUser {
 }
 
 /// Optional authentication — does not reject if no token is present.
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct OptionalAuth(pub Option<AuthUser>);
 

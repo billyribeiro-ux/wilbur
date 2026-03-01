@@ -6,7 +6,7 @@ use axum::{
     routing::{delete, get, post},
     Router,
 };
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::{json, Value};
 
 use crate::{
@@ -66,7 +66,7 @@ async fn get_provider_config(
 
 /// GET /{provider}/connect -- initiate an OAuth connection (returns redirect URL).
 async fn connect_provider(
-    State(state): State<Arc<AppState>>,
+    State(_state): State<Arc<AppState>>,
     _auth_user: AuthUser,
     Path(provider): Path<String>,
     Query(params): Query<ConnectQuery>,
@@ -85,10 +85,10 @@ async fn connect_provider(
 
 /// POST /{provider}/exchange -- exchange an authorization code for tokens.
 async fn exchange_token(
-    State(state): State<Arc<AppState>>,
+    State(_state): State<Arc<AppState>>,
     auth_user: AuthUser,
     Path(provider): Path<String>,
-    Json(body): Json<ExchangeRequest>,
+    Json(_body): Json<ExchangeRequest>,
 ) -> AppResult<Json<Value>> {
     validate_provider(&provider)?;
 
@@ -102,7 +102,7 @@ async fn exchange_token(
 
 /// POST /{provider}/refresh -- refresh the provider's access token.
 async fn refresh_token(
-    State(state): State<Arc<AppState>>,
+    State(_state): State<Arc<AppState>>,
     auth_user: AuthUser,
     Path(provider): Path<String>,
 ) -> AppResult<Json<Value>> {
@@ -118,8 +118,8 @@ async fn refresh_token(
 
 /// DELETE /{provider}/disconnect -- disconnect a provider integration.
 async fn disconnect_provider(
-    State(state): State<Arc<AppState>>,
-    auth_user: AuthUser,
+    State(_state): State<Arc<AppState>>,
+    _auth_user: AuthUser,
     Path(provider): Path<String>,
 ) -> AppResult<StatusCode> {
     validate_provider(&provider)?;
