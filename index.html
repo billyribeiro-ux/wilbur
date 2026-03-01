@@ -75,7 +75,6 @@
          🚀 Preconnects & DNS Prefetch
          ========================================================== -->
     <link rel="preconnect" href="https://ngknerhbcrcwjlxquzsf.supabase.co" crossorigin />
-    <link rel="preconnect" href="https://sdk.scdn.co" crossorigin />
     <link rel="dns-prefetch" href="https://api.spotify.com" />
     <link rel="dns-prefetch" href="https://livekit.cloud" />
 
@@ -85,98 +84,10 @@
          ========================================================== -->
 
     <!-- ==========================================================
-         🔧 DEPRECATION FIX: Suppress unload warning from Spotify SDK jQuery
+         🎧 Spotify Web Playback SDK
+         NOTE: SDK removed from global scope. Load dynamically when needed to prevent
+         deprecated 'unload' event jQuery listener from affecting every page load.
          ========================================================== -->
-    <script>
-      (function() {
-        // Patch console.warn to filter out the specific unload deprecation
-        const originalWarn = console.warn;
-        console.warn = function(...args) {
-          const message = args.join(' ');
-          if (message.includes('unload') && message.includes('deprecated')) {
-            // Silently drop the jQuery unload deprecation warning
-            return;
-          }
-          return originalWarn.apply(console, args);
-        };
-        
-        // Also try to intercept addEventListener as backup
-        const originalAddEventListener = window.addEventListener;
-        window.addEventListener = function(type, listener, options) {
-          if (type === 'unload') {
-            console.log('[Deprecation Patch] Redirecting unload → pagehide');
-            return originalAddEventListener.call(this, 'pagehide', listener, options);
-          }
-          return originalAddEventListener.call(this, type, listener, options);
-        };
-        
-        window.__unloadPatchApplied = true;
-      })();
-    </script>
-
-    <!-- ==========================================================
-         🎧 Spotify Web Playback SDK Loader (Async + Safe)
-         ========================================================== -->
-    <script>
-      window.__spotifySDK = { loading: false, loaded: false, error: null, startTime: null };
-
-      window.onSpotifyWebPlaybackSDKReady = function () {
-        console.log('✅ [SDK] Spotify Web Playback SDK Ready');
-        window.__spotifySDK.loaded = true;
-        window.__spotifySDK.loading = false;
-        window.__spotifySDK.loadTime = Date.now() - window.__spotifySDK.startTime;
-        window.dispatchEvent(new CustomEvent('spotify-sdk-ready'));
-      };
-
-      (function () {
-        var isWebContainer =
-          window.location.hostname.includes('stackblitz') ||
-          window.location.hostname.includes('webcontainer') ||
-          window.location.hostname.includes('bolt.new');
-
-        if (isWebContainer) {
-          console.warn('⚠️ [SDK] WebContainer environment detected — Spotify SDK may be restricted');
-          window.__spotifySDK.environment = 'webcontainer';
-        }
-
-        window.__spotifySDK.loading = true;
-        window.__spotifySDK.startTime = Date.now();
-
-        var script = document.createElement('script');
-        script.id = 'spotify-sdk';
-        script.src = 'https://sdk.scdn.co/spotify-player.js';
-        script.async = true;
-        script.defer = true;
-
-        script.onerror = function (e) {
-          console.error('❌ [SDK] Failed to load Spotify SDK script:', e);
-          window.__spotifySDK.loading = false;
-          window.__spotifySDK.error = 'Script load failed';
-          window.dispatchEvent(
-            new CustomEvent('spotify-sdk-error', {
-              detail: { error: 'Script load failed', type: 'network' },
-            })
-          );
-        };
-
-        script.onload = function () {
-          console.log('📦 [SDK] Spotify SDK script loaded, awaiting initialization...');
-          setTimeout(function () {
-            if (!window.__spotifySDK.loaded) {
-              console.error('❌ [SDK] Loaded but never initialized');
-              window.__spotifySDK.error = 'Initialization timeout';
-              window.dispatchEvent(
-                new CustomEvent('spotify-sdk-error', {
-                  detail: { error: 'Initialization timeout', type: 'timeout' },
-                })
-              );
-            }
-          }, 15000);
-        };
-
-        document.head.appendChild(script);
-      })();
-    </script>
 
     <!-- ==========================================================
          🎨 Inline Critical CSS - Prevents FOUC
