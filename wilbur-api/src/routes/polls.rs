@@ -105,14 +105,13 @@ async fn delete_poll(
     auth_user: AuthUser,
     Path((room_id, id)): Path<(Uuid, Uuid)>,
 ) -> AppResult<StatusCode> {
-    let result = sqlx::query(
-        "DELETE FROM polls WHERE id = $1 AND room_id = $2 AND creator_id = $3",
-    )
-    .bind(id)
-    .bind(room_id)
-    .bind(auth_user.id)
-    .execute(&state.pool)
-    .await?;
+    let result =
+        sqlx::query("DELETE FROM polls WHERE id = $1 AND room_id = $2 AND creator_id = $3")
+            .bind(id)
+            .bind(room_id)
+            .bind(auth_user.id)
+            .execute(&state.pool)
+            .await?;
 
     if result.rows_affected() == 0 {
         return Err(AppError::NotFound(

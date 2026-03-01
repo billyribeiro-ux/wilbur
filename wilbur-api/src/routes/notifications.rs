@@ -59,13 +59,12 @@ async fn mark_read(
     auth_user: AuthUser,
     Path(id): Path<Uuid>,
 ) -> AppResult<Json<Value>> {
-    let result = sqlx::query(
-        "UPDATE notifications SET is_read = true WHERE id = $1 AND user_id = $2",
-    )
-    .bind(id)
-    .bind(auth_user.id)
-    .execute(&state.pool)
-    .await?;
+    let result =
+        sqlx::query("UPDATE notifications SET is_read = true WHERE id = $1 AND user_id = $2")
+            .bind(id)
+            .bind(auth_user.id)
+            .execute(&state.pool)
+            .await?;
 
     if result.rows_affected() == 0 {
         return Err(AppError::NotFound("Notification not found".into()));
@@ -84,13 +83,11 @@ async fn delete_notification(
     auth_user: AuthUser,
     Path(id): Path<Uuid>,
 ) -> AppResult<StatusCode> {
-    let result = sqlx::query(
-        "DELETE FROM notifications WHERE id = $1 AND user_id = $2",
-    )
-    .bind(id)
-    .bind(auth_user.id)
-    .execute(&state.pool)
-    .await?;
+    let result = sqlx::query("DELETE FROM notifications WHERE id = $1 AND user_id = $2")
+        .bind(id)
+        .bind(auth_user.id)
+        .execute(&state.pool)
+        .await?;
 
     if result.rows_affected() == 0 {
         return Err(AppError::NotFound("Notification not found".into()));

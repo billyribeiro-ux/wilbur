@@ -17,8 +17,8 @@ use crate::{
         room_access::{require_room_member, require_room_moderator},
     },
     models::moderation::{
-        BannedUser, BannedUserResponse, ModerationLog, ModerationLogResponse,
-        ReportedContent, ReportedContentResponse,
+        BannedUser, BannedUserResponse, ModerationLog, ModerationLogResponse, ReportedContent,
+        ReportedContentResponse,
     },
     state::AppState,
 };
@@ -83,9 +83,9 @@ async fn ban_user(
 
     let mut tx = state.pool.begin().await?;
 
-    let expires_at = body.duration_secs.map(|secs| {
-        chrono::Utc::now() + chrono::Duration::seconds(secs)
-    });
+    let expires_at = body
+        .duration_secs
+        .map(|secs| chrono::Utc::now() + chrono::Duration::seconds(secs));
 
     // Insert into banned_users
     let ban = sqlx::query_as::<_, BannedUser>(
@@ -155,13 +155,11 @@ async fn unban_user(
     let mut tx = state.pool.begin().await?;
 
     // Delete from banned_users
-    let result = sqlx::query(
-        "DELETE FROM banned_users WHERE user_id = $1 AND room_id = $2",
-    )
-    .bind(body.user_id)
-    .bind(body.room_id)
-    .execute(&mut *tx)
-    .await?;
+    let result = sqlx::query("DELETE FROM banned_users WHERE user_id = $1 AND room_id = $2")
+        .bind(body.user_id)
+        .bind(body.room_id)
+        .execute(&mut *tx)
+        .await?;
 
     if result.rows_affected() == 0 {
         return Err(AppError::NotFound("User is not banned in this room".into()));
@@ -213,16 +211,16 @@ async fn kick_user(
     let mut tx = state.pool.begin().await?;
 
     // Delete from room_memberships
-    let result = sqlx::query(
-        "DELETE FROM room_memberships WHERE user_id = $1 AND room_id = $2",
-    )
-    .bind(body.user_id)
-    .bind(body.room_id)
-    .execute(&mut *tx)
-    .await?;
+    let result = sqlx::query("DELETE FROM room_memberships WHERE user_id = $1 AND room_id = $2")
+        .bind(body.user_id)
+        .bind(body.room_id)
+        .execute(&mut *tx)
+        .await?;
 
     if result.rows_affected() == 0 {
-        return Err(AppError::NotFound("User is not a member of this room".into()));
+        return Err(AppError::NotFound(
+            "User is not a member of this room".into(),
+        ));
     }
 
     // Insert into moderation_log
@@ -308,8 +306,10 @@ async fn get_moderation_log(
     .fetch_all(&state.pool)
     .await?;
 
-    let data: Vec<ModerationLogResponse> =
-        entries.into_iter().map(ModerationLogResponse::from).collect();
+    let data: Vec<ModerationLogResponse> = entries
+        .into_iter()
+        .map(ModerationLogResponse::from)
+        .collect();
 
     Ok(Json(json!({
         "room_id": room_id,
@@ -391,7 +391,9 @@ async fn resolve_report(
 ) -> AppResult<Json<Value>> {
     // Only admin can resolve reports
     if auth_user.role != "admin" {
-        return Err(AppError::Forbidden("Only admins can resolve reports".into()));
+        return Err(AppError::Forbidden(
+            "Only admins can resolve reports".into(),
+        ));
     }
 
     let status_str = body

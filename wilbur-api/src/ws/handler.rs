@@ -99,7 +99,11 @@ async fn handle_client_message(
             // Authorization: notification channels require matching user
             if let Some(uid) = parsed.user_id() {
                 if uid != user_id {
-                    send_error(tx, "Cannot subscribe to another user's notifications", "FORBIDDEN");
+                    send_error(
+                        tx,
+                        "Cannot subscribe to another user's notifications",
+                        "FORBIDDEN",
+                    );
                     return;
                 }
             }
@@ -130,7 +134,11 @@ async fn handle_client_message(
         }
 
         ClientMessage::Presence { channel, status } => {
-            let event = if status == "typing" { "typing" } else { "status" };
+            let event = if status == "typing" {
+                "typing"
+            } else {
+                "status"
+            };
             let msg = ServerMessage::Presence {
                 channel: channel.clone(),
                 event: event.to_string(),

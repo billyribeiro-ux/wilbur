@@ -102,14 +102,13 @@ async fn get_theme(
     auth_user: AuthUser,
     Path(id): Path<Uuid>,
 ) -> AppResult<Json<UserTheme>> {
-    let theme = sqlx::query_as::<_, UserTheme>(
-        "SELECT * FROM user_themes WHERE id = $1 AND user_id = $2",
-    )
-    .bind(id)
-    .bind(auth_user.id)
-    .fetch_optional(&state.pool)
-    .await?
-    .ok_or_else(|| AppError::NotFound("Theme not found".into()))?;
+    let theme =
+        sqlx::query_as::<_, UserTheme>("SELECT * FROM user_themes WHERE id = $1 AND user_id = $2")
+            .bind(id)
+            .bind(auth_user.id)
+            .fetch_optional(&state.pool)
+            .await?
+            .ok_or_else(|| AppError::NotFound("Theme not found".into()))?;
 
     Ok(Json(theme))
 }

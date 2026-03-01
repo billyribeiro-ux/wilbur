@@ -119,13 +119,11 @@ async fn delete_alert(
     _auth_user: AuthUser,
     Path((room_id, id)): Path<(Uuid, Uuid)>,
 ) -> AppResult<StatusCode> {
-    let result = sqlx::query(
-        "UPDATE alerts SET is_active = false WHERE id = $1 AND room_id = $2",
-    )
-    .bind(id)
-    .bind(room_id)
-    .execute(&state.pool)
-    .await?;
+    let result = sqlx::query("UPDATE alerts SET is_active = false WHERE id = $1 AND room_id = $2")
+        .bind(id)
+        .bind(room_id)
+        .execute(&state.pool)
+        .await?;
 
     if result.rows_affected() == 0 {
         return Err(AppError::NotFound("Alert not found".into()));
@@ -156,10 +154,7 @@ async fn upload_alert_media(
         .map_err(|e| AppError::BadRequest(format!("Multipart error: {e}")))?
     {
         if field.name() == Some("media") {
-            let raw_name = field
-                .file_name()
-                .unwrap_or("media.bin")
-                .to_string();
+            let raw_name = field.file_name().unwrap_or("media.bin").to_string();
             let content_type = field
                 .content_type()
                 .unwrap_or("application/octet-stream")
@@ -185,7 +180,10 @@ async fn upload_alert_media(
                 .await
                 .map_err(|e| AppError::Internal(format!("S3 upload failed: {e}")))?;
 
-            let media_url = format!("{}/{}/{}", state.config.s3_endpoint, state.config.s3_bucket, key);
+            let media_url = format!(
+                "{}/{}/{}",
+                state.config.s3_endpoint, state.config.s3_bucket, key
+            );
 
             // Update the alert's media_url in the database
             sqlx::query("UPDATE alerts SET media_url = $1 WHERE id = $2 AND room_id = $3")
@@ -208,5 +206,7 @@ async fn upload_alert_media(
         }
     }
 
-    Err(AppError::BadRequest("No media field found in multipart body".into()))
+    Err(AppError::BadRequest(
+        "No media field found in multipart body".into(),
+    ))
 }

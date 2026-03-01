@@ -15,10 +15,7 @@ impl EmailService {
             return Err("SMTP not configured".to_string());
         }
 
-        let creds = Credentials::new(
-            config.smtp_username.clone(),
-            config.smtp_password.clone(),
-        );
+        let creds = Credentials::new(config.smtp_username.clone(), config.smtp_password.clone());
 
         let mailer = AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(&config.smtp_host)
             .map_err(|e| format!("SMTP error: {e}"))?
@@ -44,7 +41,11 @@ impl EmailService {
         );
 
         let email = Message::builder()
-            .from(self.from.parse().map_err(|e| format!("Invalid from: {e}"))?)
+            .from(
+                self.from
+                    .parse()
+                    .map_err(|e| format!("Invalid from: {e}"))?,
+            )
             .to(to.parse().map_err(|e| format!("Invalid to: {e}"))?)
             .subject("Verify your Wilbur account")
             .header(ContentType::TEXT_PLAIN)
@@ -71,7 +72,11 @@ impl EmailService {
         );
 
         let email = Message::builder()
-            .from(self.from.parse().map_err(|e| format!("Invalid from: {e}"))?)
+            .from(
+                self.from
+                    .parse()
+                    .map_err(|e| format!("Invalid from: {e}"))?,
+            )
             .to(to.parse().map_err(|e| format!("Invalid to: {e}"))?)
             .subject("Reset your Wilbur password")
             .header(ContentType::TEXT_PLAIN)

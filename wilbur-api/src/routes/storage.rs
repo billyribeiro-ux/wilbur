@@ -146,10 +146,7 @@ async fn upload_file(
         .map_err(|e| AppError::BadRequest(format!("Multipart error: {e}")))?
     {
         if field.name() == Some("file") {
-            let raw_name = field
-                .file_name()
-                .unwrap_or("upload.bin")
-                .to_string();
+            let raw_name = field.file_name().unwrap_or("upload.bin").to_string();
             let content_type = field
                 .content_type()
                 .unwrap_or("application/octet-stream")
@@ -177,7 +174,10 @@ async fn upload_file(
                 .await
                 .map_err(|e| AppError::Internal(format!("S3 upload failed: {e}")))?;
 
-            let url = format!("{}/{}/{}", state.config.s3_endpoint, state.config.s3_bucket, key);
+            let url = format!(
+                "{}/{}/{}",
+                state.config.s3_endpoint, state.config.s3_bucket, key
+            );
 
             return Ok((
                 StatusCode::CREATED,
@@ -193,7 +193,9 @@ async fn upload_file(
         }
     }
 
-    Err(AppError::BadRequest("No file field found in multipart body".into()))
+    Err(AppError::BadRequest(
+        "No file field found in multipart body".into(),
+    ))
 }
 
 /// GET /files/{id} -- look up a file record and return its details.
@@ -224,7 +226,9 @@ async fn delete_file(
         .await?;
 
     if result.rows_affected() == 0 {
-        return Err(AppError::NotFound("File not found or not owned by you".into()));
+        return Err(AppError::NotFound(
+            "File not found or not owned by you".into(),
+        ));
     }
 
     Ok(StatusCode::NO_CONTENT)
@@ -259,10 +263,7 @@ async fn create_room_file(
         .map_err(|e| AppError::BadRequest(format!("Multipart error: {e}")))?
     {
         if field.name() == Some("file") {
-            let raw_name = field
-                .file_name()
-                .unwrap_or("upload.bin")
-                .to_string();
+            let raw_name = field.file_name().unwrap_or("upload.bin").to_string();
             let content_type = field
                 .content_type()
                 .unwrap_or("application/octet-stream")
@@ -290,7 +291,10 @@ async fn create_room_file(
                 .await
                 .map_err(|e| AppError::Internal(format!("S3 upload failed: {e}")))?;
 
-            let url = format!("{}/{}/{}", state.config.s3_endpoint, state.config.s3_bucket, key);
+            let url = format!(
+                "{}/{}/{}",
+                state.config.s3_endpoint, state.config.s3_bucket, key
+            );
 
             // Store file record in DB
             let file = sqlx::query_as::<_, RoomFile>(
@@ -310,11 +314,16 @@ async fn create_room_file(
             .fetch_one(&state.pool)
             .await?;
 
-            return Ok((StatusCode::CREATED, Json(serde_json::to_value(file).unwrap_or_default())));
+            return Ok((
+                StatusCode::CREATED,
+                Json(serde_json::to_value(file).unwrap_or_default()),
+            ));
         }
     }
 
-    Err(AppError::BadRequest("No file field found in multipart body".into()))
+    Err(AppError::BadRequest(
+        "No file field found in multipart body".into(),
+    ))
 }
 
 /// GET /rooms/{room_id}/notes -- list notes for a room.

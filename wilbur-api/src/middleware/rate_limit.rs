@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use std::net::IpAddr;
+use std::sync::Arc;
 
 use axum::{
     extract::{ConnectInfo, Request, State},
@@ -28,8 +28,8 @@ pub fn create_auth_rate_limiter() -> Arc<AuthRateLimiter> {
 
 /// Create an API rate limiter: 200 requests per 60 seconds.
 pub fn create_api_rate_limiter() -> Arc<AuthRateLimiter> {
-    let quota = Quota::per_minute(NonZeroU32::new(200).unwrap())
-        .allow_burst(NonZeroU32::new(50).unwrap());
+    let quota =
+        Quota::per_minute(NonZeroU32::new(200).unwrap()).allow_burst(NonZeroU32::new(50).unwrap());
     Arc::new(RateLimiter::direct(quota))
 }
 

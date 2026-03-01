@@ -21,7 +21,10 @@ pub async fn security_headers(request: Request, next: Next) -> Response {
     headers.insert("X-Frame-Options", "DENY".parse().unwrap());
 
     // Control referrer information
-    headers.insert("Referrer-Policy", "strict-origin-when-cross-origin".parse().unwrap());
+    headers.insert(
+        "Referrer-Policy",
+        "strict-origin-when-cross-origin".parse().unwrap(),
+    );
 
     // Content Security Policy — restrict resource loading
     // API server primarily serves JSON, but CSP protects any HTML error pages

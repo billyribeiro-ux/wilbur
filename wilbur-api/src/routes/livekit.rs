@@ -38,13 +38,12 @@ async fn generate_token(
     Json(body): Json<TokenRequest>,
 ) -> AppResult<Json<TokenResponse>> {
     // Look up the room by name to verify membership
-    let room = sqlx::query_as::<_, Room>(
-        "SELECT * FROM rooms WHERE name = $1 AND is_active = true",
-    )
-    .bind(&body.room)
-    .fetch_optional(&state.pool)
-    .await?
-    .ok_or_else(|| AppError::NotFound("Room not found".into()))?;
+    let room =
+        sqlx::query_as::<_, Room>("SELECT * FROM rooms WHERE name = $1 AND is_active = true")
+            .bind(&body.room)
+            .fetch_optional(&state.pool)
+            .await?
+            .ok_or_else(|| AppError::NotFound("Room not found".into()))?;
 
     // Verify the user is a member of the room
     require_room_member(&state.pool, auth_user.id, room.id).await?;

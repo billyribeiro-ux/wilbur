@@ -81,7 +81,9 @@ async fn create_chat(
     Json(body): Json<CreateChatRequest>,
 ) -> AppResult<(StatusCode, Json<Value>)> {
     if auth_user.id == body.user_id {
-        return Err(AppError::BadRequest("Cannot create a DM with yourself".into()));
+        return Err(AppError::BadRequest(
+            "Cannot create a DM with yourself".into(),
+        ));
     }
 
     // Ensure participant_one < participant_two to satisfy the CHECK constraint
@@ -203,8 +205,10 @@ async fn list_chat_messages(
     .fetch_all(&state.pool)
     .await?;
 
-    let data: Vec<PrivateMessageResponse> =
-        messages.into_iter().map(PrivateMessageResponse::from).collect();
+    let data: Vec<PrivateMessageResponse> = messages
+        .into_iter()
+        .map(PrivateMessageResponse::from)
+        .collect();
 
     Ok(Json(json!({
         "chat_id": id,
@@ -246,7 +250,12 @@ async fn send_chat_message(
 
     // Notify via WebSocket
     let channel = format!("dm:{}", id);
-    WsManager::notify_change(&state, &channel, "private_message_sent", response_json.clone());
+    WsManager::notify_change(
+        &state,
+        &channel,
+        "private_message_sent",
+        response_json.clone(),
+    );
 
     Ok((StatusCode::CREATED, Json(response_json)))
 }

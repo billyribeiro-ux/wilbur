@@ -78,7 +78,9 @@ async fn create_message(
     body.validate()
         .map_err(|e| AppError::Validation(e.to_string()))?;
 
-    let content_type = body.content_type.unwrap_or(crate::models::message::ContentType::Text);
+    let content_type = body
+        .content_type
+        .unwrap_or(crate::models::message::ContentType::Text);
     let msg_id = Uuid::new_v4();
     let now = chrono::Utc::now();
 
@@ -186,7 +188,9 @@ async fn delete_message(
     .await?;
 
     if result.rows_affected() == 0 {
-        return Err(AppError::NotFound("Message not found or not owned by you".into()));
+        return Err(AppError::NotFound(
+            "Message not found or not owned by you".into(),
+        ));
     }
 
     let channel = format!("room:{}:chat", room_id);

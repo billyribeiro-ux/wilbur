@@ -18,7 +18,9 @@ use crate::{
         room_access::{require_room_host, require_room_moderator},
     },
     models::{
-        membership::{MemberRole, MemberStatus, MembershipResponse, RoomMembership, UpdateMemberRoleRequest},
+        membership::{
+            MemberRole, MemberStatus, MembershipResponse, RoomMembership, UpdateMemberRoleRequest,
+        },
         room::{CreateRoomRequest, Room, RoomResponse, UpdateRoomRequest},
     },
     state::AppState,
@@ -190,10 +192,11 @@ async fn delete_room(
     // Only the host can delete a room
     require_room_host(&state.pool, auth_user.id, id).await?;
 
-    let result = sqlx::query("UPDATE rooms SET is_active = false, updated_at = NOW() WHERE id = $1")
-        .bind(id)
-        .execute(&state.pool)
-        .await?;
+    let result =
+        sqlx::query("UPDATE rooms SET is_active = false, updated_at = NOW() WHERE id = $1")
+            .bind(id)
+            .execute(&state.pool)
+            .await?;
 
     if result.rows_affected() == 0 {
         return Err(AppError::NotFound("Room not found".into()));
@@ -215,7 +218,8 @@ async fn list_members(
     .fetch_all(&state.pool)
     .await?;
 
-    let results: Vec<MembershipResponse> = members.into_iter().map(MembershipResponse::from).collect();
+    let results: Vec<MembershipResponse> =
+        members.into_iter().map(MembershipResponse::from).collect();
     Ok(Json(results))
 }
 
@@ -254,7 +258,10 @@ async fn invite_member(
     .fetch_one(&state.pool)
     .await?;
 
-    Ok((StatusCode::CREATED, Json(MembershipResponse::from(membership))))
+    Ok((
+        StatusCode::CREATED,
+        Json(MembershipResponse::from(membership)),
+    ))
 }
 
 /// DELETE /{id}/members/{user_id} -- remove a member from a room.
@@ -268,16 +275,16 @@ async fn remove_member(
 
     // Cannot remove yourself
     if auth_user.id == user_id {
-        return Err(AppError::BadRequest("You cannot remove yourself from the room".into()));
+        return Err(AppError::BadRequest(
+            "You cannot remove yourself from the room".into(),
+        ));
     }
 
-    let result = sqlx::query(
-        "DELETE FROM room_memberships WHERE room_id = $1 AND user_id = $2",
-    )
-    .bind(room_id)
-    .bind(user_id)
-    .execute(&state.pool)
-    .await?;
+    let result = sqlx::query("DELETE FROM room_memberships WHERE room_id = $1 AND user_id = $2")
+        .bind(room_id)
+        .bind(user_id)
+        .execute(&state.pool)
+        .await?;
 
     if result.rows_affected() == 0 {
         return Err(AppError::NotFound("Membership not found".into()));

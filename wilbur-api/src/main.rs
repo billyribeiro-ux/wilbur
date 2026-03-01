@@ -29,9 +29,10 @@ async fn main() {
 
     // Initialize tracing
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-            "wilbur_api=debug,tower_http=debug".into()
-        }))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "wilbur_api=debug,tower_http=debug".into()),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 
@@ -106,7 +107,10 @@ async fn main() {
         .nest("/ws", routes::ws::router())
         .nest("/api/v1/users", routes::users::router())
         .nest("/api/v1/rooms", routes::rooms::router())
-        .nest("/api/v1/rooms/{room_id}/messages", routes::messages::router())
+        .nest(
+            "/api/v1/rooms/{room_id}/messages",
+            routes::messages::router(),
+        )
         .nest("/api/v1/rooms/{room_id}/alerts", routes::alerts::router())
         .nest("/api/v1/rooms/{room_id}/polls", routes::polls::router())
         .nest("/api/v1/integrations", routes::integrations::router())
@@ -117,7 +121,10 @@ async fn main() {
         .nest("/api/v1/moderation", routes::moderation::router())
         .nest("/api/v1/dm", routes::private_chats::router())
         .nest("/api/v1/notifications", routes::notifications::router())
-        .nest("/api/v1/rooms/{room_id}/tracks", routes::media_tracks::router())
+        .nest(
+            "/api/v1/rooms/{room_id}/tracks",
+            routes::media_tracks::router(),
+        )
         .route_layer(axum_middleware::from_fn_with_state(
             api_limiter,
             middleware::rate_limit::api_rate_limit,
@@ -127,7 +134,9 @@ async fn main() {
     let app = Router::new()
         .merge(auth_routes)
         .merge(api_routes)
-        .layer(axum_middleware::from_fn(middleware::security::security_headers))
+        .layer(axum_middleware::from_fn(
+            middleware::security::security_headers,
+        ))
         .layer(cors)
         .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http())
@@ -135,7 +144,9 @@ async fn main() {
 
     // Start server
     let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
-    let listener = TcpListener::bind(addr).await.expect("Failed to bind address");
+    let listener = TcpListener::bind(addr)
+        .await
+        .expect("Failed to bind address");
     tracing::info!("Server listening on {}", addr);
 
     axum::serve(listener, app)

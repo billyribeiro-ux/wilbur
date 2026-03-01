@@ -258,13 +258,11 @@ async fn login(
         .map_err(|e| AppError::Validation(e.to_string()))?;
 
     // Find user by email
-    let user = sqlx::query_as::<_, User>(
-        "SELECT * FROM users WHERE LOWER(email) = LOWER($1)",
-    )
-    .bind(&body.email)
-    .fetch_optional(&state.pool)
-    .await?
-    .ok_or_else(|| AppError::Unauthorized("Invalid email or password".into()))?;
+    let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE LOWER(email) = LOWER($1)")
+        .bind(&body.email)
+        .fetch_optional(&state.pool)
+        .await?
+        .ok_or_else(|| AppError::Unauthorized("Invalid email or password".into()))?;
 
     // Verify password
     if !verify_password(&body.password, &user.password_hash)? {
@@ -302,7 +300,13 @@ async fn login(
     .await?;
 
     // Store refresh token (hashed)
-    store_refresh_token(&state.pool, user.id, &refresh_token, state.config.jwt_refresh_token_expiry_secs).await?;
+    store_refresh_token(
+        &state.pool,
+        user.id,
+        &refresh_token,
+        state.config.jwt_refresh_token_expiry_secs,
+    )
+    .await?;
 
     tracing::info!(user_id = %user.id, "User logged in");
 
@@ -317,10 +321,7 @@ async fn login(
 }
 
 /// POST /logout -- invalidate the current session and all refresh tokens.
-async fn logout(
-    State(state): State<Arc<AppState>>,
-    auth_user: AuthUser,
-) -> AppResult<StatusCode> {
+async fn logout(State(state): State<Arc<AppState>>, auth_user: AuthUser) -> AppResult<StatusCode> {
     invalidate_all_user_tokens(&state.pool, auth_user.id).await?;
 
     tracing::info!(user_id = %auth_user.id, "User logged out");
@@ -356,7 +357,9 @@ async fn refresh(
         // Possible token reuse attack — revoke all tokens for safety
         invalidate_all_user_tokens(&state.pool, user_id).await?;
         tracing::warn!(user_id = %user_id, "Refresh token reuse detected — all tokens revoked");
-        return Err(AppError::Unauthorized("Session expired or invalid. Please log in again.".into()));
+        return Err(AppError::Unauthorized(
+            "Session expired or invalid. Please log in again.".into(),
+        ));
     }
 
     // Revoke the used refresh token (rotation)
@@ -399,7 +402,13 @@ async fn refresh(
     .await?;
 
     // Store new refresh token (hashed)
-    store_refresh_token(&state.pool, user.id, &refresh_token, state.config.jwt_refresh_token_expiry_secs).await?;
+    store_refresh_token(
+        &state.pool,
+        user.id,
+        &refresh_token,
+        state.config.jwt_refresh_token_expiry_secs,
+    )
+    .await?;
 
     let resp = build_auth_response(
         user,
@@ -461,12 +470,10 @@ async fn forgot_password(
         .map_err(|e| AppError::Validation(e.to_string()))?;
 
     // Always return success to prevent user enumeration
-    let user = sqlx::query_as::<_, User>(
-        "SELECT * FROM users WHERE LOWER(email) = LOWER($1)",
-    )
-    .bind(&body.email)
-    .fetch_optional(&state.pool)
-    .await?;
+    let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE LOWER(email) = LOWER($1)")
+        .bind(&body.email)
+        .fetch_optional(&state.pool)
+        .await?;
 
     if let Some(user) = user {
         let reset_token = Uuid::new_v4().to_string();

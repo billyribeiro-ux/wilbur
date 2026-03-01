@@ -54,7 +54,9 @@ async fn update_user(
     Json(body): Json<UpdateUserRequest>,
 ) -> AppResult<Json<UserResponse>> {
     if auth_user.id != id {
-        return Err(AppError::Forbidden("You can only update your own profile".into()));
+        return Err(AppError::Forbidden(
+            "You can only update your own profile".into(),
+        ));
     }
 
     let user = sqlx::query_as::<_, User>(
@@ -85,7 +87,9 @@ async fn upload_avatar(
     mut multipart: Multipart,
 ) -> AppResult<Json<Value>> {
     if auth_user.id != id {
-        return Err(AppError::Forbidden("You can only update your own avatar".into()));
+        return Err(AppError::Forbidden(
+            "You can only update your own avatar".into(),
+        ));
     }
 
     while let Some(field) = multipart
@@ -94,10 +98,7 @@ async fn upload_avatar(
         .map_err(|e| AppError::BadRequest(format!("Multipart error: {e}")))?
     {
         if field.name() == Some("avatar") {
-            let file_name = field
-                .file_name()
-                .unwrap_or("avatar.png")
-                .to_string();
+            let file_name = field.file_name().unwrap_or("avatar.png").to_string();
             let content_type = field
                 .content_type()
                 .unwrap_or("application/octet-stream")
@@ -120,7 +121,10 @@ async fn upload_avatar(
                 .await
                 .map_err(|e| AppError::Internal(format!("S3 upload failed: {e}")))?;
 
-            let avatar_url = format!("{}/{}/{}", state.config.s3_endpoint, state.config.s3_bucket, key);
+            let avatar_url = format!(
+                "{}/{}/{}",
+                state.config.s3_endpoint, state.config.s3_bucket, key
+            );
 
             sqlx::query("UPDATE users SET avatar_url = $1, updated_at = NOW() WHERE id = $2")
                 .bind(&avatar_url)
@@ -132,7 +136,9 @@ async fn upload_avatar(
         }
     }
 
-    Err(AppError::BadRequest("No avatar field found in multipart body".into()))
+    Err(AppError::BadRequest(
+        "No avatar field found in multipart body".into(),
+    ))
 }
 
 /// GET /search?q= -- search users by display name or email.

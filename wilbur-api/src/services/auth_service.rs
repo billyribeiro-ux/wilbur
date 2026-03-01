@@ -21,8 +21,7 @@ pub fn hash_password(password: &str) -> Result<String, String> {
 
 /// Verify a password against a stored hash.
 pub fn verify_password(password: &str, hash: &str) -> Result<bool, String> {
-    let parsed_hash =
-        PasswordHash::new(hash).map_err(|e| format!("Invalid password hash: {e}"))?;
+    let parsed_hash = PasswordHash::new(hash).map_err(|e| format!("Invalid password hash: {e}"))?;
     Ok(Argon2::default()
         .verify_password(password.as_bytes(), &parsed_hash)
         .is_ok())

@@ -49,7 +49,10 @@ impl OAuthService {
         let client = reqwest::Client::new();
         let resp = client
             .post("https://accounts.spotify.com/api/token")
-            .basic_auth(&config.spotify_client_id, Some(&config.spotify_client_secret))
+            .basic_auth(
+                &config.spotify_client_id,
+                Some(&config.spotify_client_secret),
+            )
             .form(&[
                 ("grant_type", "authorization_code"),
                 ("code", code),
@@ -77,7 +80,10 @@ impl OAuthService {
         let client = reqwest::Client::new();
         let resp = client
             .post("https://accounts.spotify.com/api/token")
-            .basic_auth(&config.spotify_client_id, Some(&config.spotify_client_secret))
+            .basic_auth(
+                &config.spotify_client_id,
+                Some(&config.spotify_client_secret),
+            )
             .form(&[
                 ("grant_type", "refresh_token"),
                 ("refresh_token", refresh_token),

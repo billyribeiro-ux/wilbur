@@ -70,11 +70,7 @@ impl WsManager {
 
     /// Remove all closed senders from a specific connection.
     pub fn disconnect(state: &Arc<AppState>) {
-        let keys: Vec<String> = state
-            .ws_channels
-            .iter()
-            .map(|e| e.key().clone())
-            .collect();
+        let keys: Vec<String> = state.ws_channels.iter().map(|e| e.key().clone()).collect();
 
         for key in keys {
             if let Some(mut entry) = state.ws_channels.get_mut(&key) {
