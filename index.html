@@ -85,6 +85,39 @@
          ========================================================== -->
 
     <!-- ==========================================================
+         🔧 DEPRECATION FIX: Patch unload event before Spotify SDK loads
+         jQuery uses deprecated unload event - patch to use pagehide instead
+         ========================================================== -->
+    <script>
+      (function() {
+        // Patch addEventListener to intercept unload and redirect to pagehide
+        const originalAddEventListener = window.addEventListener;
+        window.addEventListener = function(type, listener, options) {
+          if (type === 'unload') {
+            console.log('[Deprecation Patch] Redirecting unload event to pagehide');
+            return originalAddEventListener.call(this, 'pagehide', listener, options);
+          }
+          return originalAddEventListener.call(this, type, listener, options);
+        };
+        
+        // Also patch document-level events for older jQuery
+        if (document.addEventListener) {
+          const docOriginalAddEventListener = document.addEventListener;
+          document.addEventListener = function(type, listener, options) {
+            if (type === 'unload') {
+              console.log('[Deprecation Patch] Redirecting document unload to pagehide');
+              return docOriginalAddEventListener.call(this, 'pagehide', listener, options);
+            }
+            return docOriginalAddEventListener.call(this, type, listener, options);
+          };
+        }
+        
+        // Mark that we've patched
+        window.__unloadPatchApplied = true;
+      })();
+    </script>
+
+    <!-- ==========================================================
          🎧 Spotify Web Playback SDK Loader (Async + Safe)
          ========================================================== -->
     <script>

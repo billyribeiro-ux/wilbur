@@ -63,29 +63,43 @@ async function refreshAccessToken(): Promise<void> {
 }
 
 async function fetchWithAuth<T>(url: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_BASE}${url}`, {
-    ...options,
-    headers: { ...getHeaders(), ...options.headers },
-  });
-
-  // Auto-refresh on 401
-  if (response.status === 401 && tokens?.refreshToken) {
-    if (!refreshPromise) {
-      refreshPromise = refreshAccessToken().finally(() => {
-        refreshPromise = undefined;
-      });
-    }
-    await refreshPromise;
-
-    // Retry with new token
-    const retry = await fetch(`${API_BASE}${url}`, {
+  try {
+    const response = await fetch(`${API_BASE}${url}`, {
       ...options,
       headers: { ...getHeaders(), ...options.headers },
     });
-    return handleResponse<T>(retry);
-  }
 
-  return handleResponse<T>(response);
+    // Auto-refresh on 401
+    if (response.status === 401 && tokens?.refreshToken) {
+      if (!refreshPromise) {
+        refreshPromise = refreshAccessToken().finally(() => {
+          refreshPromise = undefined;
+        });
+      }
+      await refreshPromise;
+
+      // Retry with new token
+      const retry = await fetch(`${API_BASE}${url}`, {
+        ...options,
+        headers: { ...getHeaders(), ...options.headers },
+      });
+      return handleResponse<T>(retry);
+    }
+
+    return handleResponse<T>(response);
+  } catch (error) {
+    // Detect connection refused errors and provide helpful message
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      console.error(`[API Client] Connection failed to ${API_BASE}`);
+      console.error('[API Client] Is the backend server running? (cargo run in wilbur-api)');
+      throw {
+        error: `Backend connection failed. Please ensure the Rust backend is running on ${API_BASE}`,
+        status: 503,
+        connectionRefused: true
+      };
+    }
+    throw error;
+  }
 }
 
 export const api = {

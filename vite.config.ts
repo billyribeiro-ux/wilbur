@@ -12,9 +12,11 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    strictPort: true, // Prevent automatic port switching - fixes WebSocket connection
     host: true,
     hmr: {
       overlay: true,
+      port: 5173, // Ensure HMR WebSocket uses same port
     },
   },
   build: {
