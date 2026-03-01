@@ -1,4 +1,3 @@
-use axum::extract::Query;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -22,5 +21,3 @@ impl PaginationParams {
         self.per_page() as i64
     }
 }
-
-pub type Pagination = Query<PaginationParams>;

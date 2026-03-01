@@ -15,6 +15,5 @@ pub mod room_memberships;
 pub mod rooms;
 pub mod sessions;
 pub mod tenants;
-pub mod user_integrations;
 pub mod user_themes;
 pub mod users;

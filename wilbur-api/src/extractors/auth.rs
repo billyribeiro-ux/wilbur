@@ -57,21 +57,3 @@ impl FromRequestParts<Arc<AppState>> for AuthUser {
         })
     }
 }
-
-/// Optional authentication — does not reject if no token is present.
-#[derive(Debug, Clone)]
-pub struct OptionalAuth(pub Option<AuthUser>);
-
-impl FromRequestParts<Arc<AppState>> for OptionalAuth {
-    type Rejection = AppError;
-
-    async fn from_request_parts(
-        parts: &mut Parts,
-        state: &Arc<AppState>,
-    ) -> Result<Self, Self::Rejection> {
-        match AuthUser::from_request_parts(parts, state).await {
-            Ok(user) => Ok(OptionalAuth(Some(user))),
-            Err(_) => Ok(OptionalAuth(None)),
-        }
-    }
-}

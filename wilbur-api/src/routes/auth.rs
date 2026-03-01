@@ -27,6 +27,7 @@ use crate::{
         },
         user::{CreateUserRequest, User, UserResponse, UserRole},
     },
+    services::email_service::EmailService,
     state::AppState,
 };
 
@@ -237,8 +238,14 @@ async fn register(
     .execute(&state.pool)
     .await?;
 
-    // TODO: Send verification email via email service
-    tracing::info!(user_id = %user_id, email = %body.email, "New user registered — verification email pending");
+    // Send verification email
+    if let Ok(email_service) = EmailService::new(&state.config) {
+        if let Err(e) = email_service.send_verification_email(&body.email, &verification_token, "http://localhost:5173").await {
+            tracing::warn!(user_id = %user_id, error = %e, "Failed to send verification email");
+        }
+    }
+
+    tracing::info!(user_id = %user_id, email = %body.email, "New user registered — verification email sent");
 
     Ok((
         StatusCode::CREATED,
@@ -492,8 +499,14 @@ async fn forgot_password(
         .execute(&state.pool)
         .await?;
 
-        // TODO: Send reset email via email service
-        tracing::info!(user_id = %user.id, "Password reset requested");
+        // Send password reset email
+        if let Ok(email_service) = EmailService::new(&state.config) {
+            if let Err(e) = email_service.send_password_reset_email(&user.email, &reset_token, "http://localhost:5173").await {
+                tracing::warn!(user_id = %user.id, error = %e, "Failed to send password reset email");
+            }
+        }
+
+        tracing::info!(user_id = %user.id, "Password reset email sent");
     }
 
     Ok(Json(json!({

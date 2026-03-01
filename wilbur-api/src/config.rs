@@ -12,7 +12,6 @@ pub struct AppConfig {
     pub jwt_refresh_token_expiry_secs: i64,
 
     // Server
-    pub host: String,
     pub port: u16,
     pub allowed_origins: Vec<String>,
 
@@ -35,7 +34,6 @@ pub struct AppConfig {
 
     // OAuth — Spotify
     pub spotify_client_id: String,
-    pub spotify_client_secret: String,
 }
 
 impl AppConfig {
@@ -57,7 +55,6 @@ impl AppConfig {
                 .parse()
                 .unwrap_or(2592000),
 
-            host: env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string()),
             port: env::var("PORT")
                 .unwrap_or_else(|_| "3000".to_string())
                 .parse()
@@ -86,7 +83,6 @@ impl AppConfig {
             smtp_from: env::var("SMTP_FROM").unwrap_or_default(),
 
             spotify_client_id: env::var("SPOTIFY_CLIENT_ID").unwrap_or_default(),
-            spotify_client_secret: env::var("SPOTIFY_CLIENT_SECRET").unwrap_or_default(),
         })
     }
 }
