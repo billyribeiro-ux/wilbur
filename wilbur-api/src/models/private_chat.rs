@@ -1,8 +1,7 @@
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use sqlx::FromRow;
 use uuid::Uuid;
-use validator::Validate;
 
 #[derive(Debug, Clone, FromRow, Serialize)]
 pub struct PrivateChat {
@@ -20,17 +19,6 @@ pub struct PrivateMessage {
     pub content: String,
     pub is_read: bool,
     pub created_at: DateTime<Utc>,
-}
-
-#[derive(Debug, Deserialize, Validate)]
-pub struct CreatePrivateChatRequest {
-    pub participant_id: Uuid,
-}
-
-#[derive(Debug, Deserialize, Validate)]
-pub struct SendPrivateMessageRequest {
-    #[validate(length(min = 1, max = 5000))]
-    pub content: String,
 }
 
 /// Private chat response.

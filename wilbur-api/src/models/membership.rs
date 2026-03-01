@@ -37,19 +37,7 @@ pub struct RoomMembership {
 }
 
 #[derive(Debug, Deserialize, Validate)]
-pub struct JoinRoomRequest {
-    pub room_id: Uuid,
-    #[validate(length(max = 100))]
-    pub city: Option<String>,
-    #[validate(length(max = 100))]
-    pub state_name: Option<String>,
-    #[validate(length(max = 100))]
-    pub country: Option<String>,
-}
-
-#[derive(Debug, Deserialize, Validate)]
 pub struct UpdateMemberRoleRequest {
-    pub user_id: Uuid,
     pub role: MemberRole,
 }
 

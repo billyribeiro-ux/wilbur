@@ -25,10 +25,7 @@ pub fn router() -> Router<Arc<AppState>> {
 }
 
 #[derive(Debug, Deserialize)]
-struct ExchangeRequest {
-    code: String,
-    redirect_uri: Option<String>,
-}
+struct ExchangeRequest {}
 
 #[derive(Debug, Deserialize)]
 struct ConnectQuery {

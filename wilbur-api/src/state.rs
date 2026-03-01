@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use dashmap::DashMap;
 use sqlx::PgPool;
 use tokio::sync::mpsc;
@@ -27,6 +25,3 @@ impl AppState {
         }
     }
 }
-
-/// Type alias used in handler signatures.
-pub type SharedState = Arc<AppState>;

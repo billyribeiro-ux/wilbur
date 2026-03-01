@@ -45,11 +45,11 @@ interface PrivateMessage {
 const containerVariants = {
   minimized: {
     height: 60,
-    transition: { type: 'spring', damping: 20, stiffness: 300 },
+    transition: { type: 'spring' as const, damping: 20, stiffness: 300 },
   },
   expanded: {
     height: 500,
-    transition: { type: 'spring', damping: 20, stiffness: 300 },
+    transition: { type: 'spring' as const, damping: 20, stiffness: 300 },
   },
 };
 

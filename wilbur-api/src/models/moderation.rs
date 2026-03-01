@@ -2,7 +2,6 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
-use validator::Validate;
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, PartialEq)]
 #[sqlx(type_name = "report_status", rename_all = "lowercase")]
@@ -46,27 +45,6 @@ pub struct ReportedContent {
     pub status: ReportStatus,
     pub reviewed_by: Option<Uuid>,
     pub created_at: DateTime<Utc>,
-}
-
-#[derive(Debug, Deserialize, Validate)]
-pub struct BanUserRequest {
-    pub user_id: Uuid,
-    #[validate(length(max = 1000))]
-    pub reason: Option<String>,
-    pub expires_at: Option<DateTime<Utc>>,
-}
-
-#[derive(Debug, Deserialize, Validate)]
-pub struct ReportContentRequest {
-    pub content_type: String,
-    pub content_id: Uuid,
-    #[validate(length(min = 1, max = 1000))]
-    pub reason: String,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct ReviewReportRequest {
-    pub status: ReportStatus,
 }
 
 /// Banned user response.

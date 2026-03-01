@@ -119,15 +119,6 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/rooms/{room_id}/notes", post(create_room_note))
 }
 
-#[derive(Debug, Serialize)]
-struct FileResponse {
-    id: Uuid,
-    filename: String,
-    content_type: String,
-    size: i64,
-    url: String,
-}
-
 #[derive(Debug, Deserialize)]
 struct CreateNoteRequest {
     title: String,

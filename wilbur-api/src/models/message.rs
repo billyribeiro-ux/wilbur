@@ -13,21 +13,6 @@ pub enum ContentType {
     File,
 }
 
-#[derive(Debug, Clone, FromRow, Serialize)]
-pub struct ChatMessage {
-    pub id: Uuid,
-    pub room_id: Uuid,
-    pub user_id: Uuid,
-    pub content: String,
-    pub content_type: ContentType,
-    pub is_pinned: bool,
-    pub is_off_topic: bool,
-    pub is_deleted: bool,
-    pub deleted_at: Option<DateTime<Utc>>,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
-
 /// Chat message joined with user display info.
 #[derive(Debug, Clone, FromRow, Serialize)]
 pub struct ChatMessageWithUser {

@@ -29,28 +29,6 @@ pub struct Tenant {
 }
 
 #[derive(Debug, Deserialize, Validate)]
-pub struct CreateTenantRequest {
-    #[validate(length(min = 1, max = 200))]
-    pub business_name: String,
-    pub logo_url: Option<String>,
-    pub primary_color: Option<String>,
-    pub secondary_color: Option<String>,
-    pub accent_color: Option<String>,
-    pub header_font: Option<String>,
-    pub body_font: Option<String>,
-    pub border_radius: Option<String>,
-    pub background_image_url: Option<String>,
-    pub favicon_url: Option<String>,
-    pub tagline: Option<String>,
-    pub website_url: Option<String>,
-    pub support_email: Option<String>,
-    pub custom_css: Option<String>,
-    pub login_background_url: Option<String>,
-    pub dashboard_layout: Option<String>,
-    pub sidebar_position: Option<String>,
-}
-
-#[derive(Debug, Deserialize, Validate)]
 pub struct UpdateTenantRequest {
     #[validate(length(min = 1, max = 200))]
     pub business_name: Option<String>,
