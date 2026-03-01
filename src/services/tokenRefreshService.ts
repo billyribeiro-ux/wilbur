@@ -2,7 +2,7 @@
 // The API client handles JWT auto-refresh on 401 automatically.
 // This service now handles OAuth provider token refresh (Spotify, X, LinkedIn).
 import { integrationsApi } from '../api/integrations';
-import { refreshTokenIfNeeded } from './oauthApi';
+// import { refreshTokenIfNeeded } from './oauthApi';
 
 interface TokenRefreshConfig {
   userId: string;

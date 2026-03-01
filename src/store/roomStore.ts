@@ -133,7 +133,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
     set({ loading: true, error: undefined });
     try {
       const data = await roomsApi.list();
-      set({ rooms: data || [], loading: false });
+      set({ rooms: (data as unknown as Room[]) || [], loading: false });
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       console.error('[roomStore] Failed to fetch rooms:', errorMessage);
@@ -182,8 +182,9 @@ export const useRoomStore = create<RoomState>((set, get) => ({
   createRoom: async (name: string, tenantId: string, _userId: string) => {
     try {
       const data = await roomsApi.create({ name, title: name, tenant_id: tenantId });
-      set((state) => ({ rooms: [data, ...state.rooms] }));
-      return data;
+      const room = data as unknown as Room;
+      set((state) => ({ rooms: [room, ...state.rooms] }));
+      return room;
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       console.error('[roomStore] Failed to create room:', errorMessage);
@@ -207,7 +208,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 
   loadTenantData: async (tenantId: string) => {
     try {
-      return await tenantsApi.get(tenantId);
+      return await tenantsApi.get(tenantId) as unknown as Tenant;
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       console.error('[roomStore] Failed to load tenant:', errorMessage);

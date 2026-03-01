@@ -152,12 +152,12 @@ export async function createMembership(
 /**
  * ENTERPRISE PATTERN: Get all user memberships
  */
-export async function getUserMemberships(userId: string): Promise<RoomMembership[]> {
+export async function getUserMemberships(_userId: string): Promise<RoomMembership[]> {
   try {
     // The rooms API list endpoint returns rooms the user has access to.
     // We use it to derive memberships. For a direct membership list,
     // consumers should use the rooms API directly.
-    const rooms = await roomsApi.list();
+    await roomsApi.list();
     // Return an empty array as we cannot derive per-user memberships from the rooms list.
     // Consumers should migrate to use roomsApi.listMembers(roomId) per-room.
     return [];

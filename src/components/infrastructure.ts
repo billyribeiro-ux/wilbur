@@ -6,7 +6,7 @@
 // and zero production overhead while maintaining backward compatibility
 // ═══════════════════════════════════════════════════════════════
 
-import { logger } from '../utils/productionLogger';
+import { logger } from '../utils/logger';
 
 /**
  * Logger factory for creating scoped loggers

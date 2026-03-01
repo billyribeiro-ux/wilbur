@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { configure } from '@testing-library/react';
+// import { configure } from '@testing-library/react';
 
 // Configure test timeout
 // jest.setTimeout is not available in Vitest, use vi.setConfig instead

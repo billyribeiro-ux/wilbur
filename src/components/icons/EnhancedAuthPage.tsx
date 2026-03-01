@@ -148,11 +148,10 @@ export function EnhancedAuthPage() {
       // Microsoft Enterprise pattern: Set session in auth store after OTP verification
       const { setSession } = useAuthStore.getState();
       setSession({ 
-        user: result.user, 
+        user: result.user as unknown as Parameters<typeof setSession>[0] extends undefined ? never : NonNullable<Parameters<typeof setSession>[0]>['user'],
         access_token: '', 
         refresh_token: '',
         expires_in: 3600,
-        token_type: 'bearer'
       });
       addToast('Login successful!', 'success');
       resetForm();
@@ -295,7 +294,7 @@ export function EnhancedAuthPage() {
                 loginStep === 'credentials' ? (
                   <form onSubmit={handlePasswordLogin} className="space-y-5">
                     <div>
-                      <label className="block text-sm font-medium text-slate-200 mb-2">
+                      <label htmlFor="password-login-email" className="block text-sm font-medium text-slate-200 mb-2">
                         Email Address
                       </label>
                       <div className="relative">
@@ -316,12 +315,14 @@ export function EnhancedAuthPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-200 mb-2">
+                      <label htmlFor="password-login-password" className="block text-sm font-medium text-slate-200 mb-2">
                         Password
                       </label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                         <input
+                          id="password-login-password"
+                          name="password-login-password"
                           type={showPassword ? 'text' : 'password'}
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
@@ -329,6 +330,7 @@ export function EnhancedAuthPage() {
                           placeholder="Enter your password"
                           required
                           disabled={loading}
+                          autoComplete="current-password"
                         />
                         <button
                           type="button"
@@ -378,7 +380,7 @@ export function EnhancedAuthPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-200 mb-2">
+                      <label htmlFor="pin-request-email" className="block text-sm font-medium text-slate-200 mb-2">
                         Email Address
                       </label>
                       <div className="relative">
@@ -424,7 +426,7 @@ export function EnhancedAuthPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-200 mb-2">
+                      <label htmlFor="pin-code" className="block text-sm font-medium text-slate-200 mb-2">
                         Enter PIN from Email
                       </label>
                       <div className="relative">
@@ -545,12 +547,14 @@ export function EnhancedAuthPage() {
           {authMode === 'register' && (
             <form onSubmit={handleRegister} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">
+                <label htmlFor="register-display-name" className="block text-sm font-medium text-slate-200 mb-2">
                   Display Name
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                   <input
+                    id="register-display-name"
+                    name="register-display-name"
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
@@ -559,17 +563,20 @@ export function EnhancedAuthPage() {
                     required
                     disabled={loading}
                     maxLength={50}
+                    autoComplete="name"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">
+                <label htmlFor="register-email" className="block text-sm font-medium text-slate-200 mb-2">
                   Email Address
                 </label>
                 <div className="relative">
                   <Envelope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                   <input
+                    id="register-email"
+                    name="register-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -577,17 +584,20 @@ export function EnhancedAuthPage() {
                     placeholder="your@email.com"
                     required
                     disabled={loading}
+                    autoComplete="email"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">
+                <label htmlFor="register-password" className="block text-sm font-medium text-slate-200 mb-2">
                   Password
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                   <input
+                    id="register-password"
+                    name="register-password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -595,6 +605,7 @@ export function EnhancedAuthPage() {
                     placeholder="Create a strong password"
                     required
                     disabled={loading}
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -610,12 +621,14 @@ export function EnhancedAuthPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">
+                <label htmlFor="register-confirm-password" className="block text-sm font-medium text-slate-200 mb-2">
                   Confirm Password
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                   <input
+                    id="register-confirm-password"
+                    name="register-confirm-password"
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -623,6 +636,7 @@ export function EnhancedAuthPage() {
                     placeholder="Confirm your password"
                     required
                     disabled={loading}
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -668,12 +682,14 @@ export function EnhancedAuthPage() {
           {authMode === 'forgot-password' && (
             <form onSubmit={handleForgotPassword} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-slate-200 mb-2">
+                <label htmlFor="forgot-password-email" className="block text-sm font-medium text-slate-200 mb-2">
                   Email Address
                 </label>
                 <div className="relative">
                   <Envelope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
                   <input
+                    id="forgot-password-email"
+                    name="forgot-password-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -681,6 +697,7 @@ export function EnhancedAuthPage() {
                     placeholder="your@email.com"
                     required
                     disabled={loading}
+                    autoComplete="email"
                   />
                 </div>
                 <p className="text-xs text-slate-400 mt-1">

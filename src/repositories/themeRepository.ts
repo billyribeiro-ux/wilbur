@@ -46,7 +46,7 @@ export const themeRepository = {
   },
 
   // Read all themes by user
-  async getThemesByUser(userId: string): Promise<UserThemeRow[]> {
+  async getThemesByUser(_userId: string): Promise<UserThemeRow[]> {
     const data = await themesApi.list();
     // Filter by user on client side (server returns user's themes)
     return (data || []).map(theme => ({

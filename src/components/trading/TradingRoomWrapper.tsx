@@ -62,7 +62,7 @@ export function TradingRoomWrapper() {
         const data = await roomsApi.get(roomId);
 
         if (data) {
-          setRoomData(data as Room);
+          setRoomData(data as unknown as Room);
 
           // Pre-load alerts and messages for instant scroll
           // This eliminates the 1-2 second delay on room load
@@ -79,7 +79,7 @@ export function TradingRoomWrapper() {
               }),
             ]);
 
-            setInitialAlerts(alertsData || []);
+            setInitialAlerts((alertsData || []) as unknown as Alert[]);
             setInitialMessages((messagesData || []) as ChatMessage[]);
           } catch (preloadError) {
             console.error('[TradingRoomWrapper] Pre-load error:', preloadError);

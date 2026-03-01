@@ -11,7 +11,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { Microphone, Monitor, Video, MessageSquare, Wrench, Pencil, AtSign, MessageCircle, UserPlus,  } from '@phosphor-icons/react';
+import { Microphone, Monitor, Video, ChatTeardrop, Wrench, Pencil, At, ChatCircle, UserPlus } from '@phosphor-icons/react';
 
 import { ModalBase } from './ModalBase';
 
@@ -202,7 +202,7 @@ export function UserInfoModal({ user, onClose, isOpen = true }: UserInfoModalPro
         "
         aria-label={`Mention ${displayName}`}
       >
-        <AtSign className="w-4 h-4" />
+        <At weight="regular" className="w-4 h-4" />
         <span className="hidden sm:inline">Mention</span>
       </button>
       <button
@@ -217,7 +217,7 @@ export function UserInfoModal({ user, onClose, isOpen = true }: UserInfoModalPro
         "
         aria-label={`Private chat with ${displayName}`}
       >
-        <MessageCircle className="w-4 h-4" />
+        <ChatCircle weight="regular" className="w-4 h-4" />
         <span className="hidden sm:inline">Private Chat</span>
       </button>
       <button
@@ -387,7 +387,7 @@ export function UserInfoModal({ user, onClose, isOpen = true }: UserInfoModalPro
                   <PermissionCheckbox
                     id="perm-admin-chat"
                     label="Admin Chat"
-                    icon={<MessageSquare className="w-5 h-5" />}
+                    icon={<ChatTeardrop weight="regular" className="w-5 h-5" />}
                     checked={permissions.adminChat}
                     onChange={(v) => handlePermissionChange('adminChat', v)}
                   />

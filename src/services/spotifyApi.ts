@@ -1,7 +1,7 @@
 // src/services/spotifyApi.ts
 // Spotify API service using integrationsApi
 import { integrationsApi } from '../api/integrations';
-import { refreshTokenIfNeeded } from './oauthApi';
+// import { refreshTokenIfNeeded } from './oauthApi';
 
 import type {
   SpotifyTrack,

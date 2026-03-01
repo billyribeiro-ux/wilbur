@@ -11,7 +11,7 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Minus, Send } from '@phosphor-icons/react';
+import { ChatCircle, X, CaretDown, PaperPlaneRight } from '@phosphor-icons/react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { privateChatsApi } from '../../api/private_chats';
@@ -188,7 +188,7 @@ export function PrivateChatModal({
           aria-controls="private-chat-content"
         >
           <div className="flex items-center gap-3">
-            <MessageSquare className="w-5 h-5 text-white" />
+            <ChatCircle weight="regular" className="w-5 h-5 text-white" />
             <div className="flex items-center gap-2">
               {/* Avatar */}
               <div className="relative w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center overflow-hidden">
@@ -211,7 +211,7 @@ export function PrivateChatModal({
           </div>
           <div className="flex items-center gap-2">
             <span className="p-1 text-slate-400 hover:text-white transition-colors">
-              <Minus className="w-4 h-4" />
+              <CaretDown weight="regular" className="w-4 h-4" />
             </span>
             <span
               role="button"
@@ -335,7 +335,7 @@ export function PrivateChatModal({
                 "
                 aria-label="Send message"
               >
-                <Send className="w-4 h-4" />
+                <PaperPlaneRight weight="regular" className="w-4 h-4" />
               </button>
             </div>
           </div>

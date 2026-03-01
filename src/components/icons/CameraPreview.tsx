@@ -1,4 +1,4 @@
-import { Video, VideoSlash, WarningCircle } from '@phosphor-icons/react';
+import { Video, VideoCameraSlash, WarningCircle } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 
 import { cameraPermissions } from '../../lib/cameraPermissions';
@@ -86,7 +86,7 @@ export function CameraPreview({ deviceId }: CameraPreviewProps) {
     return (
       <div className="w-full aspect-video bg-slate-700 rounded-lg flex items-center justify-center">
         <div className="text-center">
-          <VideoSlash className="w-12 h-12 text-slate-400 mx-auto mb-2" weight="regular"/>
+          <VideoCameraSlash className="w-12 h-12 text-slate-400 mx-auto mb-2" weight="regular"/>
           <p className="text-sm text-slate-400">No camera selected</p>
         </div>
       </div>
@@ -116,7 +116,7 @@ export function CameraPreview({ deviceId }: CameraPreviewProps) {
     return (
       <div className="w-full aspect-video bg-slate-700 rounded-lg flex items-center justify-center border-2 border-red-500/50">
         <div className="text-center px-4">
-          <VideoSlash className="w-12 h-12 text-red-400 mx-auto mb-2" weight="regular"/>
+          <VideoCameraSlash className="w-12 h-12 text-red-400 mx-auto mb-2" weight="regular"/>
           <p className="text-sm text-red-400 mb-1">Camera Error</p>
           <p className="text-xs text-slate-400">{error}</p>
         </div>

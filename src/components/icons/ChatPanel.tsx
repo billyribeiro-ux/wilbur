@@ -190,7 +190,7 @@ export function ChatPanel() {
     
     try {
       const existingChat = await privateChatsApi.findByUser(userId);
-      let chatId = existingChat?.id;
+      let chatId = existingChat?.chat?.id;
 
       if (!chatId) {
         const newChat = await privateChatsApi.create(userId);

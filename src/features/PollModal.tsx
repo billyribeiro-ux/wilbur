@@ -1,5 +1,5 @@
 // src/components/PollModal.tsx
-import { BarChart3, Plus, X, Trash, Clock, Users } from '@phosphor-icons/react';
+import { ChartBar, Plus, X, Trash, Clock, Users } from '@phosphor-icons/react';
 import { useState } from 'react';
 
 import { createPoll } from '../services/api';
@@ -98,7 +98,7 @@ export function PollModal({ onClose }: PollModalProps) {
       // Replace optimistic poll with real poll from API
       if (createdPoll) {
         const { setPolls, polls: currentPolls } = useRoomStore.getState();
-        setPolls(currentPolls.map(p => p.id === tempPollId ? createdPoll : p));
+        setPolls(currentPolls.map(p => p.id === tempPollId ? (createdPoll as unknown as Poll) : p));
       } else {
         // If creation failed, remove optimistic poll
         const { removePoll } = useRoomStore.getState();
@@ -131,7 +131,7 @@ export function PollModal({ onClose }: PollModalProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="p-1.5 sm:p-2 bg-white/20 rounded-lg">
-                <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                <ChartBar weight="regular" className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-white">Create Poll</h2>
@@ -304,7 +304,7 @@ export function PollModal({ onClose }: PollModalProps) {
               </>
             ) : (
               <>
-                <BarChart3 className="w-4 h-4" />
+                <ChartBar weight="regular" className="w-4 h-4" />
                 <span>Create Poll</span>
               </>
             )}

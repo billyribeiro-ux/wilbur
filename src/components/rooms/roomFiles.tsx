@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------
 
 import { storageApi } from "../../api/storage";
-import { logger } from "../../utils/productionLogger";
+import { logger } from "../../utils/logger";
 
 // ────────────────────────────────────────────────────────────────────────────
 // Types & Error Class
@@ -53,7 +53,7 @@ export async function getRoomFiles(roomId: string): Promise<RoomFile[]> {
 
     const data = await storageApi.listRoomFiles(roomId);
 
-    return (data || []).map((item: Record<string, unknown>) => ({
+    return ((data || []) as unknown as Record<string, unknown>[]).map((item) => ({
       id: item.id as string,
       room_id: item.room_id as string,
       user_id: (item.uploaded_by as string) || '',

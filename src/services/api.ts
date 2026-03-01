@@ -9,7 +9,7 @@ import { messagesApi } from '../api/messages';
 import { alertsApi } from '../api/alerts';
 import { pollsApi } from '../api/polls';
 import { storageApi } from '../api/storage';
-import { usersApi } from '../api/users';
+// users API available via '../api/users' when needed
 import type { Room, ChatMessage, Alert, RoomMembership, Poll } from '../types/database.types';
 
 import { queryCache, CacheKeys, invalidateRoomCache } from '../utils/queryCache';
@@ -89,10 +89,10 @@ export const getUserRooms = async (_userId: string, useCache = true): Promise<Ro
     const data = await roomsApi.list();
 
     if (useCache && data) {
-      queryCache.set(cacheKey, data as Room[], 5 * 60 * 1000);
+      queryCache.set(cacheKey, data as unknown as Room[], 5 * 60 * 1000);
     }
 
-    return (data as Room[]) || [];
+    return (data as unknown as Room[]) || [];
   } catch (error) {
     console.error('[API] Error fetching user rooms:', error);
     throw error;
@@ -137,7 +137,7 @@ export const getRoomMessages = async (
       queryCache.set(cacheKey, data, 2 * 60 * 1000);
     }
 
-    return (data as ChatMessage[]) || [];
+    return (data as unknown as ChatMessage[]) || [];
   } catch (error) {
     console.error('[API] Error fetching room messages:', error);
     return [];
@@ -168,7 +168,7 @@ export const getRoomAlerts = async (
       queryCache.set(cacheKey, data, 1 * 60 * 1000);
     }
 
-    return (data as Alert[]) || [];
+    return (data as unknown as Alert[]) || [];
   } catch (error) {
     console.error('[API] getRoomAlerts: Fatal error:', error);
     return [];
@@ -190,7 +190,7 @@ export const getUserRoomRole = async (userId: string, roomId: string): Promise<R
   try {
     const members = await roomsApi.listMembers(roomId);
     const membership = members.find((m) => m.user_id === userId);
-    return membership as RoomMembership | undefined;
+    return membership as unknown as RoomMembership | undefined;
   } catch (error) {
     console.error('[API] getUserRoomRole: Error:', error);
     return undefined;
@@ -237,7 +237,7 @@ export const getActiveMediaTracks = async (_roomId: string) => {
 export const uploadAlertMedia = async (
   file: File,
   _tenantId: string,
-  roomId: string,
+  _roomId: string,
   _userId: string
 ): Promise<string> => {
   // Upload via storage API, then return the URL
@@ -289,7 +289,7 @@ export const getRoomPolls = async (roomId: string, useCache = true): Promise<Pol
     queryCache.set(cacheKey, data, 3 * 60 * 1000);
   }
 
-  return data as Poll[];
+  return data as unknown as Poll[];
 };
 
 export const getPollVotes = async (pollId: string, useCache = true) => {

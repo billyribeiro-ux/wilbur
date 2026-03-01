@@ -20,7 +20,6 @@ import {
   getRoomMessages,
   getRoomAlerts,
   getActiveMediaTracks,
-  ensureUserRoomMembership,
 } from '../../services/api';
 import { audioService } from '../../services/audioService';
 import { cameraService } from '../../services/cameraService';
@@ -47,7 +46,7 @@ import type { TradingRoomLayoutProps } from './types';
 import { useAudioVideoController } from './useAudioVideoController';
 import { useScreenShareController } from './useScreenShareController';
 import { useTradingRoomState } from './useTradingRoomState';
-import type { Database } from '../../types/database.types';
+import type { Database, RoomMembership } from '../../types/database.types';
 
 type RoomRow = Database['public']['Tables']['rooms']['Row'];
 
@@ -187,7 +186,7 @@ export function TradingRoomContainer({
         // CRITICAL: Set the membership in the store so canManageRoom works
         if (membershipResult.isValid && membershipResult.membership) {
           console.log('[TradingRoom] ✅ Membership validated - Role:', membershipResult.membership.role);
-          setMembership(membershipResult.membership);
+          setMembership(membershipResult.membership as unknown as RoomMembership);
         } else {
           console.error('[TradingRoom] ❌ MEMBERSHIP VALIDATION FAILED');
           console.error('[TradingRoom] 🚨 Error:', membershipResult.error);
@@ -529,7 +528,7 @@ export function TradingRoomContainer({
     
     try {
       // Microsoft Enterprise: Server-side ban implementation
-      await moderationApi.banUser(room.id, userId, 'Banned by moderator');
+      await moderationApi.ban(userId, room.id, 'Banned by moderator');
       
       addToast(`${displayName} has been banned`);
       logger.info('User banned:', { userId, displayName, roomId: room.id });
@@ -548,7 +547,7 @@ export function TradingRoomContainer({
     
     try {
       // Microsoft Enterprise: Server-side kick implementation
-      await moderationApi.kickUser(room.id, userId, 'Kicked by moderator');
+      await moderationApi.kick(userId, room.id, 'Kicked by moderator');
       
       addToast(`${displayName} has been kicked`);
       logger.info('User kicked:', { userId, displayName, roomId: room.id });
@@ -567,12 +566,7 @@ export function TradingRoomContainer({
     
     try {
       // Microsoft Enterprise: Server-side report implementation
-      await moderationApi.report({
-        content_type: 'alert',
-        content_id: alertId,
-        room_id: room.id,
-        reason: 'Reported by user',
-      });
+      await moderationApi.report(room.id, user.id, 'Reported by user', alertId);
       
       addToast('Alert reported to moderators');
       logger.info('Alert reported:', { alertId, roomId: room.id, reportedBy: user.id });
@@ -801,7 +795,8 @@ export function TradingRoomContainer({
     
     try {
       // Create or get existing private chat room via API
-      const chat = await privateChatsApi.getOrCreate(userId);
+      const existingChat = await privateChatsApi.findByUser(userId).catch(() => null);
+      const chat = existingChat || await privateChatsApi.create(userId);
       const chatId = chat?.id;
       
       // Dispatch event to open private chat drawer

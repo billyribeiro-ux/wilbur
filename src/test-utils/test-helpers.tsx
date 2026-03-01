@@ -1,3 +1,4 @@
+/// <reference types="vitest/globals" />
 /** Microsoft-style test utilities for React Testing Library */
 
 import type { RenderOptions } from '@testing-library/react';

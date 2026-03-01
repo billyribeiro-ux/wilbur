@@ -10,7 +10,7 @@
  * @updated 2026-01-24
  */
 
-import { X, Search, ArrowUpDown, ArrowClockwise, Gear, User, AtSign, MessageSquare } from '@phosphor-icons/react';
+import { X, MagnifyingGlass, ArrowsDownUp, ArrowClockwise, Gear, User, At, ChatTeardrop } from '@phosphor-icons/react';
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 
 import { useRoomStore } from '../../store/roomStore';
@@ -150,7 +150,7 @@ export function UsersPanelModal({ onClose, isOpen = true }: UsersPanelModalProps
           "
           aria-label="Search users"
         >
-          <Search className="w-5 h-5 text-slate-300" />
+          <MagnifyingGlass weight="regular" className="w-5 h-5 text-slate-300" />
         </button>
 
         <button
@@ -167,7 +167,7 @@ export function UsersPanelModal({ onClose, isOpen = true }: UsersPanelModalProps
           aria-label={`Sort ${sortOrder === 'asc' ? 'Z-A' : sortOrder === 'desc' ? 'None' : 'A-Z'}`}
           aria-pressed={sortOrder !== 'none'}
         >
-          <ArrowUpDown className="w-5 h-5" />
+          <ArrowsDownUp weight="regular" className="w-5 h-5" />
         </button>
 
         <button
@@ -227,7 +227,7 @@ export function UsersPanelModal({ onClose, isOpen = true }: UsersPanelModalProps
       {/* Search Input */}
       <div className="px-4 sm:px-6 py-3 bg-slate-900/50 border-b border-slate-700/50">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <MagnifyingGlass weight="regular" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500" />
           <label htmlFor="user-search" className="sr-only">Search users</label>
           <input
             ref={searchInputRef}
@@ -355,7 +355,7 @@ export function UsersPanelModal({ onClose, isOpen = true }: UsersPanelModalProps
                       "
                       role="menuitem"
                     >
-                      <AtSign className="w-5 h-5 text-slate-400" />
+                      <At weight="regular" className="w-5 h-5 text-slate-400" />
                       <span className="text-white">Mention</span>
                     </button>
                     <button
@@ -368,7 +368,7 @@ export function UsersPanelModal({ onClose, isOpen = true }: UsersPanelModalProps
                       "
                       role="menuitem"
                     >
-                      <MessageSquare className="w-5 h-5 text-slate-400" />
+                      <ChatTeardrop weight="regular" className="w-5 h-5 text-slate-400" />
                       <span className="text-white">Private Chat</span>
                     </button>
                   </div>

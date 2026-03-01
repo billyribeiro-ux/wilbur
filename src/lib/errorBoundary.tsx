@@ -4,7 +4,7 @@
 import type { ErrorInfo, ReactNode } from 'react';
 import { Component } from 'react';
 
-import { logger } from '../utils/productionLogger';
+import { logger } from '../utils/logger';
 
 // Use logger with 'log' alias for backward compatibility
 const log = {

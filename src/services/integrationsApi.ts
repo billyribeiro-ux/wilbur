@@ -1,5 +1,5 @@
 // Integrations service using integrationsApi
-import { api } from '../api/client';
+// api client available via '../api/client' when needed
 import { integrationsApi } from '../api/integrations';
 import type { Json } from '../types/database.types';
 
@@ -67,8 +67,6 @@ export async function upsertUserIntegration(
 ): Promise<UserIntegration> {
   // The server handles upserting via the exchange endpoint.
   // This function now creates the integration by calling refresh to persist the token.
-  const redirectUri = `${window.location.origin}/oauth/callback`;
-
   // Since we already have tokens, we use the API to store/refresh them.
   // The exchange endpoint expects a code, so we use refresh instead to update the token.
   const result = await integrationsApi.refresh(integrationType);

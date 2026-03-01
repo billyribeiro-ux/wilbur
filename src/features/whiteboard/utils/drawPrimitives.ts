@@ -7,18 +7,14 @@
 // ============================================================================
 
 import type { 
-  ViewportTransform,
   WhiteboardPoint,
-  WhiteboardAnnotation,
-  TextAnnotation,
   WhiteboardShape,
-  ShapeObject,
-  EmojiObject,
   ViewportState,
   LinearGradient,
   CompositeMode
 } from '../types';
-import { safeShapePoints, hasShapePoints } from './safeAccess';
+// safeAccess utilities available when needed
+// import { safeShapePoints, hasShapePoints } from './safeAccess';
 import { worldToScreen } from './transform';
 import { drawFormattedText } from './textLayout';
 import { buildLinearGradient, getPointsBoundingBox } from './gradientBuilder';

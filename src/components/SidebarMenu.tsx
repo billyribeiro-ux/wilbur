@@ -6,7 +6,7 @@
  * Purpose: Extracted from BrandHeader for easier maintenance and development
  */
 
-import { Archive, ArrowUpDown, CheckCircle, CaretDown, MoreVertical, Search, Gear as SettingsIcon, Shuffle, Star, Users, VolumeX, Wifi,  } from '@phosphor-icons/react';
+import { Archive, ArrowsDownUp, CheckCircle, CaretDown, DotsThreeVertical, MagnifyingGlass, Gear as SettingsIcon, Shuffle, Star, Users, SpeakerSlash, WifiHigh } from '@phosphor-icons/react';
 import { useEffect, useRef } from 'react';
 
 // ============================================================================
@@ -160,7 +160,7 @@ export function SidebarMenu({
           onClick={() => handleMenuClick(onOpenConnectivityCheck)}
           type="button"
         >
-          <Wifi className="w-4 h-4 text-slate-400" />
+          <WifiHigh weight="regular" className="w-4 h-4 text-slate-400" />
           <span className="text-slate-200">Connectivity Check</span>
         </button>
 
@@ -193,7 +193,7 @@ export function SidebarMenu({
           onClick={() => handleMenuClick(onManageMutedUsers)}
           type="button"
         >
-          <VolumeX className="w-4 h-4 text-slate-400" />
+          <SpeakerSlash weight="regular" className="w-4 h-4 text-slate-400" />
           <span className="text-slate-200">Manage Muted Users</span>
         </button>
 
@@ -236,13 +236,13 @@ export function SidebarMenu({
               onClick={() => handleMenuClick(onOpenUsersPanel)}
               aria-label="Search users"
             >
-              <Search className="w-4 h-4 text-slate-400" />
+              <MagnifyingGlass weight="regular" className="w-4 h-4 text-slate-400" />
             </button>
             <button
               className="p-1.5 hover:bg-slate-600 rounded transition-colors"
               aria-label="Sort users"
             >
-              <ArrowUpDown className="w-4 h-4 text-slate-400" />
+              <ArrowsDownUp weight="regular" className="w-4 h-4 text-slate-400" />
             </button>
             <button
               className="p-1.5 hover:bg-slate-600 rounded transition-colors"
@@ -274,7 +274,7 @@ export function SidebarMenu({
             className="p-1 hover:bg-slate-600 rounded transition-colors"
             aria-label="User menu"
           >
-            <MoreVertical className="w-4 h-4 text-slate-400" />
+            <DotsThreeVertical weight="regular" className="w-4 h-4 text-slate-400" />
           </button>
         </div>
       </div>

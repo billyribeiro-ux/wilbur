@@ -11,7 +11,7 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X } from '@phosphor-icons/react';
+import { ChatCircle, X } from '@phosphor-icons/react';
 import { useCallback } from 'react';
 
 // ============================================================================
@@ -129,7 +129,7 @@ export function MessageNotification({
                   bg-white/20 backdrop-blur rounded-full
                   flex items-center justify-center
                 ">
-                  <MessageCircle className="w-5 h-5 text-white" />
+                  <ChatCircle className="w-5 h-5 text-white" />
                 </div>
               )}
             </div>

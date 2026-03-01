@@ -3,7 +3,7 @@
 // ============================================================================
 // Handles graceful degradation when browser blocks Web Playback SDK
 
-import { logger } from '../utils/productionLogger';
+import { logger } from '../utils/logger';
 
 // Create scoped logger for Spotify fallback
 const log = logger.scope('SpotifyFallback');

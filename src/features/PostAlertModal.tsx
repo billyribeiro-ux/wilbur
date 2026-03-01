@@ -311,7 +311,8 @@ export function PostAlertModal({ onClose }: PostAlertModalProps) {
       // Optimistic update - add alert immediately to store
       if (newAlert) {
         const { addAlert } = useRoomStore.getState();
-        addAlert(newAlert);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        addAlert(newAlert as any);
       }
 
       addToast('Alert posted successfully', 'success');

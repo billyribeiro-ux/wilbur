@@ -80,9 +80,7 @@ export function SpotifyButton() {
               id: '',
               user_id: user.id,
               provider: 'spotify',
-              access_token: '',
-              refresh_token: undefined,
-              expires_at: undefined,
+              connected: true,
               display_name: 'Spotify',
               avatar_url: undefined,
             });

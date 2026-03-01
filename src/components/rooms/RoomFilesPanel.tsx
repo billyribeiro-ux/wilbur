@@ -11,7 +11,7 @@ import { // Fixed: 2025-10-24 - React component type fixes
 // Microsoft TypeScript standards - corrected field references
 
 
-  FileText, Files as FilesIcon, Image, Music, Search, ArrowClockwise, Upload, Download, Trash,  } from '@phosphor-icons/react';
+  FileText, Files as FilesIcon, Image, MusicNote, MagnifyingGlass, ArrowClockwise, Upload, Download, Trash } from '@phosphor-icons/react';
 import { useState, useRef, useEffect } from "react";
 
 import { useAuthStore } from "../../store/authStore";
@@ -291,7 +291,7 @@ export function RoomFilesPanel({
         >
           {(["files", "images", "sounds"] as const).map((tab) => {
             const Icon =
-              tab === "files" ? FilesIcon : tab === "images" ? Image : Music;
+              tab === "files" ? FilesIcon : tab === "images" ? Image : MusicNote;
             const countVal = count[tab];
             return (
               <button
@@ -330,7 +330,7 @@ export function RoomFilesPanel({
             {/* Search Bar */}
             <div className="flex gap-3 p-4 border-b border-border">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <MagnifyingGlass weight="regular" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input
                   type="text"
                   placeholder="Search files..."

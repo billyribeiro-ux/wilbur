@@ -13,8 +13,9 @@ import { useState, useCallback, useMemo } from 'react';
 // const useEffect  = undefined; /* UNUSED IMPORT – preserved for reference */
 import { roomsApi } from '../../api/rooms';
 import { storageApi } from '../../api/storage';
-import { tenantsApi } from '../../api/tenants';
-import { usersApi } from '../../api/users';
+// tenants and users APIs available when needed
+// import { tenantsApi } from '../../api/tenants';
+// import { usersApi } from '../../api/users';
 import { useAuthStore } from '../../store/authStore';
 import { useToastStore } from '../../store/toastStore';
 import type { Room } from '../../types/database.types';
@@ -149,9 +150,6 @@ export function CreateRoomModal({ sourceRoom, mode = 'create', onClose, onCreate
     setError(undefined);
 
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-
       const result = await storageApi.upload(file, 'room-icons');
 
       handleChange('iconUrl', result.url);

@@ -1,6 +1,6 @@
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ArrowClockwise, Users, Microphone, MicrophoneSlash, Video, VideoSlash, LogOut, Palette, Sparkles, Gear as SettingsIcon, MonitorUp, Menu,  } from '@phosphor-icons/react';
+import { ArrowClockwise, Users, Microphone, MicrophoneSlash, Video, VideoCameraSlash, SignOut, Palette, Sparkle, Gear as SettingsIcon, MonitorArrowUp, List } from '@phosphor-icons/react';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { useFluentIcons } from '../../icons/useFluentIcons';
 
@@ -221,7 +221,7 @@ export function BrandHeader({
       // Fallback to database
       if (room?.id) {
         try {
-          const members = await roomsApi.getMembers(room.id);
+          const members = await roomsApi.listMembers(room.id);
           setParticipantCount(members.length);
         } catch (error) {
           console.error('[BrandHeader] Failed to get participant count:', error);
@@ -283,7 +283,7 @@ export function BrandHeader({
                   const C = I as React.ComponentType<Record<string, unknown>>;
                   return <C className={iconClasses} />;
                 }
-                return <Menu className={iconClasses} />;
+                return <List className={iconClasses} weight="regular" />;
               })()
             )}
           </button>
@@ -505,7 +505,7 @@ export function BrandHeader({
             (() => {
               const I = fi?.CameraOff24Regular || fi?.CameraOff20Regular || fi?.VideoOff24Regular || fi?.VideoOff20Regular;
               if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className={iconClasses} />; }
-              return <VideoSlash className={iconClasses} weight="regular"/>;
+              return <VideoCameraSlash className={iconClasses} weight="regular"/>;
             })()
           )}
         </button>
@@ -524,7 +524,7 @@ export function BrandHeader({
             {(() => {
               const I = fi?.Presenter24Regular || fi?.Presenter20Regular || fi?.ScreenShareStart24Regular || fi?.ScreenShareStart20Regular;
               if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className={iconClasses} />; }
-              return <MonitorUp className={iconClasses} />;
+              return <MonitorArrowUp className={iconClasses} weight="regular" />;
             })()}
           </button>
           <ul
@@ -690,7 +690,7 @@ export function BrandHeader({
           {(() => {
             const I = fi?.Sparkle24Regular || fi?.Sparkle20Regular || fi?.StarEmphasis24Regular || fi?.StarEmphasis20Regular;
             if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className={iconClasses} />; }
-            return <Sparkles className={iconClasses} />;
+            return <Sparkle className={iconClasses} weight="regular" />;
           })()}
         </button>
 
@@ -733,7 +733,7 @@ export function BrandHeader({
           {(() => {
             const I = fi?.SignOut24Regular || fi?.SignOut20Regular || fi?.ArrowExit24Regular || fi?.ArrowExit20Regular;
             if (I) { const C = I as React.ComponentType<Record<string, unknown>>; return <C className={iconClasses} />; }
-            return <LogOut className={iconClasses} />;
+            return <SignOut className={iconClasses} weight="regular" />;
           })()}
         </button>
       </nav>

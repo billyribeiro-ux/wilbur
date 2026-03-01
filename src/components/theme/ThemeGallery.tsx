@@ -35,7 +35,7 @@ useEffect(() => {
 const loadThemes = async () => {
 try {
 const data = await themesApi.list();
-setThemes((data || []) as UserTheme[]);
+setThemes((data || []) as unknown as UserTheme[]);
 } catch (err: unknown) {
 console.error("[ThemeGallery] Error:", err);
 const message = err instanceof Error ? err.message : "Failed to load themes.";
