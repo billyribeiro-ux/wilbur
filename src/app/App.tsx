@@ -7,7 +7,6 @@
  */
 
 import { useEffect, lazy, Suspense, type FC, type ReactNode } from 'react';
-import '../icons/fa';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { FluentProvider, webDarkTheme, Spinner, type Theme } from '@fluentui/react-components';
 
@@ -190,7 +189,7 @@ export function App() {
   // Microsoft pattern: Initialize auth on app load
   useEffect(() => {
     initialize();
-  }, []);
+  }, [initialize]);
 
   // Microsoft Pattern: Don't verify session here - authStore.initialize() is the single source of truth
   // Removed redundant DEBUG auth verification to prevent race conditions
