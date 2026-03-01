@@ -14,6 +14,7 @@ import { pointerBatcher, viewportCache, toViewportState } from '../../../utils/p
 import type {
   ViewportTransform,
   WhiteboardPoint,
+  ShapeObject,
 } from '../types';
 
 const __BROWSER__ =
@@ -117,15 +118,17 @@ export function handleLinePointerDown(
   const id = makeId();
   toolState.currentShapeId = id;
 
-  const newShape: any = {
+  const newShape: ShapeObject = {
     id,
     type: 'line',
+    x: startWorld.x,
+    y: startWorld.y,
+    scale: 1,
+    rotation: 0,
     color,
     size,
     opacity,
-    lineStyle: 'solid',
-    points: [startWorld, startWorld], // world coords
-    timestamp: now,
+    points: [startWorld, startWorld],
     locked: false,
     createdAt: now,
     updatedAt: now,
@@ -151,7 +154,7 @@ export function handleLinePointerMove(
   }
 
   const store = useWhiteboardStore.getState();
-  const shape = store.shapes.get(toolState.currentShapeId) as any;
+  const shape = store.shapes.get(toolState.currentShapeId) as ShapeObject | undefined;
   if (!shape || !shape.points || shape.points.length < 1) return false;
 
   // CSS px pointer
@@ -176,7 +179,7 @@ export function handleLinePointerMove(
     if (!toolState.currentShapeId) return;
 
     const currentStore = useWhiteboardStore.getState();
-    const currentShape = currentStore.shapes.get(toolState.currentShapeId) as any;
+    const currentShape = currentStore.shapes.get(toolState.currentShapeId) as ShapeObject | undefined;
     if (!currentShape || !currentShape.points) return;
 
     currentStore.updateShape(toolState.currentShapeId, {

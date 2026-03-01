@@ -12,7 +12,7 @@ import { // Fixed: 2025-10-24 - React component type fixes
 
 
   FileText, Files as FilesIcon, Image, MusicNote, MagnifyingGlass, ArrowClockwise, Upload, Download, Trash } from '@phosphor-icons/react';
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 import { useAuthStore } from "../../store/authStore";
 import { useThemeStore } from "../../store/themeStore";
@@ -91,11 +91,7 @@ export function RoomFilesPanel({
   // ═══════════════════════════════════════════════
   // Load Files
   // ═══════════════════════════════════════════════
-  useEffect(() => {
-    if (roomId) loadFiles();
-  }, [roomId]);
-
-  const loadFiles = async () => {
+  const loadFiles = useCallback(async () => {
     if (!roomId) return;
     setIsLoading(true);
     try {
@@ -109,7 +105,11 @@ export function RoomFilesPanel({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [roomId, addToast]);
+
+  useEffect(() => {
+    if (roomId) loadFiles();
+  }, [roomId, loadFiles]);
 
   // ═══════════════════════════════════════════════
   // File Filters

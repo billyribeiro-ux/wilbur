@@ -14,6 +14,7 @@ import { pointerBatcher, viewportCache, toViewportState } from '../../../utils/p
 import type {
   ViewportTransform,
   WhiteboardPoint,
+  ShapeObject,
 } from '../types';
 
 const __BROWSER__ = typeof window !== 'undefined' && typeof document !== 'undefined';
@@ -123,15 +124,17 @@ export function handleRectanglePointerDown(
   const now = Date.now();
   toolState.currentShapeId = id;
 
-  const newShape: any = {
+  const newShape: ShapeObject = {
     id,
     type: 'rectangle',
+    x: worldPoint.x,
+    y: worldPoint.y,
+    scale: 1,
+    rotation: 0,
     color,
-    size, // stroke thickness in WORLD units
+    size,
     opacity,
-    lineStyle: 'solid',
-    points: [worldPoint, worldPoint], // [anchor, moving corner] in WORLD coords
-    timestamp: now,
+    points: [worldPoint, worldPoint],
     locked: false,
     createdAt: now,
     updatedAt: now,
@@ -152,7 +155,7 @@ export function handleRectanglePointerMove(
   if (!toolState.isActive || !toolState.isDrawing || !toolState.currentShapeId) return false;
 
   const store = useWhiteboardStore.getState();
-  const shape = store.shapes.get(toolState.currentShapeId) as any;
+  const shape = store.shapes.get(toolState.currentShapeId) as ShapeObject | undefined;
   if (!shape || !shape.points || shape.points.length < 1) return false;
 
   // Update shift lock live if user presses/releases Shift during drag
@@ -184,7 +187,7 @@ export function handleRectanglePointerMove(
     if (!toolState.currentShapeId) return;
 
     const currentStore = useWhiteboardStore.getState();
-    const currentShape = currentStore.shapes.get(toolState.currentShapeId) as any;
+    const currentShape = currentStore.shapes.get(toolState.currentShapeId) as ShapeObject | undefined;
     if (!currentShape || !currentShape.points) return;
 
     currentStore.updateShape(toolState.currentShapeId, {

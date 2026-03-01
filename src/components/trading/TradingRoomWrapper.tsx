@@ -101,8 +101,8 @@ export function TradingRoomWrapper() {
   }, [roomId, user, initialized]);
 
   // 🔥 CRITICAL FIX: Memoize room object to prevent infinite re-renders
-  // Only create new reference when roomData.id actually changes
-  const room = useMemo(() => roomData, [roomData?.id]);
+  // Only create new reference when roomData changes
+  const room = useMemo(() => roomData, [roomData]);
 
   // Handle leave - navigate back to room selector
   const handleLeave = useCallback(() => {
