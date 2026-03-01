@@ -38,3 +38,7 @@ wilbur-api/.sqlx/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+
+# Legacy/archived code
+legacy/
