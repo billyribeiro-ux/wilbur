@@ -4,7 +4,7 @@
  */
 
 import { pb, Collections, subscribeToCollection, unsubscribe } from '$lib/services/pocketbase';
-import type { Room, RoomWithContext, RoomMembership, ChatMessage, Alert, User, Poll, PollVote, PollWithVotes } from '$lib/types';
+import type { Room, RoomWithContext, RoomMembership, ChatMessage, Alert, User, Poll, PollWithVotes } from '$lib/types';
 
 // ============================================================================
 // ROOM STATE - Svelte 5 Runes

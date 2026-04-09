@@ -11,7 +11,10 @@
 			id: 'spotify', name: 'Spotify', icon: '🎵',
 			description: 'Stream music and share what you\'re listening to',
 			connected: spotifyStore.isConnected,
-			action: () => { spotifyStore.isConnected ? spotifyStore.disconnect() : connectSpotify(); }
+			action: () => {
+				if (spotifyStore.isConnected) spotifyStore.disconnect();
+				else connectSpotify();
+			}
 		},
 		{
 			id: 'linkedin', name: 'LinkedIn', icon: '💼',

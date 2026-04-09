@@ -1,20 +1,20 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 
 	let { enabled = false }: { enabled?: boolean } = $props();
 	let videoEl: HTMLVideoElement | undefined = $state();
 	let stream: MediaStream | null = $state(null);
 	let error = $state<string | null>(null);
-	let permissionState = $state<'prompt' | 'granted' | 'denied'>('prompt');
+	let _permissionState = $state<'prompt' | 'granted' | 'denied'>('prompt');
 
 	async function startCamera() {
 		try {
 			error = null;
 			stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
 			if (videoEl) { videoEl.srcObject = stream; }
-			permissionState = 'granted';
+			_permissionState = 'granted';
 		} catch (err) {
-			permissionState = 'denied';
+			_permissionState = 'denied';
 			error = err instanceof Error ? err.message : 'Camera access denied';
 		}
 	}
@@ -42,7 +42,6 @@
 	{:else if !enabled}
 		<div class="off"><span>📷 Camera Off</span></div>
 	{:else}
-		<!-- svelte-ignore a11y_media_has_caption -->
 		<video bind:this={videoEl} autoplay playsinline muted class="video"></video>
 	{/if}
 </div>

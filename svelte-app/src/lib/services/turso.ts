@@ -4,7 +4,7 @@
  * Wilbur Trading Room - December 2025
  */
 
-import { createClient, type Client } from '@libsql/client';
+import { createClient, type Client, type InArgs, type InStatement } from '@libsql/client';
 import { env } from '$env/dynamic/private';
 
 // ============================================================================
@@ -37,7 +37,7 @@ export function getTursoClient(): Client {
 
 export async function query<T = unknown>(sql: string, args?: unknown[]): Promise<T[]> {
 	const client = getTursoClient();
-	const result = await client.execute({ sql, args: (args || []) as import('@libsql/client').InArgs });
+	const result = await client.execute({ sql, args: (args || []) as InArgs });
 	return result.rows as T[];
 }
 
@@ -48,12 +48,12 @@ export async function queryOne<T = unknown>(sql: string, args?: unknown[]): Prom
 
 export async function execute(sql: string, args?: unknown[]) {
 	const client = getTursoClient();
-	return await client.execute({ sql, args: (args || []) as import('@libsql/client').InArgs });
+	return await client.execute({ sql, args: (args || []) as InArgs });
 }
 
 export async function batchExecute(statements: { sql: string; args?: unknown[] }[]) {
 	const client = getTursoClient();
-	return await client.batch(statements as import('@libsql/client').InStatement[]);
+	return await client.batch(statements as InStatement[]);
 }
 
 // ============================================================================

@@ -58,7 +58,7 @@
 		currentPoints = [...currentPoints, getPoint(e)];
 	}
 
-	function handlePointerUp(e: PointerEvent) {
+	function handlePointerUp(_e: PointerEvent) {
 		if (whiteboardStore.tool === 'laser') { whiteboardStore.laserVisible = false; whiteboardStore.clearLaser(); return; }
 		if (!isDrawing || currentPoints.length < 2) { isDrawing = false; return; }
 		const tool = whiteboardStore.tool;

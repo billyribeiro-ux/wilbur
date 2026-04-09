@@ -115,7 +115,8 @@ class PrivateChatStore {
 
 	private mapToChat(r: Record<string, unknown>, currentUserId: string): PrivateChat {
 		const isUser1 = r.user1 === currentUserId;
-		const otherUserData = isUser1 ? (r.expand as any)?.user2 : (r.expand as any)?.user1;
+		const expand = r.expand as { user1?: Record<string, unknown>; user2?: Record<string, unknown> } | undefined;
+		const otherUserData = isUser1 ? expand?.user2 : expand?.user1;
 		return {
 			id: r.id as string, user1Id: r.user1 as string, user2Id: r.user2 as string,
 			createdAt: r.created as string, updatedAt: r.updated as string,

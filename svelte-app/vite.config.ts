@@ -1,6 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
@@ -13,5 +13,11 @@ export default defineConfig({
 	},
 	optimizeDeps: {
 		exclude: ['pocketbase']
+	},
+	test: {
+		include: ['src/**/*.{test,spec}.ts'],
+		exclude: ['node_modules', 'e2e', '**/.svelte-kit/**'],
+		passWithNoTests: true,
+		environment: 'node'
 	}
 });

@@ -3,7 +3,7 @@
  * Wilbur Trading Room - December 2025
  */
 
-import { json, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { env } from '$env/dynamic/private';
 

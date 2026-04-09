@@ -1,10 +1,11 @@
 <script lang="ts">
+	import type { Component } from 'svelte';
 	import { roomStore, authStore, toastStore } from '$lib/stores';
 	import { UsersIcon, CrownIcon, ShieldIcon, UserIcon, DotsThreeIcon, ProhibitIcon, ChatCircleIcon, UserMinusIcon } from 'phosphor-svelte';
 
 	let showActionsFor = $state<string | null>(null);
 
-	function getRoleIcon(role: string) {
+	function getRoleIcon(role: string): { icon: Component; class: string } {
 		switch (role) {
 			case 'admin':
 				return { icon: CrownIcon, class: 'text-yellow-400' };
@@ -51,7 +52,7 @@
 		showActionsFor = null;
 	}
 
-	async function handleDirectMessage(userId: string) {
+	async function handleDirectMessage(_userId: string) {
 		// TODO: Implement DM functionality
 		toastStore.info('Direct messaging coming soon');
 		showActionsFor = null;
@@ -132,7 +133,7 @@
 	</div>
 </div>
 
-{#snippet MemberItem(props: { member: typeof sortedMembers[0], showActionsFor: string | null, canModerate: () => boolean, isCurrentUser: (id: string) => boolean, getRoleIcon: (role: string) => { icon: any, class: string }, getRoleBadgeClass: (role: string) => string, handleKickUser: (id: string, name: string) => void, handleBanUser: (id: string, name: string) => void, handleDirectMessage: (id: string) => void })}
+{#snippet MemberItem(props: { member: typeof sortedMembers[0], showActionsFor: string | null, canModerate: () => boolean, isCurrentUser: (id: string) => boolean, getRoleIcon: (role: string) => { icon: Component; class: string }, getRoleBadgeClass: (role: string) => string, handleKickUser: (id: string, name: string) => void, handleBanUser: (id: string, name: string) => void, handleDirectMessage: (id: string) => void })}
 	{@const member = props.member}
 	{@const roleStyle = props.getRoleIcon(member.role)}
 	<div class="group relative flex items-center gap-3 rounded-lg p-2 hover:bg-surface-800 transition">
@@ -156,6 +157,7 @@
 		<!-- Info -->
 		<div class="flex-1 min-w-0">
 			<div class="flex items-center gap-2">
+				<roleStyle.icon class="h-4 w-4 shrink-0 {roleStyle.class}" />
 				<span class="font-medium truncate">
 					{member.user?.displayName || 'Unknown'}
 				</span>
