@@ -153,31 +153,46 @@ export function simplifyPoints(points: Array<{ x: number; y: number }>, toleranc
   if (points.length < 3) return points;
   const sqTolerance = tolerance * tolerance;
 
-  function getSqDist(p1: { x: number; y: number }, p2: { x: number; y: number }) {
-    const dx = p1.x - p2.x, dy = p1.y - p2.y;
+  function getSqSegDist(p: { x: number; y: number }, v: { x: number; y: number }, w: { x: number; y: number }) {
+    let dx = w.x - v.x, dy = w.y - v.y;
+    if (dx !== 0 || dy !== 0) {
+      const t = Math.min(1, Math.max(0, ((p.x - v.x) * dx + (p.y - v.y) * dy) / (dx * dx + dy * dy)));
+      dx = v.x + t * dx - p.x;
+      dy = v.y + t * dy - p.y;
+    } else {
+      dx = v.x - p.x;
+      dy = v.y - p.y;
+    }
     return dx * dx + dy * dy;
   }
 
-  function simplifyDPStep(pts: Array<{ x: number; y: number }>, first: number, last: number, simplified: Array<{ x: number; y: number }>) {
+  // Iterative Douglas-Peucker to avoid stack overflow on large inputs
+  const bitSet = new Uint8Array(points.length);
+  bitSet[0] = 1;
+  bitSet[points.length - 1] = 1;
+  const stack: [number, number][] = [[0, points.length - 1]];
+
+  while (stack.length > 0) {
+    const [first, last] = stack.pop()!;
     let maxDist = sqTolerance, index = -1;
     for (let i = first + 1; i < last; i++) {
-      const dist = getSqDist(pts[i], pts[first]) + getSqDist(pts[i], pts[last]);
+      const dist = getSqSegDist(points[i], points[first], points[last]);
       if (dist > maxDist) {
         index = i;
         maxDist = dist;
       }
     }
     if (index !== -1) {
-      simplifyDPStep(pts, first, index, simplified);
-      simplifyDPStep(pts, index, last, simplified);
-    } else {
-      simplified.push(pts[first]);
+      bitSet[index] = 1;
+      stack.push([first, index]);
+      stack.push([index, last]);
     }
   }
 
   const simplified: Array<{ x: number; y: number }> = [];
-  simplifyDPStep(points, 0, points.length - 1, simplified);
-  simplified.push(points[points.length - 1]);
+  for (let i = 0; i < points.length; i++) {
+    if (bitSet[i]) simplified.push(points[i]);
+  }
   return simplified;
 }
 

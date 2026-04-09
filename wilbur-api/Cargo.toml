@@ -7,7 +7,7 @@ rust-version = "1.82"
 [dependencies]
 # Web Framework
 axum = { version = "0.8", features = ["ws", "multipart", "macros"] }
-axum-extra = { version = "0.10", features = ["typed-header", "cookie", "query"] }
+axum-extra = { version = "0.12", features = ["typed-header", "cookie", "query"] }
 tokio = { version = "1", features = ["full"] }
 tower = { version = "0.5", features = ["util", "timeout"] }
 tower-http = { version = "0.6", features = ["cors", "trace", "limit", "compression-gzip", "request-id"] }
@@ -31,7 +31,7 @@ aws-config = { version = "1", features = ["behavior-version-latest"] }
 livekit-api = "0.4"
 
 # HTTP Client (OAuth)
-reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+reqwest = { version = "0.13", features = ["json", "rustls"], default-features = false }
 
 # Serialization
 serde = { version = "1", features = ["derive"] }
@@ -40,20 +40,20 @@ serde_json = "1"
 # Utilities
 uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
-validator = { version = "0.19", features = ["derive"] }
+validator = { version = "0.20", features = ["derive"] }
 thiserror = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 dashmap = "6"
 dotenvy = "0.15"
-rand = "0.8"
+rand = "0.9"
 base64 = "0.22"
 url = "2"
 mime = "0.3"
 bytes = "1"
 futures = "0.3"
 tokio-stream = "0.1"
-governor = "0.8"
+governor = "0.10"
 http = "1"
 
 [profile.release]

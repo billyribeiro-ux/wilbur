@@ -122,7 +122,7 @@ describe('Whiteboard Utils - Type Safety', () => {
   it('should import draw primitives', async () => {
     const drawPrimitives = await import('../../src/features/whiteboard/utils/drawPrimitives');
     
-    expect(typeof drawPrimitives.drawPath).toBe('function');
+    expect(typeof drawPrimitives.drawStroke).toBe('function');
     expect(typeof drawPrimitives.drawText).toBe('function');
     
     console.log('✅ Draw Primitives: Functions exported');

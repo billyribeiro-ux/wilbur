@@ -24,12 +24,22 @@ export default defineConfig({
     sourcemap: 'hidden',
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-fluent': ['@fluentui/react-components', '@fluentui/react-icons'],
-          'vendor-livekit': ['livekit-client'],
-          'vendor-framer': ['framer-motion'],
-          'vendor-zustand': ['zustand', 'immer'],
+        manualChunks(id: string) {
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/') || id.includes('node_modules/react-router-dom')) {
+            return 'vendor-react';
+          }
+          if (id.includes('node_modules/@fluentui/react-components') || id.includes('node_modules/@fluentui/react-icons')) {
+            return 'vendor-fluent';
+          }
+          if (id.includes('node_modules/livekit-client')) {
+            return 'vendor-livekit';
+          }
+          if (id.includes('node_modules/framer-motion')) {
+            return 'vendor-framer';
+          }
+          if (id.includes('node_modules/zustand') || id.includes('node_modules/immer')) {
+            return 'vendor-zustand';
+          }
         },
       },
     },
