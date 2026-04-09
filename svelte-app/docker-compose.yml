@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # ==========================================================================
+  # Wilbur SvelteKit Application
+  # ==========================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+      - PUBLIC_POCKETBASE_URL=http://pocketbase:8090
+      - TURSO_DATABASE_URL=${TURSO_DATABASE_URL}
+      - TURSO_AUTH_TOKEN=${TURSO_AUTH_TOKEN}
+      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
+      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
+      - LIVEKIT_URL=${LIVEKIT_URL}
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - pocketbase
+    networks:
+      - wilbur-network
+    command: npm run dev -- --host
+
+  # ==========================================================================
+  # Pocketbase Backend
+  # ==========================================================================
+  pocketbase:
+    image: ghcr.io/muchobien/pocketbase:latest
+    ports:
+      - "8090:8090"
+    volumes:
+      - pocketbase_data:/pb_data
+      - ./pocketbase/pb_schema.json:/pb_migrations/schema.json:ro
+    environment:
+      - POCKETBASE_ADMIN_EMAIL=${POCKETBASE_ADMIN_EMAIL:-admin@wilbur.local}
+      - POCKETBASE_ADMIN_PASSWORD=${POCKETBASE_ADMIN_PASSWORD:-adminpassword123}
+    networks:
+      - wilbur-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8090/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================================================
+  # Nginx Reverse Proxy (Production)
+  # ==========================================================================
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - app
+      - pocketbase
+    networks:
+      - wilbur-network
+    profiles:
+      - production
+
+volumes:
+  pocketbase_data:
+    driver: local
+
+networks:
+  wilbur-network:
+    driver: bridge

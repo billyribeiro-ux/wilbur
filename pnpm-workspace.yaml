@@ -1,2 +1,6 @@
 packages:
-  - '.'
+  - .
+  - svelte-app
+
+onlyBuiltDependencies:
+  - esbuild

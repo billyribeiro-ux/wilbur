@@ -1,0 +1,128 @@
+@import 'tailwindcss';
+@import '@skeletonlabs/skeleton/themes/cerberus';
+
+/* Tailwind v4 Theme Extension */
+@theme {
+	/* Primary colors */
+	--color-primary-50: oklch(0.97 0.01 257);
+	--color-primary-100: oklch(0.93 0.03 257);
+	--color-primary-200: oklch(0.86 0.06 257);
+	--color-primary-300: oklch(0.76 0.1 257);
+	--color-primary-400: oklch(0.65 0.15 257);
+	--color-primary-500: oklch(0.55 0.2 257);
+	--color-primary-600: oklch(0.48 0.18 257);
+	--color-primary-700: oklch(0.42 0.15 257);
+	--color-primary-800: oklch(0.36 0.12 257);
+	--color-primary-900: oklch(0.31 0.09 257);
+	--color-primary-950: oklch(0.24 0.06 257);
+
+	/* Surface colors for dark theme */
+	--color-surface-50: oklch(0.98 0 0);
+	--color-surface-100: oklch(0.96 0 0);
+	--color-surface-200: oklch(0.9 0 0);
+	--color-surface-300: oklch(0.82 0 0);
+	--color-surface-400: oklch(0.65 0 0);
+	--color-surface-500: oklch(0.5 0 0);
+	--color-surface-600: oklch(0.37 0 0);
+	--color-surface-700: oklch(0.27 0 0);
+	--color-surface-800: oklch(0.18 0 0);
+	--color-surface-900: oklch(0.12 0 0);
+	--color-surface-950: oklch(0.07 0 0);
+}
+
+/* Global Dark Mode Default */
+html {
+	color-scheme: dark;
+}
+
+body {
+	@apply bg-surface-900 text-surface-50;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	@apply bg-surface-800;
+}
+
+::-webkit-scrollbar-thumb {
+	@apply bg-surface-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	@apply bg-surface-500;
+}
+
+/* Chat Message Animations */
+@keyframes slideIn {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.chat-message-enter {
+	animation: slideIn 0.2s ease-out;
+}
+
+/* Alert Pulse Animation */
+@keyframes alertPulse {
+	0%, 100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.7;
+	}
+}
+
+.alert-pulse {
+	animation: alertPulse 2s ease-in-out infinite;
+}
+
+/* Trading Signal Colors */
+.signal-buy {
+	@apply text-green-400 bg-green-400/10 border-green-400/30;
+}
+
+.signal-sell {
+	@apply text-red-400 bg-red-400/10 border-red-400/30;
+}
+
+.signal-neutral {
+	@apply text-yellow-400 bg-yellow-400/10 border-yellow-400/30;
+}
+
+/* Room Card Hover Effect */
+.room-card {
+	@apply transition-all duration-200;
+}
+
+.room-card:hover {
+	@apply scale-[1.02] shadow-xl;
+}
+
+/* Real-time indicator */
+.realtime-indicator {
+	@apply w-2 h-2 rounded-full bg-green-500 animate-pulse;
+}
+
+/* Online status */
+.status-online {
+	@apply bg-green-500;
+}
+
+.status-away {
+	@apply bg-yellow-500;
+}
+
+.status-offline {
+	@apply bg-gray-500;
+}
