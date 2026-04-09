@@ -241,7 +241,6 @@ export function ChatPanel() {
     input,
     pendingFile: fileUpload.pendingFile,
     uploadedFileUrl: fileUpload.uploadedFileUrl,
-    activeTab: activeTab === ChatTab.Main ? 'main' : 'off-topic',
     messagesEndRef,
     justSentMessageRef,
     setInput,

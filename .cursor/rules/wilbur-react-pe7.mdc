@@ -1,0 +1,24 @@
+---
+description: Principal-engineer standards for the Vite/React app (src/)
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Wilbur React — PE7 standards
+
+## Architecture
+- **API**: HTTP only via `src/api/*` + `src/api/client.ts` (tokens, refresh). No ad-hoc `fetch` to the backend outside the client unless justified (upload streams).
+- **State**: Domain state in Zustand `src/store/*`; keep stores thin — call `src/api` / repositories, not raw env.
+- **Config**: Read `import.meta.env` through `src/config/environment.ts` (or `environment`) — avoid scattering `VITE_*` across components.
+- **Isolation**: Never import `svelte-app/**`. ESLint `no-restricted-imports` + `pnpm run check:isolation` + `pnpm run check:pe7`.
+
+## Security
+- No secrets in client code. JWT access/refresh live in memory + `localStorage` via `api/client` only — do not log tokens.
+- Trust server validation; client validation is UX only.
+
+## TypeScript
+- Prefer `interface` for object shapes; use `type` for unions. Avoid `any` — use `unknown` + narrowing or `Json` from `types/database.types` where appropriate.
+- `@typescript-eslint/no-explicit-any` is **error** in `src/api/**` and `src/store/**`.
+
+## UI
+- Prefer Tailwind utilities + Fluent primitives; avoid new global `!important` in `index.css` unless scoped and documented.

@@ -9,10 +9,26 @@ import { WhiteboardToolbar } from '../../features/whiteboard/components/Whiteboa
 import { useWhiteboardStore } from '../../features/whiteboard/state/whiteboardStore';
 import { TextLayer } from '../../features/whiteboard/components/TextLayer';
 import { EmojiPicker } from '../../features/whiteboard/components/EmojiPicker';
+import type { TextAnnotation } from '../../features/whiteboard/types';
+
+declare global {
+  interface Window {
+    __WB_STORE__?: typeof useWhiteboardStore;
+    /** Test harness / dev tools may set different breadcrumb shapes */
+    __WB_DEBUG_LAST_ADDED__?: unknown;
+    __WB_DEBUG_LAST_UPDATED__?: Record<string, unknown> | null;
+    __WB_DEBUG_UP__?: boolean;
+    __WB_DEBUG_TOOL__?: string;
+    __WB_DEBUG_BRANCH__?: unknown;
+    __WB_DEBUG_ON_DOWN__?: boolean;
+    __WB_DEBUG_ON_MOVE__?: string | null;
+    __WB_DEBUG_ON_UP__?: string | null;
+  }
+}
 
 export const TestWhiteboardHarness: React.FC = () => {
-  const { 
-    shapes, 
+  const {
+    shapes,
     tool,
     setTool: _setTool,
     addShape: _addShape,
@@ -34,62 +50,62 @@ export const TestWhiteboardHarness: React.FC = () => {
 
   // Expose store to window for test debugging
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      (window as any).__WB_STORE__ = useWhiteboardStore;
-      (window as any).__WB_DEBUG_LAST_ADDED__ = null;
-      (window as any).__WB_DEBUG_LAST_UPDATED__ = null;
-      (window as any).__WB_DEBUG_UP__ = false;
-      (window as any).__WB_DEBUG_TOOL__ = tool;
-      (window as any).__WB_DEBUG_BRANCH__ = null;
-      (window as any).__WB_DEBUG_ON_DOWN__ = false;
-      (window as any).__WB_DEBUG_ON_MOVE__ = null;
-      (window as any).__WB_DEBUG_ON_UP__ = null;
+    if (typeof window === 'undefined') return;
 
-      // Track shape additions
-      const originalAddShape = useWhiteboardStore.getState().addShape;
-      useWhiteboardStore.setState({
-        addShape: (shape) => {
-          (window as any).__WB_DEBUG_LAST_ADDED__ = shape;
-          return originalAddShape(shape);
-        }
-      });
+    window.__WB_STORE__ = useWhiteboardStore;
+    window.__WB_DEBUG_LAST_ADDED__ = null;
+    window.__WB_DEBUG_LAST_UPDATED__ = null;
+    window.__WB_DEBUG_UP__ = false;
+    window.__WB_DEBUG_TOOL__ = tool;
+    window.__WB_DEBUG_BRANCH__ = null;
+    window.__WB_DEBUG_ON_DOWN__ = false;
+    window.__WB_DEBUG_ON_MOVE__ = null;
+    window.__WB_DEBUG_ON_UP__ = null;
 
-      // Track shape updates
-      const originalUpdateShape = useWhiteboardStore.getState().updateShape;
-      useWhiteboardStore.setState({
-        updateShape: (id, updates) => {
-          (window as any).__WB_DEBUG_LAST_UPDATED__ = { id, ...updates, len: shapes.size };
-          return originalUpdateShape(id, updates);
-        }
-      });
-    }
+    const originalAddShape = useWhiteboardStore.getState().addShape;
+    useWhiteboardStore.setState({
+      addShape: (shape) => {
+        window.__WB_DEBUG_LAST_ADDED__ = shape;
+        return originalAddShape(shape);
+      }
+    });
+
+    const originalUpdateShape = useWhiteboardStore.getState().updateShape;
+    useWhiteboardStore.setState({
+      updateShape: (id, updates) => {
+        window.__WB_DEBUG_LAST_UPDATED__ = {
+          id,
+          ...updates,
+          len: useWhiteboardStore.getState().shapes.size
+        };
+        return originalUpdateShape(id, updates);
+      }
+    });
 
     return () => {
-      if (typeof window !== 'undefined') {
-        delete (window as any).__WB_STORE__;
-        delete (window as any).__WB_DEBUG_LAST_ADDED__;
-        delete (window as any).__WB_DEBUG_LAST_UPDATED__;
-        delete (window as any).__WB_DEBUG_UP__;
-        delete (window as any).__WB_DEBUG_TOOL__;
-        delete (window as any).__WB_DEBUG_BRANCH__;
-        delete (window as any).__WB_DEBUG_ON_DOWN__;
-        delete (window as any).__WB_DEBUG_ON_MOVE__;
-        delete (window as any).__WB_DEBUG_ON_UP__;
-      }
+      delete window.__WB_STORE__;
+      delete window.__WB_DEBUG_LAST_ADDED__;
+      delete window.__WB_DEBUG_LAST_UPDATED__;
+      delete window.__WB_DEBUG_UP__;
+      delete window.__WB_DEBUG_TOOL__;
+      delete window.__WB_DEBUG_BRANCH__;
+      delete window.__WB_DEBUG_ON_DOWN__;
+      delete window.__WB_DEBUG_ON_MOVE__;
+      delete window.__WB_DEBUG_ON_UP__;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-time test instrumentation; uses getState() for fresh shape count
   }, []);
 
   // Update debug tool when it changes and handle emoji tool
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      (window as any).__WB_DEBUG_TOOL__ = tool;
-    }
-    
+    if (typeof window === 'undefined') return;
+
+    window.__WB_DEBUG_TOOL__ = tool;
+
     // Show emoji picker when emoji tool is selected
     if (tool === 'emoji') {
-      // Position the picker in the center of the viewport
-      const centerX = window.innerWidth / 2 - 160; // 160 is half the picker width
-      const centerY = window.innerHeight / 2 - 200; // Approximate height adjustment
+      const centerX = window.innerWidth / 2 - 160;
+      const centerY = window.innerHeight / 2 - 200;
       setEmojiPickerPosition({ x: centerX, y: centerY });
       setShowEmojiPicker(true);
     }
@@ -98,23 +114,20 @@ export const TestWhiteboardHarness: React.FC = () => {
   // Track pointer events for debugging
   useEffect(() => {
     const handlePointerDown = () => {
-      if (typeof window !== 'undefined') {
-        (window as any).__WB_DEBUG_ON_DOWN__ = true;
-        (window as any).__WB_DEBUG_UP__ = false;
-      }
+      if (typeof window === 'undefined') return;
+      window.__WB_DEBUG_ON_DOWN__ = true;
+      window.__WB_DEBUG_UP__ = false;
     };
 
     const handlePointerMove = () => {
-      if (typeof window !== 'undefined') {
-        (window as any).__WB_DEBUG_ON_MOVE__ = 'moved';
-      }
+      if (typeof window === 'undefined') return;
+      window.__WB_DEBUG_ON_MOVE__ = 'moved';
     };
 
     const handlePointerUp = () => {
-      if (typeof window !== 'undefined') {
-        (window as any).__WB_DEBUG_ON_UP__ = 'up';
-        (window as any).__WB_DEBUG_UP__ = true;
-      }
+      if (typeof window === 'undefined') return;
+      window.__WB_DEBUG_ON_UP__ = 'up';
+      window.__WB_DEBUG_UP__ = true;
     };
 
     document.addEventListener('pointerdown', handlePointerDown);
@@ -130,42 +143,36 @@ export const TestWhiteboardHarness: React.FC = () => {
 
   return (
     <div className="relative w-full h-screen bg-gray-50 overflow-hidden">
-      {/* Whiteboard Canvas - Professional Version */}
       <WhiteboardCanvasPro />
 
-      {/* Text Layer for text editing */}
       <TextLayer />
 
-      {/* Emoji Picker - Only show when needed */}
       {showEmojiPicker && (
-        <EmojiPicker 
+        <EmojiPicker
           onSelect={(emoji) => {
-            // Handle emoji selection
             console.log('Emoji selected:', emoji);
-            // Add emoji as a text shape
-            const emojiShape = {
+            const emojiShape: TextAnnotation = {
               id: `emoji-${Date.now()}`,
-              type: 'text' as const,
+              type: 'text',
               content: emoji,
-              x: emojiPickerPosition.x + 160, // Place near picker
+              x: emojiPickerPosition.x + 160,
               y: emojiPickerPosition.y + 100,
               color: '#000000',
               opacity: 1,
               fontSize: 48,
               fontFamily: 'Apple Color Emoji, Segoe UI Emoji, sans-serif',
               fontWeight: 400,
-              fontStyle: 'normal' as const,
+              fontStyle: 'normal',
               scale: 1,
               rotation: 0,
               locked: false,
               createdAt: Date.now(),
               updatedAt: Date.now()
             };
-            _addShape(emojiShape as any);
+            _addShape(emojiShape);
             setShowEmojiPicker(false);
           }}
           onClose={() => {
-            // Handle picker close
             console.log('Emoji picker closed');
             setShowEmojiPicker(false);
           }}
@@ -173,19 +180,16 @@ export const TestWhiteboardHarness: React.FC = () => {
         />
       )}
 
-      {/* Whiteboard Toolbar */}
       <div className="absolute top-4 left-4 z-50">
-        <WhiteboardToolbar 
+        <WhiteboardToolbar
           onClose={() => {
-            // Handle toolbar close
             console.log('Toolbar closed');
           }}
           canManageRoom={true}
         />
       </div>
 
-      {/* History Count Display for Tests */}
-      <div 
+      <div
         className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-2 z-50"
         data-testid="history-info"
       >
@@ -197,7 +201,6 @@ export const TestWhiteboardHarness: React.FC = () => {
         </div>
       </div>
 
-      {/* Debug Info */}
       {process.env.NODE_ENV === 'development' && (
         <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-2 text-xs z-50">
           <div>Shapes: {shapes.size}</div>

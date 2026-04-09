@@ -1,6 +1,7 @@
 // Performance utilities for whiteboard tools
 // Microsoft L67+ Principal Engineer style: modular, typed, robust
 
+import type { ViewportState } from '../../types';
 
 /**
  * pointerBatcher - Batches pointer events and schedules updates via requestAnimationFrame.
@@ -24,7 +25,7 @@ export function pointerBatcher<T>(callback: (batch: T[]) => void, batchSize: num
     if (rafId !== null) return;
     scheduledFn = fn;
     rafId = window.requestAnimationFrame(() => {
-      scheduledFn && scheduledFn();
+      if (scheduledFn) scheduledFn();
       rafId = null;
       scheduledFn = null;
     });
@@ -48,9 +49,9 @@ export function pointerBatcher<T>(callback: (batch: T[]) => void, batchSize: num
  * Usage: const cache = viewportCache(); cache.get(canvas, viewport)
  */
 export function viewportCache() {
-  let cache = new WeakMap<HTMLElement, { rect: DOMRect; viewportState: any }>();
+  let cache = new WeakMap<HTMLElement, { rect: DOMRect; viewportState: ViewportState }>();
   return {
-    get(canvas: HTMLElement, viewportState: any) {
+    get(canvas: HTMLElement, viewportState: ViewportState) {
       let cached = cache.get(canvas);
       if (!cached || cached.viewportState !== viewportState) {
         const rect = canvas.getBoundingClientRect();

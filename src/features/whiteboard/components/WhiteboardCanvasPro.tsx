@@ -592,7 +592,7 @@ export function WhiteboardCanvasPro({
     }
     
     ctx.restore();
-  }, [getViewportState, getTextEditState]);
+  }, [getViewportState]);
   
   const renderShapesLayer = useCallback(() => {
     const layer = layers.get(LAYER_CONFIG.SHAPES);
@@ -840,6 +840,86 @@ export function WhiteboardCanvasPro({
       y: clientY - rect.top
     };
   }, []);
+
+  const commitDrawing = useCallback(() => {
+    if (drawingState.currentPath.length < 1) return;
+
+    const now = Date.now();
+
+    switch (drawingState.tool) {
+      case 'pen': {
+        if (drawingState.currentPath.length < 2) return;
+        const penShape: PenAnnotation = {
+          id: `pen-${now}`,
+          type: 'pen',
+          points: drawingState.currentPath,
+          color: drawingState.color,
+          thickness: drawingState.size,
+          opacity: drawingState.opacity,
+          x: drawingState.startPoint?.x || 0,
+          y: drawingState.startPoint?.y || 0,
+          scale: 1,
+          rotation: 0,
+          locked: false,
+          createdAt: now,
+          updatedAt: now
+        };
+        addShape(penShape);
+        break;
+      }
+
+      case 'rectangle':
+      case 'circle':
+      case 'arrow':
+      case 'line': {
+        if (drawingState.currentPath.length < 2) return;
+        const shapeObj: ShapeObject = {
+          id: `${drawingState.tool}-${now}`,
+          type: drawingState.tool as 'rectangle' | 'circle' | 'arrow' | 'line',
+          points: drawingState.currentPath,
+          stroke: drawingState.color,
+          strokeWidth: drawingState.size,
+          opacity: drawingState.opacity,
+          x: drawingState.startPoint?.x || 0,
+          y: drawingState.startPoint?.y || 0,
+          scale: 1,
+          rotation: 0,
+          locked: false,
+          createdAt: now,
+          updatedAt: now
+        };
+        addShape(shapeObj);
+        break;
+      }
+    }
+  }, [drawingState, addShape]);
+
+  const eraseAtPosition = useCallback((pos: Point) => {
+    const nearbyShapes = spatialIndex.getShapesNear(pos.x, pos.y, eraserSize);
+    const shapesToDelete: string[] = [];
+
+    nearbyShapes.forEach(shape => {
+      if (shape.type === 'text') {
+        const text = shape as TextAnnotation;
+        if (Math.abs(text.x - pos.x) < eraserSize && Math.abs(text.y - pos.y) < eraserSize) {
+          shapesToDelete.push(shape.id);
+        }
+      } else if ('points' in shape && shape.points) {
+        for (const point of shape.points) {
+          const distance = Math.sqrt(
+            Math.pow(point.x - pos.x, 2) +
+            Math.pow(point.y - pos.y, 2)
+          );
+          if (distance < eraserSize) {
+            shapesToDelete.push(shape.id);
+            break;
+          }
+        }
+      }
+    });
+
+    shapesToDelete.forEach(id => deleteShape(id));
+  }, [spatialIndex, eraserSize, deleteShape]);
   
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (!canAnnotate) return;
@@ -896,7 +976,7 @@ export function WhiteboardCanvasPro({
         e.preventDefault();
         return;
     }
-  }, [tool, color, size, opacity, canAnnotate, getMousePos, screenToWorld, getViewportState]);
+  }, [tool, color, size, opacity, canAnnotate, getMousePos, screenToWorld, getViewportState, eraseAtPosition]);
   
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     const canvas = shapesCanvasRef.current;
@@ -944,7 +1024,7 @@ export function WhiteboardCanvasPro({
       }
       e.preventDefault();
     }
-  }, [tool, isErasing, drawingState.isDrawing, getMousePos, screenToWorld, getViewportState]);
+  }, [tool, isErasing, drawingState.isDrawing, getMousePos, screenToWorld, getViewportState, eraseAtPosition]);
   
   const handlePointerUp = useCallback((e: React.PointerEvent) => {
     const canvas = shapesCanvasRef.current;
@@ -986,88 +1066,7 @@ export function WhiteboardCanvasPro({
         opacity: 1
       });
     }
-  }, [tool, drawingState, getViewportState]);
-  
-  const commitDrawing = useCallback(() => {
-    if (drawingState.currentPath.length < 1) return;
-    
-    const now = Date.now();
-    
-    switch (drawingState.tool) {
-      case 'pen': {
-        if (drawingState.currentPath.length < 2) return;
-        const penShape: PenAnnotation = {
-          id: `pen-${now}`,
-          type: 'pen',
-          points: drawingState.currentPath,
-          color: drawingState.color,
-          thickness: drawingState.size,
-          opacity: drawingState.opacity,
-          x: drawingState.startPoint?.x || 0,
-          y: drawingState.startPoint?.y || 0,
-          scale: 1,
-          rotation: 0,
-          locked: false,
-          createdAt: now,
-          updatedAt: now
-        };
-        addShape(penShape);
-        break;
-      }
-      
-      case 'rectangle':
-      case 'circle':
-      case 'arrow':
-      case 'line': {
-        if (drawingState.currentPath.length < 2) return;
-        const shapeObj: ShapeObject = {
-          id: `${drawingState.tool}-${now}`,
-          type: drawingState.tool as 'rectangle' | 'circle' | 'arrow' | 'line',
-          points: drawingState.currentPath,
-          stroke: drawingState.color,
-          strokeWidth: drawingState.size,
-          opacity: drawingState.opacity,
-          x: drawingState.startPoint?.x || 0,
-          y: drawingState.startPoint?.y || 0,
-          scale: 1,
-          rotation: 0,
-          locked: false,
-          createdAt: now,
-          updatedAt: now
-        };
-        addShape(shapeObj);
-        break;
-      }
-    }
-  }, [drawingState, addShape]);
-  
-  const eraseAtPosition = useCallback((pos: Point) => {
-    const nearbyShapes = spatialIndex.getShapesNear(pos.x, pos.y, eraserSize);
-    const shapesToDelete: string[] = [];
-    
-    nearbyShapes.forEach(shape => {
-      // More precise hit detection
-      if (shape.type === 'text') {
-        const text = shape as TextAnnotation;
-        if (Math.abs(text.x - pos.x) < eraserSize && Math.abs(text.y - pos.y) < eraserSize) {
-          shapesToDelete.push(shape.id);
-        }
-      } else if ('points' in shape && shape.points) {
-        for (const point of shape.points) {
-          const distance = Math.sqrt(
-            Math.pow(point.x - pos.x, 2) + 
-            Math.pow(point.y - pos.y, 2)
-          );
-          if (distance < eraserSize) {
-            shapesToDelete.push(shape.id);
-            break;
-          }
-        }
-      }
-    });
-    
-    shapesToDelete.forEach(id => deleteShape(id));
-  }, [spatialIndex, eraserSize, deleteShape]);
+  }, [tool, drawingState, commitDrawing]);
   
   const handleEmojiSelect = useCallback((emoji: string) => {
     const pos = screenToWorld(emojiPickerPosition.x, emojiPickerPosition.y);

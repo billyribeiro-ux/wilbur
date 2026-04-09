@@ -77,7 +77,7 @@ export function deactivateArrowTool(): void {
   toolState.startWorld = null;
 
   if (toolState.canvasElement) {
-    try { toolState.canvasElement.style.cursor = ''; } catch {}
+    try { toolState.canvasElement.style.cursor = ''; } catch { void 0; }
     toolState.canvasElement = null;
   }
   toolState.pointerId = null;

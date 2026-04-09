@@ -67,6 +67,7 @@ This repo includes a **separate** SvelteKit app under `svelte-app/`. It does **n
 **Boundaries**
 
 - Do not import `svelte-app/` from `src/` (enforced by ESLint and `pnpm run check:isolation`).
+- **PE7 gates**: `pnpm run check:pe7` scans `src/` for forbidden imports (e.g. Supabase client, `livekit-client`, `svelte-app`). Pair with `pnpm run check:isolation` in CI.
 - Lint React from the repo root: `pnpm run lint`. Lint SvelteKit from its app: `pnpm --dir svelte-app run lint`.
 - Build React: `pnpm run build`. Build SvelteKit: `pnpm --dir svelte-app run build`.
 

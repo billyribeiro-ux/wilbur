@@ -30,7 +30,6 @@ interface UseChatHandlersProps {
   input: string;
   pendingFile?: File;
   uploadedFileUrl?: string;
-  activeTab: string;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
   justSentMessageRef: React.MutableRefObject<boolean>;
   setInput: (value: string) => void;
@@ -51,7 +50,6 @@ export function useChatHandlers(props: UseChatHandlersProps) {
     input,
     pendingFile,
     uploadedFileUrl,
-    activeTab,
     messagesEndRef,
     justSentMessageRef,
     setInput,
@@ -116,7 +114,7 @@ export function useChatHandlers(props: UseChatHandlersProps) {
       const message = error instanceof Error ? error.message : 'Failed to send message';
       addToast(message, 'error');
     }
-  }, [input, pendingFile, user, currentRoom, uploadedFileUrl, activeTab, messagesEndRef, justSentMessageRef, setInput, setImagePreview, setPendingFile, setUploadedFileUrl, setIsUserScrolledUp, setLoadingStates, addToast, fileInputRef]);
+  }, [input, pendingFile, user, currentRoom, uploadedFileUrl, messagesEndRef, justSentMessageRef, setInput, setImagePreview, setPendingFile, setUploadedFileUrl, setIsUserScrolledUp, setLoadingStates, addToast, fileInputRef]);
 
   /**
    * Handles deleting a message
@@ -152,7 +150,7 @@ export function useChatHandlers(props: UseChatHandlersProps) {
         return { ...prev, deleting: newDeleting };
       });
     }
-  }, [user, messages, setLoadingStates, addToast]);
+  }, [user, currentRoom, messages, setLoadingStates, addToast]);
 
   /**
    * Handles pinning/unpinning a message

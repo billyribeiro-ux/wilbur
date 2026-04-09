@@ -5,6 +5,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useWhiteboardStore } from '../state/whiteboardStore';
+import type { TextAnnotation } from '../types';
 
 export const TextLayer: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -73,7 +74,7 @@ export const TextLayer: React.FC = () => {
         locked: false,
         createdAt: Date.now(),
         updatedAt: Date.now(),
-      } as any);
+      } as TextAnnotation);
     }
     setIsEditing(false);
     setText('');

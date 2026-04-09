@@ -214,7 +214,7 @@ class AuthService {
         action: 'validateUserProfile',
         userId
       });
-      throw new Error('Failed to validate user account. Please try again.');
+      throw new Error('Failed to validate user account. Please try again.', { cause: error });
     }
   }
 

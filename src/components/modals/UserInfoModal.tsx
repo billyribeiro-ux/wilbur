@@ -159,7 +159,7 @@ export function UserInfoModal({ user, onClose, isOpen = true }: UserInfoModalPro
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent, tabIndex: number) => {
     const tabCount = TABS.length;
-    let newIndex = tabIndex;
+    let newIndex: number;
 
     switch (e.key) {
       case 'ArrowLeft':

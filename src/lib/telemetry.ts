@@ -38,7 +38,7 @@ const track = (eventName: string, properties?: Record<string, unknown>) => {
   // Azure App Insights tracking
   try {
     window.appInsights?.trackEvent({ name: eventName, properties });
-  } catch {}
+  } catch { void 0; }
 };
 
 // Initialize telemetry

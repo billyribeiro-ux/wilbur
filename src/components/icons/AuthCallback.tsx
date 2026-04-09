@@ -1,7 +1,7 @@
 // AuthCallback.tsx — Auth callback handler
 
 import { CheckCircle, XCircle, ArrowRight, CircleNotch } from '@phosphor-icons/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { authApi } from '../../api/auth';
 import { useToastStore } from '../../store/toastStore';
@@ -16,24 +16,11 @@ export function AuthCallback() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const { addToast } = useToastStore();
 
-  useEffect(() => {
-    handleEmailVerification();
+  const redirectToLogin = useCallback(() => {
+    window.location.href = '/';
   }, []);
 
-  useEffect(() => {
-    if (status === 'success' && countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(Number(countdown) - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (status === 'success' && countdown === 0) {
-      redirectToLogin();
-      return undefined;
-    }
-    return undefined;
-  }, [status, countdown]);
-
-  const handleEmailVerification = async () => {
+  const handleEmailVerification = useCallback(async () => {
     try {
       // Get the hash from the URL
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -97,11 +84,24 @@ export function AuthCallback() {
       setStatus('error');
       addToast('Email verification failed', 'error');
     }
-  };
+  }, [addToast]);
 
-  const redirectToLogin = () => {
-    window.location.href = '/';
-  };
+  useEffect(() => {
+    void handleEmailVerification();
+  }, [handleEmailVerification]);
+
+  useEffect(() => {
+    if (status === 'success' && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(Number(countdown) - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (status === 'success' && countdown === 0) {
+      redirectToLogin();
+      return undefined;
+    }
+    return undefined;
+  }, [status, countdown, redirectToLogin]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">

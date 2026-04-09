@@ -25,10 +25,7 @@ export function CameraWindow({ stream, isActive, onClose }: CameraWindowProps) {
     }
     
     return () => {
-      // Cleanup: video element will be unmounted, no need to clear srcObject
-      if (videoRef.current && stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
+      stream?.getTracks().forEach((track) => track.stop());
     };
   }, [stream]);
 

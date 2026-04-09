@@ -103,6 +103,8 @@ useSoundStore.subscribe((state) => {
       doNotDisturb: state.doNotDisturb,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  } catch {}
+  } catch {
+    /* best-effort persistence; ignore quota / private mode errors */
+  }
 });
 

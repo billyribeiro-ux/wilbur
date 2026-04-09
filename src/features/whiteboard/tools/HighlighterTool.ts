@@ -19,8 +19,9 @@ import {
   viewportCache,
   simplifyPoints,
 } from '../utils/performance/index';
-import type { 
-  WhiteboardShape, 
+import type {
+  WhiteboardGradient,
+  WhiteboardShape,
   WhiteboardPoint,
   ViewportState,
   StrokeMetadata
@@ -38,7 +39,7 @@ interface HighlighterAnnotationWithMetadata {
   opacity: number;
   locked: boolean;
   points: WhiteboardPoint[];
-  colorGradient: any; // Use proper gradient type from your types
+  colorGradient: WhiteboardGradient;
   thickness: number;
   composite: 'multiply' | 'normal' | 'overlay';
   createdAt: number;
@@ -180,7 +181,7 @@ export function activateHighlighterTool(canvasElement?: HTMLElement): void {
   // Pre-cache viewport if canvas element provided
   if (canvasElement) {
     const store = useWhiteboardStore.getState();
-    toolState.viewportCache.get(canvasElement, store.viewport);
+    toolState.viewportCache.get(canvasElement, store.viewport as ViewportState);
   }
 
   // Reset smoothing buffers

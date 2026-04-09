@@ -20,17 +20,15 @@ interface CameraPreviewProps {
 
 export function CameraPreview({ deviceId }: CameraPreviewProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [stream, setStream] = useState<MediaStream | undefined>();
+  const streamRef = useRef<MediaStream | undefined>(undefined);
   const [error, setError] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
 
   useEffect(() => {
     if (!deviceId) {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        setStream(undefined);
-      }
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = undefined;
       return;
     }
 
@@ -40,9 +38,8 @@ export function CameraPreview({ deviceId }: CameraPreviewProps) {
       setPermissionDenied(false);
 
       try {
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-        }
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = undefined;
 
         const constraints: MediaStreamConstraints = {
           video: {
@@ -54,7 +51,7 @@ export function CameraPreview({ deviceId }: CameraPreviewProps) {
         };
 
         const newStream = await navigator.mediaDevices.getUserMedia(constraints);
-        setStream(newStream);
+        streamRef.current = newStream;
 
         if (videoRef.current) {
           videoRef.current.srcObject = newStream;
@@ -76,9 +73,8 @@ export function CameraPreview({ deviceId }: CameraPreviewProps) {
     startCamera();
 
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = undefined;
     };
   }, [deviceId]);
 

@@ -16,6 +16,29 @@ export function useScreenShareController(): UseScreenShareControllerReturn {
   const isCleaningUp = useRef(false);
   const screenStream = useRef<MediaStream | null>(null);
 
+  const stopScreenShare = useCallback(async () => {
+    if (isCleaningUp.current) return;
+
+    try {
+      if (screenStream.current) {
+        screenStream.current.getTracks().forEach((track) => {
+          track.stop();
+        });
+        screenStream.current = null;
+      }
+
+      setIsSharing(false);
+      addToast('Screen sharing stopped');
+    } catch (error) {
+      console.error('[ScreenShare] Error stopping screen share:', error);
+      if (screenStream.current) {
+        screenStream.current.getTracks().forEach((track) => track.stop());
+        screenStream.current = null;
+      }
+      setIsSharing(false);
+    }
+  }, [addToast]);
+
   const startScreenShare = useCallback(async () => {
     if (isCleaningUp.current || isSharing) return;
 
@@ -45,30 +68,7 @@ export function useScreenShareController(): UseScreenShareControllerReturn {
       setIsSharing(false);
       addToast('Failed to start screen sharing');
     }
-  }, [isSharing, addToast]);
-
-  const stopScreenShare = useCallback(async () => {
-    if (isCleaningUp.current) return;
-
-    try {
-      if (screenStream.current) {
-        screenStream.current.getTracks().forEach((track) => {
-          track.stop();
-        });
-        screenStream.current = null;
-      }
-
-      setIsSharing(false);
-      addToast('Screen sharing stopped');
-    } catch (error) {
-      console.error('[ScreenShare] Error stopping screen share:', error);
-      if (screenStream.current) {
-        screenStream.current.getTracks().forEach((track) => track.stop());
-        screenStream.current = null;
-      }
-      setIsSharing(false);
-    }
-  }, [addToast]);
+  }, [isSharing, addToast, stopScreenShare]);
 
   const toggleScreenShare = useCallback(async () => {
     if (isSharing) {

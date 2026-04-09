@@ -52,7 +52,7 @@ export function BrandingSettings() {
     // Validate file using shared utility
     const validation = validateImageFile(file, UPLOAD_CONFIG.ALLOWED_TYPES, LIMITS.maxAvatarSize);
     if (!validation.ok) {
-      addToast((validation as any).reason || 'Invalid file', 'error');
+      addToast('reason' in validation ? validation.reason : 'Invalid file', 'error');
       return;
     }
 
@@ -81,7 +81,7 @@ export function BrandingSettings() {
       }
 
       if (!result.ok) {
-        addToast((result as any).error || 'Upload failed', 'error');
+        addToast('error' in result ? result.error : 'Upload failed', 'error');
         return;
       }
 

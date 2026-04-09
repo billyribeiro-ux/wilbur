@@ -430,6 +430,8 @@ export function NotesView({
     editorRef.current.innerHTML = selectedNote?.content || '';
     // Ensure LTR after injecting content
     scrubBidi(editorRef.current);
+    // Intentionally depend on id only: syncing on every content keystroke would fight the contenteditable.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- only reset HTML when switching notes
   }, [selectedNote?.id]);
 
   // Auto-init first note for test environments or simplified flows

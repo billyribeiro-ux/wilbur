@@ -212,7 +212,7 @@ export function GeneralSettingsModal({ onClose, isOpen = true }: GeneralSettings
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent, tabIndex: number) => {
     const tabCount = TABS.length;
-    let newIndex = tabIndex;
+    let newIndex: number;
 
     switch (e.key) {
       case 'ArrowLeft':

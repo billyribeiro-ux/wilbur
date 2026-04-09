@@ -99,7 +99,7 @@ export function deactivatePenTool(): void {
   if (toolState.canvasElement) {
     try {
       toolState.canvasElement.style.cursor = '';
-    } catch {}
+    } catch { void 0; }
     toolState.canvasElement = null;
   }
 }
@@ -121,7 +121,7 @@ export function handlePenPointerDown(
 
   toolState.isDrawing = true;
   if ('setPointerCapture' in canvasElement) {
-    try { canvasElement.setPointerCapture(e.pointerId); } catch {}
+    try { canvasElement.setPointerCapture(e.pointerId); } catch { void 0; }
   }
 
   // Use cached viewport - no getBoundingClientRect() spam!
@@ -257,7 +257,7 @@ export function handlePenPointerUp(
   pointerBatcher.cancel();
 
   if ('releasePointerCapture' in canvasElement) {
-    try { canvasElement.releasePointerCapture(e.pointerId); } catch {}
+    try { canvasElement.releasePointerCapture(e.pointerId); } catch { void 0; }
   }
 
   // Apply final high-quality simplification with Douglas-Peucker

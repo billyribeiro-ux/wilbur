@@ -9,7 +9,13 @@
 // ============================================================================
 
 import { useCallback, useRef } from 'react';
-import type { WhiteboardPoint, WhiteboardShape, ViewportState } from '../types';
+import type {
+  HighlighterAnnotation,
+  PenAnnotation,
+  WhiteboardPoint,
+  WhiteboardShape,
+  ViewportState,
+} from '../types';
 import { useWhiteboardStore } from '../state/whiteboardStore';
 import { screenToWorld } from '../utils/transform';
 import { createDefaultHighlighterGradient } from '../utils/gradientBuilder';
@@ -119,7 +125,7 @@ export function usePointerDrawing(
       // Dev/test-only breadcrumbs (safe no-op in prod)
       try {
         if (import.meta.env.DEV && typeof window !== 'undefined') {
-          const w = window as Window & {
+          const w = window as unknown as {
             __WB_DEBUG_LAST_ADDED__?: { type: string; at: number };
           };
           w.__WB_DEBUG_LAST_ADDED__ = { type: newShape.type, at: now };
@@ -143,10 +149,12 @@ export function usePointerDrawing(
 
       const { shapes } = useWhiteboardStore.getState();
       const shape = shapes.get(currentShapeId.current);
-      if (!shape || !('points' in shape) || !(shape as any).points || (shape as any).points.length < 1) return;
+      if (!shape || (shape.type !== 'pen' && shape.type !== 'highlighter')) return;
+      const stroke = shape as PenAnnotation | HighlighterAnnotation;
+      if (!stroke.points || stroke.points.length < 1) return;
 
       // Continuous freehand: append points
-      const newPoints = [...(shape as any).points, worldPoint];
+      const newPoints = [...stroke.points, worldPoint];
 
       updateShape(currentShapeId.current, {
         points: newPoints,
@@ -156,11 +164,11 @@ export function usePointerDrawing(
       // Dev/test-only breadcrumbs
       try {
         if (import.meta.env.DEV && typeof window !== 'undefined') {
-          const w = window as Window & {
+          const w = window as unknown as {
             __WB_DEBUG_LAST_UPDATED__?: { id: string; len: number; tool: string };
           };
           w.__WB_DEBUG_LAST_UPDATED__ = {
-            id: currentShapeId.current,
+            id: currentShapeId.current!,
             len: newPoints.length,
             tool,
           };

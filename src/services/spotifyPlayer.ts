@@ -181,7 +181,10 @@ export class SpotifyPlayer {
     } catch (error) {
       console.error('❌ [SpotifyPlayer] SDK loading failed - falling back to API-only mode');
       console.error('💡 Users can still control Spotify via external devices (phone/computer)');
-      throw new Error('Spotify SDK not available after initialization. Please use Spotify on your phone/computer instead - we\'ll control it remotely.');
+      throw new Error(
+        'Spotify SDK not available after initialization. Please use Spotify on your phone/computer instead - we\'ll control it remotely.',
+        { cause: error }
+      );
     }
   }
 

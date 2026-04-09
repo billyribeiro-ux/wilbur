@@ -254,7 +254,7 @@ export function useTradingRoomState(): UseTradingRoomStateReturn {
         if (typeof leftPanelWidth === 'number') setLeftPanelWidth(leftPanelWidth);
         if (typeof alertsHeight === 'number') setAlertsHeight(alertsHeight);
       }
-    } catch {}
+    } catch { void 0; }
   }, []);
   
   // Persist changes with rAF
@@ -262,7 +262,7 @@ export function useTradingRoomState(): UseTradingRoomStateReturn {
     const id = requestAnimationFrame(() => {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ leftPanelWidth, alertsHeight }));
-      } catch {}
+      } catch { void 0; }
     });
     return () => cancelAnimationFrame(id);
   }, [leftPanelWidth, alertsHeight]);
@@ -273,7 +273,7 @@ export function useTradingRoomState(): UseTradingRoomStateReturn {
     setAlertsHeight(DEFAULTS.alertsHeight);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULTS));
-    } catch {}
+    } catch { void 0; }
   }, []);
 
   // Observe container size for automatic responsive adjustments (use existing sizeRef)
@@ -495,7 +495,7 @@ export function useTradingRoomState(): UseTradingRoomStateReturn {
     // Set initial panel dimensions
     root.style.setProperty('--panel-width', `${leftPanelWidth}px`);
     root.style.setProperty('--alert-height', `${alertsHeight}px`);
-  }, []); // Removed leftPanelWidth and alertsHeight, this should only run once
+  }, [leftPanelWidth, alertsHeight]);
 
   // =========================================================
   // THEME TYPOGRAPHY APPLICATION

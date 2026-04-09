@@ -11,7 +11,7 @@
 
 import { useCallback, useRef, useEffect, useMemo } from 'react';
 import { useWhiteboardStore } from '../state/whiteboardStore';
-import type { ViewportState, WhiteboardTool } from '../types';
+import type { ViewportState, ViewportTransform, WhiteboardTool } from '../types';
 
 // ============================================================================
 // Tool Handler Imports
@@ -124,9 +124,9 @@ interface UseWhiteboardToolsProps {
 interface ToolHandlers {
   activate: (canvas?: HTMLElement | HTMLCanvasElement) => void;
   deactivate: () => void;
-  pointerDown: (e: PointerEvent, canvas: HTMLElement | HTMLCanvasElement, viewport: any) => boolean;
-  pointerMove: (e: PointerEvent, canvas: HTMLElement | HTMLCanvasElement, viewport: any) => boolean;
-  pointerUp: (e: PointerEvent, canvas?: HTMLElement | HTMLCanvasElement, viewport?: any) => boolean;
+  pointerDown: (e: PointerEvent, canvas: HTMLElement | HTMLCanvasElement, viewport: ViewportState | ViewportTransform) => boolean;
+  pointerMove: (e: PointerEvent, canvas: HTMLElement | HTMLCanvasElement, viewport: ViewportState | ViewportTransform) => boolean;
+  pointerUp: (e: PointerEvent, canvas?: HTMLElement | HTMLCanvasElement, viewport?: ViewportState | ViewportTransform) => boolean;
   keyDown?: (e: KeyboardEvent) => boolean;
 }
 
@@ -302,6 +302,61 @@ export function useWhiteboardTools({
     ...viewportState,
     dpr: window.devicePixelRatio || 1,
   }), [viewportState]);
+
+  const updateInputLatency = useCallback(
+    (startTime: number) => {
+      const latency = performance.now() - startTime;
+      updatePerformanceMetrics({ inputLatency: latency });
+      if (process.env.NODE_ENV === 'development' && latency > 16) {
+        console.warn(`[WhiteboardTools] High input latency: ${latency.toFixed(2)}ms`);
+      }
+    },
+    [updatePerformanceMetrics]
+  );
+
+  const startInertialPanning = useCallback(() => {
+    const animate = () => {
+      const panState = panStateRef.current;
+      panState.velocity.x *= TOOL_CONFIG.PAN_INERTIA;
+      panState.velocity.y *= TOOL_CONFIG.PAN_INERTIA;
+      const velocityMagnitude = Math.hypot(panState.velocity.x, panState.velocity.y);
+      if (velocityMagnitude < TOOL_CONFIG.PAN_MIN_VELOCITY) {
+        inertiaRafRef.current = null;
+        return;
+      }
+      setPan(
+        viewport.panX + panState.velocity.x * 0.016,
+        viewport.panY + panState.velocity.y * 0.016
+      );
+      inertiaRafRef.current = requestAnimationFrame(animate);
+    };
+    animate();
+  }, [viewport.panX, viewport.panY, setPan]);
+
+  const handleGlobalShortcuts = useCallback(
+    (e: KeyboardEvent) => {
+      const shortcuts: Record<string, WhiteboardTool> = {
+        p: 'pen',
+        h: 'highlighter',
+        e: 'eraser',
+        l: 'line',
+        r: 'rectangle',
+        c: 'circle',
+        a: 'arrow',
+        t: 'text',
+        s: 'select',
+        ' ': 'hand',
+      };
+      if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+        const newTool = shortcuts[e.key.toLowerCase()];
+        if (newTool) {
+          setTool(newTool);
+          e.preventDefault();
+        }
+      }
+    },
+    [setTool]
+  );
   
   // ============================================================================
   // Tool Activation
@@ -455,7 +510,7 @@ export function useWhiteboardTools({
     } catch (error) {
       console.error(`[WhiteboardTools] Error in pointerDown for ${tool}:`, error);
     }
-  }, [tool, canAnnotate, viewport, dprAwareViewport, canvasRef]);
+  }, [tool, canAnnotate, viewport, dprAwareViewport, canvasRef, updateInputLatency]);
   
   /**
    * Enhanced pointer move handler with throttling and inertia calculation
@@ -521,7 +576,7 @@ export function useWhiteboardTools({
     } catch (error) {
       console.error(`[WhiteboardTools] Error in pointerMove for ${tool}:`, error);
     }
-  }, [tool, canAnnotate, viewport, dprAwareViewport, setPan, canvasRef]);
+  }, [tool, canAnnotate, viewport, dprAwareViewport, setPan, canvasRef, updateInputLatency]);
   
   /**
    * Enhanced pointer up handler with inertial scrolling
@@ -572,7 +627,7 @@ export function useWhiteboardTools({
     } catch (error) {
       console.error(`[WhiteboardTools] Error in pointerUp for ${tool}:`, error);
     }
-  }, [tool, canAnnotate, canvasRef]);
+  }, [tool, canAnnotate, canvasRef, updateInputLatency, startInertialPanning]);
   
   // ============================================================================
   // Keyboard Event Handler
@@ -604,7 +659,7 @@ export function useWhiteboardTools({
     } catch (error) {
       console.error(`[WhiteboardTools] Error in keyDown for ${tool}:`, error);
     }
-  }, [tool, canAnnotate, enableShortcuts]);
+  }, [tool, canAnnotate, enableShortcuts, updateInputLatency, handleGlobalShortcuts]);
   
   // ============================================================================
   // Helper Functions
@@ -635,75 +690,6 @@ export function useWhiteboardTools({
     };
     
     canvas.style.cursor = cursorMap[tool] || 'default';
-  };
-  
-  /**
-   * Starts inertial panning animation
-   */
-  const startInertialPanning = () => {
-    const animate = () => {
-      const panState = panStateRef.current;
-      
-      // Apply friction
-      panState.velocity.x *= TOOL_CONFIG.PAN_INERTIA;
-      panState.velocity.y *= TOOL_CONFIG.PAN_INERTIA;
-      
-      // Check if velocity is too small
-      const velocityMagnitude = Math.hypot(panState.velocity.x, panState.velocity.y);
-      if (velocityMagnitude < TOOL_CONFIG.PAN_MIN_VELOCITY) {
-        inertiaRafRef.current = null;
-        return;
-      }
-      
-      // Apply velocity to pan
-      setPan(
-        viewport.panX + panState.velocity.x * 0.016, // Assume 60fps
-        viewport.panY + panState.velocity.y * 0.016
-      );
-      
-      inertiaRafRef.current = requestAnimationFrame(animate);
-    };
-    
-    animate();
-  };
-  
-  /**
-   * Handles global keyboard shortcuts
-   */
-  const handleGlobalShortcuts = (e: KeyboardEvent) => {
-    // Tool switching shortcuts
-    const shortcuts: Record<string, WhiteboardTool> = {
-      'p': 'pen',
-      'h': 'highlighter',
-      'e': 'eraser',
-      'l': 'line',
-      'r': 'rectangle',
-      'c': 'circle',
-      'a': 'arrow',
-      't': 'text',
-      's': 'select',
-      ' ': 'hand', // Spacebar for hand tool
-    };
-    
-    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
-      const newTool = shortcuts[e.key.toLowerCase()];
-      if (newTool) {
-        setTool(newTool);
-        e.preventDefault();
-      }
-    }
-  };
-  
-  /**
-   * Updates input latency metrics
-   */
-  const updateInputLatency = (startTime: number) => {
-    const latency = performance.now() - startTime;
-    updatePerformanceMetrics({ inputLatency: latency });
-    
-    if (process.env.NODE_ENV === 'development' && latency > 16) {
-      console.warn(`[WhiteboardTools] High input latency: ${latency.toFixed(2)}ms`);
-    }
   };
   
   // ============================================================================

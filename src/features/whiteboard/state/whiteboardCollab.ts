@@ -62,30 +62,30 @@ export function processIncomingEvent(event: WhiteboardEvent): void {
   const store = useWhiteboardStore.getState();
   
   switch (event.type) {
-    case 'shape:add':
-      if (event.payload && 'shape' in (event.payload as any)) {
-        store.addShape((event.payload as any).shape);
-      }
+    case 'shape:add': {
+      const p = event.payload as { shape?: WhiteboardShape } | undefined;
+      if (p?.shape) store.addShape(p.shape);
       break;
-      
-    case 'shape:update':
-      if (event.payload && 'shape' in (event.payload as any)) {
-        const shape = (event.payload as any).shape;
-        store.updateShape(shape.id, shape);
-      }
+    }
+
+    case 'shape:update': {
+      const p = event.payload as { shape?: WhiteboardShape } | undefined;
+      const shape = p?.shape;
+      if (shape) store.updateShape(shape.id, shape);
       break;
-      
-    case 'shape:delete':
-      if (event.payload && 'shapeId' in (event.payload as any)) {
-        store.deleteShape((event.payload as any).shapeId);
-      }
+    }
+
+    case 'shape:delete': {
+      const p = event.payload as { shapeId?: string } | undefined;
+      if (p?.shapeId) store.deleteShape(p.shapeId);
       break;
-      
-    case 'cursor:move':
-      if (event.payload && 'cursor' in (event.payload as any) && event.userId) {
-        store.updateRemoteCursor(event.userId, (event.payload as any).cursor);
-      }
+    }
+
+    case 'cursor:move': {
+      const p = event.payload as { cursor?: RemoteCursor } | undefined;
+      if (p?.cursor && event.userId) store.updateRemoteCursor(event.userId, p.cursor);
       break;
+    }
       
     case 'stroke:clear':
       store.clearShapes();

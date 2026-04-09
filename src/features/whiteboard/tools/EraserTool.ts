@@ -135,9 +135,9 @@ function rebuildSpatialIndex(): void {
   toolState.spatialIndex = new SpatialGrid();
 
   store.shapes.forEach((shape, id) => {
-    const shapeWithPoints = shape as any;
-    if (shapeWithPoints.points && shapeWithPoints.points.length > 0) {
-      toolState.spatialIndex!.insert(id, shapeWithPoints.points);
+    const pts = 'points' in shape && Array.isArray(shape.points) ? shape.points : undefined;
+    if (pts && pts.length > 0) {
+      toolState.spatialIndex!.insert(id, pts);
     }
   });
 
@@ -310,11 +310,11 @@ function eraseAtPoint(
     if (shape.locked) continue;
     if (!erasableTypes.has(shape.type)) continue;
     
-    const shapeWithPoints = shape as any;
-    if (!shapeWithPoints.points || shapeWithPoints.points.length === 0) continue;
+    const pts = 'points' in shape && Array.isArray(shape.points) ? shape.points : undefined;
+    if (!pts || pts.length === 0) continue;
 
     // Check if any point is within eraser radius
-    for (const point of shapeWithPoints.points) {
+    for (const point of pts) {
       const sp = worldToScreen(point, viewportState);
       const dx = sp.x - screenX;
       const dy = sp.y - screenY;

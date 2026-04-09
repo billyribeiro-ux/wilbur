@@ -114,6 +114,13 @@ export default [
       ],
     },
   },
+  // Stricter typing at integration boundaries (PE7)
+  {
+    files: ['src/api/**/*.ts', 'src/store/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
+    },
+  },
   // Test files overrides: relax React Hooks and typing strictness for Playwright/Vitest
   {
     files: [

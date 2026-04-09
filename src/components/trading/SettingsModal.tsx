@@ -123,26 +123,24 @@ function SettingsModalContent({ onClose, userId }: { onClose: () => void; userId
   const [compactMode, setCompactMode] = useState(settings.display.compactMode);
   const [showTimestamps, setShowTimestamps] = useState(settings.display.showTimestamps);
 
+  const getCurrentSettings = useCallback((): UserSettings => ({
+    audio: { masterVolume, notificationVolume, micSensitivity },
+    video: { quality: videoQuality, frameRate, hardwareAcceleration },
+    notifications: { desktop: desktopNotifications, sound: soundNotifications, alerts: alertNotifications, chat: chatNotifications },
+    display: { theme, compactMode, showTimestamps },
+  }), [masterVolume, notificationVolume, micSensitivity, videoQuality, frameRate, hardwareAcceleration, desktopNotifications, soundNotifications, alertNotifications, chatNotifications, theme, compactMode, showTimestamps]);
+
   // Load settings on mount
   useEffect(() => {
-    loadSettings();
-  }, []);
+    void loadSettings();
+  }, [loadSettings]);
 
   // Track changes
   useEffect(() => {
     const currentSettings = getCurrentSettings();
     const changed = JSON.stringify(currentSettings) !== JSON.stringify(originalSettings);
     setHasUnsavedChanges(changed);
-  }, [masterVolume, notificationVolume, micSensitivity, videoQuality, frameRate,
-      hardwareAcceleration, desktopNotifications, soundNotifications, alertNotifications,
-      chatNotifications, theme, compactMode, showTimestamps, originalSettings]);
-
-  const getCurrentSettings = (): UserSettings => ({
-    audio: { masterVolume, notificationVolume, micSensitivity },
-    video: { quality: videoQuality, frameRate, hardwareAcceleration },
-    notifications: { desktop: desktopNotifications, sound: soundNotifications, alerts: alertNotifications, chat: chatNotifications },
-    display: { theme, compactMode, showTimestamps },
-  });
+  }, [getCurrentSettings, originalSettings]);
 
   const applySettings = useCallback((settings: UserSettings) => {
     // Apply audio settings
