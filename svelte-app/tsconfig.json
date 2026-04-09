@@ -14,14 +14,7 @@
 		"module": "ES2022",
 		"verbatimModuleSyntax": true,
 		"isolatedModules": true,
-		"noEmit": true,
-		"paths": {
-			"$lib/*": ["./src/lib/*"],
-			"$components/*": ["./src/lib/components/*"],
-			"$stores/*": ["./src/lib/stores/*"],
-			"$services/*": ["./src/lib/services/*"],
-			"$types/*": ["./src/lib/types/*"]
-		}
+		"noEmit": true
 	},
 	"include": [
 		"./.svelte-kit/ambient.d.ts",

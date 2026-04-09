@@ -13,7 +13,7 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div class="emoji-picker" role="dialog" aria-label="Emoji picker" tabindex="-1" onclick={(e) => e.stopPropagation()}>
 		<div class="categories">
-			{#each categories as cat, i}
+			{#each categories as cat, i (i)}
 				<button
 					class:active={activeCategory === i}
 					onclick={() => activeCategory = i}
@@ -21,7 +21,7 @@
 			{/each}
 		</div>
 		<div class="emoji-grid">
-			{#each categories[activeCategory].emojis as emoji}
+			{#each categories[activeCategory].emojis as emoji, ei (`${activeCategory}-${ei}-${emoji}`)}
 				<button class="emoji-btn" onclick={() => onselect(emoji)}>{emoji}</button>
 			{/each}
 		</div>

@@ -3,6 +3,8 @@
  * Wilbur Trading Room - April 2026
  */
 
+import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -23,7 +25,7 @@ export interface WBShape {
 
 export interface WBViewport { panX: number; panY: number; zoom: number; }
 
-interface HistoryEntry { shapes: Map<string, WBShape>; timestamp: number; action: string; }
+interface HistoryEntry { shapes: SvelteMap<string, WBShape>; timestamp: number; action: string; }
 
 // ============================================================================
 // STORE
@@ -37,14 +39,16 @@ class WhiteboardStore {
 	opacity = $state(1);
 
 	// Canvas state
-	shapes = $state<Map<string, WBShape>>(new Map());
-	selectedIds = $state<Set<string>>(new Set());
+	shapes = $state<SvelteMap<string, WBShape>>(new SvelteMap());
+	selectedIds = $state<SvelteSet<string>>(new SvelteSet());
 
 	// Viewport
 	viewport = $state<WBViewport>({ panX: 0, panY: 0, zoom: 1 });
 
 	// History
-	private history = $state<HistoryEntry[]>([{ shapes: new Map(), timestamp: Date.now(), action: 'init' }]);
+	private history = $state<HistoryEntry[]>([
+		{ shapes: new SvelteMap(), timestamp: Date.now(), action: 'init' }
+	]);
 	private historyIndex = $state(0);
 	private maxHistory = 100;
 
@@ -77,7 +81,7 @@ class WhiteboardStore {
 	// ============================================================================
 
 	addShape(shape: WBShape): void {
-		this.shapes = new Map(this.shapes).set(shape.id, shape);
+		this.shapes.set(shape.id, shape);
 		this.pushHistory('add');
 	}
 
@@ -85,22 +89,18 @@ class WhiteboardStore {
 		const shape = this.shapes.get(id);
 		if (!shape) return;
 		const updated = { ...shape, ...updates, updatedAt: Date.now() };
-		this.shapes = new Map(this.shapes).set(id, updated);
+		this.shapes.set(id, updated);
 	}
 
 	deleteShape(id: string): void {
-		const next = new Map(this.shapes);
-		next.delete(id);
-		this.shapes = next;
-		const sel = new Set(this.selectedIds);
-		sel.delete(id);
-		this.selectedIds = sel;
+		this.shapes.delete(id);
+		this.selectedIds.delete(id);
 		this.pushHistory('delete');
 	}
 
 	clearShapes(): void {
-		this.shapes = new Map();
-		this.selectedIds = new Set();
+		this.shapes.clear();
+		this.selectedIds.clear();
 		this.pushHistory('clear');
 	}
 
@@ -108,10 +108,13 @@ class WhiteboardStore {
 	// SELECTION
 	// ============================================================================
 
-	select(id: string): void { this.selectedIds = new Set(this.selectedIds).add(id); }
-	deselect(id: string): void { const s = new Set(this.selectedIds); s.delete(id); this.selectedIds = s; }
-	clearSelection(): void { this.selectedIds = new Set(); }
-	selectAll(): void { this.selectedIds = new Set(this.shapes.keys()); }
+	select(id: string): void { this.selectedIds.add(id); }
+	deselect(id: string): void { this.selectedIds.delete(id); }
+	clearSelection(): void { this.selectedIds.clear(); }
+	selectAll(): void {
+		this.selectedIds.clear();
+		for (const id of this.shapes.keys()) this.selectedIds.add(id);
+	}
 
 	// ============================================================================
 	// HISTORY
@@ -119,7 +122,7 @@ class WhiteboardStore {
 
 	pushHistory(action: string): void {
 		const h = this.history.slice(0, this.historyIndex + 1);
-		h.push({ shapes: new Map(this.shapes), timestamp: Date.now(), action });
+		h.push({ shapes: new SvelteMap(this.shapes), timestamp: Date.now(), action });
 		while (h.length > this.maxHistory) h.shift();
 		this.history = h;
 		this.historyIndex = h.length - 1;
@@ -128,13 +131,13 @@ class WhiteboardStore {
 	undo(): void {
 		if (!this.canUndo) return;
 		this.historyIndex--;
-		this.shapes = new Map(this.history[this.historyIndex].shapes);
+		this.shapes = new SvelteMap(this.history[this.historyIndex].shapes);
 	}
 
 	redo(): void {
 		if (!this.canRedo) return;
 		this.historyIndex++;
-		this.shapes = new Map(this.history[this.historyIndex].shapes);
+		this.shapes = new SvelteMap(this.history[this.historyIndex].shapes);
 	}
 
 	// ============================================================================
@@ -155,8 +158,9 @@ class WhiteboardStore {
 	// Reset
 	reset(): void {
 		this.tool = 'pen'; this.color = '#000000'; this.size = 3; this.opacity = 1;
-		this.shapes = new Map(); this.selectedIds = new Set();
-		this.history = [{ shapes: new Map(), timestamp: Date.now(), action: 'reset' }];
+		this.shapes.clear();
+		this.selectedIds.clear();
+		this.history = [{ shapes: new SvelteMap(), timestamp: Date.now(), action: 'reset' }];
 		this.historyIndex = 0; this.viewport = { panX: 0, panY: 0, zoom: 1 };
 		this.laserTrail = []; this.laserVisible = false;
 	}

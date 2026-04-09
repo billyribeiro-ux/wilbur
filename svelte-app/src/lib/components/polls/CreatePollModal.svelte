@@ -39,7 +39,7 @@
 			</label>
 			<fieldset>
 				<legend>Options</legend>
-				{#each options as opt, i}
+				{#each options as opt, i (i)}
 					<div class="option-row">
 						<input type="text" value={opt} oninput={(e) => updateOption(i, e.currentTarget.value)} placeholder="Option {i + 1}" required />
 						{#if options.length > 2}

@@ -1,4 +1,5 @@
-// ESLint flat config for SvelteKit (scoped to svelte-app only; run `pnpm run lint` from this directory)
+// ESLint for the SvelteKit app only. Run from `svelte-app/` (`pnpm run lint`).
+// The React app at the monorepo root uses `wilbur/eslint.config.js` — keep them separate.
 import eslint from '@eslint/js';
 import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
@@ -33,12 +34,18 @@ export default tseslint.config(
 			'@typescript-eslint/class-literal-property-style': 'off',
 			'@typescript-eslint/consistent-type-imports': 'off',
 			'@typescript-eslint/no-explicit-any': 'warn',
-			// SvelteKit: string paths and goto() are valid; each-key/@html tracked in code review
 			'svelte/no-navigation-without-resolve': 'off',
-			'svelte/require-each-key': 'warn',
-			'svelte/no-at-html-tags': 'warn',
+			'svelte/require-each-key': 'error',
+			'svelte/no-at-html-tags': 'error',
 			'svelte/no-unused-svelte-ignore': 'off',
-			'svelte/prefer-svelte-reactivity': 'warn'
+			'svelte/prefer-svelte-reactivity': 'error'
+		}
+	},
+	{
+		files: ['**/chat/ChatPanel.svelte'],
+		rules: {
+			// Body HTML is sanitized with DOMPurify in sanitizeContent() before render.
+			'svelte/no-at-html-tags': 'off'
 		}
 	},
 	{

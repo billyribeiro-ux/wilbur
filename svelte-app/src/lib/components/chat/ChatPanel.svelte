@@ -6,6 +6,8 @@
 	import DOMPurify from 'dompurify';
 	import TypingIndicator from './TypingIndicator.svelte';
 
+	/** Rich snippets use `{@html}` only after `sanitizeContent()` (DOMPurify). */
+
 	let messageInput = $state('');
 	let isSubmitting = $state(false);
 	let messagesContainer = $state<HTMLDivElement | null>(null);
@@ -111,7 +113,7 @@
 				<span class="font-medium">Pinned</span>
 			</div>
 			<div class="mt-2 space-y-2">
-				{#each roomStore.pinnedMessages.slice(0, 2) as message}
+				{#each roomStore.pinnedMessages.slice(0, 2) as message (message.id)}
 					<div class="rounded-lg bg-surface-800/50 px-3 py-2 text-sm">
 						<span class="font-medium text-surface-300">{message.user?.displayName || 'Unknown'}:</span>
 						<span class="text-surface-400 ml-1">{@html sanitizeContent(message.content)}</span>
@@ -135,7 +137,7 @@
 				<p class="mt-1 text-sm text-surface-400">Be the first to say something!</p>
 			</div>
 		{:else}
-			{#each roomStore.messages as message, i}
+			{#each roomStore.messages as message, i (message.id)}
 				{@const showAvatar = i === 0 || roomStore.messages[i - 1]?.userId !== message.userId}
 				{@const isOwn = isOwnMessage(message.userId)}
 

@@ -103,7 +103,7 @@
 				</p>
 			</div>
 		{:else}
-			{#each roomStore.alerts as alert}
+			{#each roomStore.alerts as alert (alert.id)}
 				{@const alertStyle = getAlertIcon(alert.body || '')}
 				<div class="rounded-xl border border-surface-700 bg-surface-800/50 p-4 alert-pulse">
 					<div class="flex items-start gap-3">

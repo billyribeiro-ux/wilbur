@@ -39,7 +39,7 @@
 						<div class="poll-desc">{poll.description}</div>
 					{/if}
 					<div class="poll-options">
-						{#each poll.options as option, i}
+						{#each poll.options as option, i (`${poll.id}-${i}`)}
 							{@const pct = getPercentage(poll.voteCounts[i] ?? 0, poll.totalVotes)}
 							<button
 								class="poll-option"

@@ -247,6 +247,8 @@ The project includes adapters for:
 
 ## Testing
 
+This folder is the SvelteKit app in the monorepo (alongside the React app at the repo root). Run lint and tests **from `svelte-app/`** so you use this project’s ESLint config, not the root React config.
+
 ```bash
 # Run unit tests
 npm run test
@@ -283,7 +285,7 @@ wilbur-svelte/
 │   └── hooks.server.ts     # Server hooks
 ├── pocketbase/
 │   └── pb_schema.json      # Pocketbase schema
-├── tests/                  # Playwright E2E tests
+├── e2e/                    # Playwright E2E tests
 ├── .env.example            # Environment template
 └── package.json
 ```

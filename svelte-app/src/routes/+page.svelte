@@ -135,7 +135,7 @@
 			</div>
 
 			<div class="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-				{#each features as feature}
+				{#each features as feature (feature.title)}
 					<div class="rounded-2xl border border-surface-700 bg-surface-800/50 p-8 backdrop-blur transition hover:border-surface-600 hover:bg-surface-800">
 						<div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-500/10 text-primary-400">
 							<feature.icon class="h-6 w-6" />

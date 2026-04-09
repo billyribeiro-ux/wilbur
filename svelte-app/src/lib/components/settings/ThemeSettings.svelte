@@ -32,7 +32,7 @@
 	<section>
 		<h4>Presets</h4>
 		<div class="presets-grid">
-			{#each presets as preset}
+			{#each presets as preset (preset.name)}
 				<button class="preset-card" style:background={preset.bg} onclick={() => applyPreset(preset)}>
 					<div class="preset-accent" style:background={preset.primary}></div>
 					<span class="preset-name">{preset.name}</span>
@@ -51,7 +51,7 @@
 			<label>
 				<span>Font</span>
 				<select bind:value={customFont}>
-					{#each fonts as f}<option value={f}>{f}</option>{/each}
+					{#each fonts as f (f)}<option value={f}>{f}</option>{/each}
 				</select>
 			</label>
 			<button class="apply-btn" onclick={applyCustom}>Apply</button>

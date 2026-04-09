@@ -102,7 +102,7 @@
 					<h3 class="text-xs font-semibold uppercase text-surface-500 mb-2">
 						Admins & Hosts - {admins.length}
 					</h3>
-					{#each admins as member}
+					{#each admins as member (member.id)}
 						{@render MemberItem({ member, showActionsFor, canModerate, isCurrentUser, getRoleIcon, getRoleBadgeClass, handleKickUser, handleBanUser, handleDirectMessage })}
 					{/each}
 				</div>
@@ -113,7 +113,7 @@
 					<h3 class="text-xs font-semibold uppercase text-surface-500 mb-2">
 						Moderators - {moderators.length}
 					</h3>
-					{#each moderators as member}
+					{#each moderators as member (member.id)}
 						{@render MemberItem({ member, showActionsFor, canModerate, isCurrentUser, getRoleIcon, getRoleBadgeClass, handleKickUser, handleBanUser, handleDirectMessage })}
 					{/each}
 				</div>
@@ -124,7 +124,7 @@
 					<h3 class="text-xs font-semibold uppercase text-surface-500 mb-2">
 						Members - {members.length}
 					</h3>
-					{#each members as member}
+					{#each members as member (member.id)}
 						{@render MemberItem({ member, showActionsFor, canModerate, isCurrentUser, getRoleIcon, getRoleBadgeClass, handleKickUser, handleBanUser, handleDirectMessage })}
 					{/each}
 				</div>

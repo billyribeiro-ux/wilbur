@@ -37,7 +37,7 @@
 	<div class="divider"></div>
 
 	<div class="color-group">
-		{#each colors as c}
+		{#each colors as c (c)}
 			<button
 				class="color-swatch"
 				class:active={whiteboardStore.color === c}
@@ -54,7 +54,7 @@
 		<label>
 			<span>Size</span>
 			<select value={whiteboardStore.size} onchange={(e) => whiteboardStore.setSize(Number(e.currentTarget.value))}>
-				{#each sizes as s}<option value={s}>{s}px</option>{/each}
+				{#each sizes as s (s)}<option value={s}>{s}px</option>{/each}
 			</select>
 		</label>
 		<label>

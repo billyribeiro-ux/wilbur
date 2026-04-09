@@ -128,7 +128,7 @@
 		{#if roomStore.isLoading}
 			<!-- Loading State -->
 			<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-				{#each Array(6) as _}
+				{#each [0, 1, 2, 3, 4, 5] as skeleton (skeleton)}
 					<div class="animate-pulse rounded-2xl border border-surface-700 bg-surface-800 p-6">
 						<div class="h-12 w-12 rounded-xl bg-surface-700"></div>
 						<div class="mt-4 h-6 w-3/4 rounded bg-surface-700"></div>
@@ -163,7 +163,7 @@
 		{:else}
 			<!-- Room Grid -->
 			<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-				{#each filteredRooms as room}
+				{#each filteredRooms as room (room.id)}
 					<button
 						onclick={() => handleJoinRoom(room.id)}
 						class="room-card group rounded-2xl border border-surface-700 bg-surface-800/50 p-6 text-left hover:border-surface-600 hover:bg-surface-800"
@@ -207,7 +207,7 @@
 
 						{#if room.tags && room.tags.length > 0}
 							<div class="mt-4 flex flex-wrap gap-2">
-								{#each room.tags.slice(0, 3) as tag}
+								{#each room.tags.slice(0, 3) as tag, tagIndex (`${room.id}-tag-${tagIndex}`)}
 									<span class="rounded-full bg-surface-700 px-2 py-0.5 text-xs text-surface-400">
 										{tag}
 									</span>
