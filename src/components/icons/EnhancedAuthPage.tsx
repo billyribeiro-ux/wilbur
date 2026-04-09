@@ -72,6 +72,13 @@ export function EnhancedAuthPage() {
     }
   }, [password, confirmPassword, authMode, error]);
 
+  // PIN verify step only applies to PIN method; avoid empty login UI if state ever desyncs
+  useEffect(() => {
+    if (loginMethod === 'password' && loginStep === 'pin-verify') {
+      setLoginStep('credentials');
+    }
+  }, [loginMethod, loginStep]);
+
   // ========================================================================
   // PASSWORD LOGIN
   // ========================================================================
@@ -261,23 +268,31 @@ export function EnhancedAuthPage() {
   // RENDER
   // ========================================================================
 
+  // Fixed layer + overflow-y-auto: global index.html uses body overflow:hidden / height:100%,
+  // which clips tall forms unless this route scrolls inside its own viewport.
+  const authShellClass =
+    'fixed inset-0 z-[200] overflow-y-auto overflow-x-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900';
+
   if (authMode === 'verify-email') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-        <EmailVerificationStatus
-          email={verificationEmail}
-          onBack={() => {
-            setAuthMode('login');
-            setVerificationEmail('');
-            resetForm();
-          }}
-        />
+      <div className={authShellClass} data-auth-page>
+        <div className="flex min-h-full flex-col items-center justify-center p-4 py-10">
+          <EmailVerificationStatus
+            email={verificationEmail}
+            onBack={() => {
+              setAuthMode('login');
+              setVerificationEmail('');
+              resetForm();
+            }}
+          />
         </div>
+      </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+    <div className={authShellClass} data-auth-page>
+      <div className="flex min-h-full flex-col items-center justify-center p-4 py-10">
       <div className="w-full max-w-md">
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20">
           <div className="text-center mb-8">
@@ -738,6 +753,7 @@ export function EnhancedAuthPage() {
         <div className="mt-6 text-center text-sm text-slate-400">
           <p>Check your email for verification links and PIN codes</p>
         </div>
+      </div>
       </div>
     </div>
   );

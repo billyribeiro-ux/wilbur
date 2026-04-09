@@ -580,31 +580,34 @@ html, body { margin: 0; padding: 0; }
 
 /* ============================================================
    📱 Typography — Responsive & Fluent
+   (Inside @layer base so Tailwind utilities can override colors on inputs/buttons, e.g. /auth.)
 =============================================================== */
-html {
-  font-family: var(--font-body);
-  font-size: var(--font-base-size);
-  color: var(--color-text-primary);
-  background-color: var(--color-bg-primary);
-  scroll-behavior: smooth;
+@layer base {
+  html {
+    font-family: var(--font-body);
+    font-size: var(--font-base-size);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-primary);
+    scroll-behavior: smooth;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: var(--font-heading-weight);
+    color: var(--color-text-primary);
+    letter-spacing: -0.015em;
+  }
+
+  p, span, small, li, input, button, select, textarea {
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-weight: var(--font-body-weight);
+    line-height: 1.6;
+  }
 }
 
 /* Apply global theme opacity to the app root */
 #root { opacity: var(--theme-opacity); }
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
-  font-weight: var(--font-heading-weight);
-  color: var(--color-text-primary);
-  letter-spacing: -0.015em;
-}
-
-p, span, small, li, input, button, select, textarea {
-  color: var(--color-text-secondary);
-  font-family: var(--font-body);
-  font-weight: var(--font-body-weight);
-  line-height: 1.6;
-}
 
 /* ============================================================
    🔳 Panels, Cards, and Surfaces
