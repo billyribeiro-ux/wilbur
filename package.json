@@ -40,6 +40,7 @@
     "eradicate:nulls:enhanced": "tsx scripts/enhanced-eradicate-nulls.ts",
     "eradicate:nulls:final": "tsx scripts/final-eradicate-nulls.ts",
     "check:nulls": "grep -r '\\bnull\\b' src/ --include='*.ts' --include='*.tsx' | wc -l",
+    "check:isolation": "node scripts/check-app-isolation.mjs",
     "test:ui": "vitest --ui"
   },
   "dependencies": {

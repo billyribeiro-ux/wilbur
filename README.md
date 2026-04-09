@@ -57,12 +57,18 @@ cd wilbur-api && cargo run
 
 ### React + SvelteKit at the same time
 
-This repo includes a separate SvelteKit app under `svelte-app/`. Ports are fixed so both dev servers can run together:
+This repo includes a **separate** SvelteKit app under `svelte-app/`. It does **not** share source code with the React app: different entrypoints, configs, ESLint, and TypeScript project. Ports are fixed so both dev servers can run together:
 
 | App | Port | Command (from repo root) |
 |-----|------|---------------------------|
 | React (Vite) | **5174** | `pnpm run dev` or `pnpm run dev:react` |
 | SvelteKit | **5173** | `pnpm run dev:svelte` |
+
+**Boundaries**
+
+- Do not import `svelte-app/` from `src/` (enforced by ESLint and `pnpm run check:isolation`).
+- Lint React from the repo root: `pnpm run lint`. Lint SvelteKit from its app: `pnpm --dir svelte-app run lint`.
+- Build React: `pnpm run build`. Build SvelteKit: `pnpm --dir svelte-app run build`.
 
 ## Environment Variables
 

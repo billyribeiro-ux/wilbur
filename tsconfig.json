@@ -48,6 +48,8 @@
     "node_modules",
     "dist",
     "build",
+    "svelte-app",
+    "wilbur-api",
     "src/test-utils/**/*",
     "**/*.spec.ts",
     "**/*.test.ts"

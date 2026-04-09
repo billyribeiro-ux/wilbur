@@ -1,3 +1,5 @@
+# Two workspace packages, separate apps: root = React+Vite, svelte-app = SvelteKit.
+# They do not depend on each other; do not import across trees (see `pnpm run check:isolation`).
 packages:
   - .
   - svelte-app

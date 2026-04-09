@@ -1,5 +1,5 @@
-// ESLint for the SvelteKit app only. Run from `svelte-app/` (`pnpm run lint`).
-// The React app at the monorepo root uses `wilbur/eslint.config.js` — keep them separate.
+// ESLint for the SvelteKit app only — run: `pnpm --dir svelte-app run lint` (or `cd svelte-app && pnpm run lint`).
+// The React+Vite app uses `/eslint.config.js` at the repo root. Do not merge configs; apps are independent.
 import eslint from '@eslint/js';
 import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
