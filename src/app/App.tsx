@@ -28,6 +28,7 @@ const ResetPasswordPage = lazy(() =>
 const ImageModal = lazy(() => import('../components/modals/ImageModal').then(m => ({ default: m.ImageModal })));
 const RoomSelector = lazy(() => import('../components/rooms/RoomSelector').then(m => ({ default: m.RoomSelector })));
 const TradingRoomWrapper = lazy(() => import('../components/trading/TradingRoomWrapper').then(m => ({ default: m.TradingRoomWrapper })));
+const LandingPage = lazy(() => import('../pages/LandingPage').then((m) => ({ default: m.LandingPage })));
 
 const PageSpinner = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#111827' }}>
@@ -138,15 +139,19 @@ const AppRoutes: FC = () => {
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Protected routes */}
+        {/* Home: landing for guests, room list when signed in */}
         <Route
           path="/"
           element={
-            <ProtectedRoute>
+            isAuthenticated ? (
               <RoomSelector onSelectRoom={(room) => navigate(`/room/${room.id}`)} />
-            </ProtectedRoute>
+            ) : (
+              <LandingPage />
+            )
           }
         />
+
+        {/* Protected routes */}
         <Route
           path="/room/:roomId"
           element={
@@ -175,7 +180,7 @@ const AppRoutes: FC = () => {
         {/* Test-only Whiteboard route */}
         <Route path="/__test_whiteboard" element={<TestWhiteboard />} />
         {/* Default fallback - session-based check */}
-        <Route path="*" element={<Navigate to={isAuthenticated ? '/' : '/auth'} replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </Suspense>
 
