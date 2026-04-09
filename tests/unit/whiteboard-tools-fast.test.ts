@@ -10,7 +10,7 @@ describe('TypeScript Compilation - ZERO ERRORS Verification', () => {
     const { execSync } = await import('child_process');
     
     try {
-      execSync('npx tsc --noEmit', { 
+      execSync('pnpm exec tsc --noEmit', { 
         cwd: process.cwd(),
         stdio: 'pipe' 
       });
@@ -156,7 +156,7 @@ describe('Production Build - Verification', () => {
     
     try {
       // Just verify TypeScript compiles, don't actually build
-      execSync('npx tsc --noEmit', { 
+      execSync('pnpm exec tsc --noEmit', { 
         cwd: process.cwd(),
         stdio: 'pipe' 
       });
@@ -187,7 +187,7 @@ describe('FINAL VERIFICATION - All Systems', () => {
     try {
       // TypeScript check
       const { execSync } = await import('child_process');
-      execSync('npx tsc --noEmit', { stdio: 'pipe' });
+      execSync('pnpm exec tsc --noEmit', { stdio: 'pipe' });
       results.typescript = true;
       
       // Tool imports

@@ -36,7 +36,7 @@ wilbur-api/target/
 wilbur-api/.sqlx/
 
 # Debug logs
-npm-debug.log*
+*-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*

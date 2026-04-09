@@ -27,7 +27,7 @@ A real-time trading room platform built with React, TypeScript, Rust (Axum), and
 
 ## Tech Stack
 
-- **Frontend**: React 18, TypeScript, Vite
+- **Frontend**: React 19, TypeScript, Vite
 - **Styling**: TailwindCSS
 - **State Management**: Zustand
 - **Backend**: Rust (Axum), SQLx, PostgreSQL
@@ -38,9 +38,11 @@ A real-time trading room platform built with React, TypeScript, Rust (Axum), and
 
 ## Installation
 
+Use **Node.js 24.14.1** (current LTS line). The repo includes [`.nvmrc`](./.nvmrc) for `nvm use` / `fnm use`.
+
 ```bash
 # Install frontend dependencies
-npm install
+pnpm install
 
 # Set up environment variables
 cp .env.example .env
@@ -83,7 +85,7 @@ cd wilbur-api && sqlx migrate run
 
 ```bash
 # Build frontend for production
-npm run build
+pnpm run build
 
 # Build Rust backend for production
 cd wilbur-api && cargo build --release

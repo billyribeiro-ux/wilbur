@@ -255,12 +255,12 @@ src/features/whiteboard/
 ./scripts/test-whiteboard.sh
 
 # Run specific tests
-npm run test textLayout.spec.ts
-npm run test textUndo.spec.ts
-npm run test emojiRender.spec.ts
+pnpm exec vitest run textLayout.spec.ts
+pnpm exec vitest run textUndo.spec.ts
+pnpm exec vitest run emojiRender.spec.ts
 
 # Run E2E tests
-npx playwright test whiteboard-text-emoji.spec.ts
+pnpm exec playwright test whiteboard-text-emoji.spec.ts
 ```
 
 ### Keyboard Shortcuts

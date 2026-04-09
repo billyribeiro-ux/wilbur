@@ -7,7 +7,7 @@ This project has transitioned from a React-based application to a SvelteKit-base
 - **Original Version**: React 18 + Vite (revolution-app)
 - **Current Version**: SvelteKit 2 (wilbur-trading-room)
 - **Migration Date**: March 2026
-- **Package Manager**: Converted from npm to pnpm
+- **Package Manager**: pnpm (Corepack / `packageManager` in `package.json`)
 
 ## Archive Location
 The original React application is preserved in:

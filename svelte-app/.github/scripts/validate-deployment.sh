@@ -129,11 +129,11 @@ fi
 echo ""
 echo -e "${BLUE}[5/6]${NC} Checking package manager configuration..."
 
-if [ -f "pnpm-lock.yaml" ]; then
+if [ -f "pnpm-lock.yaml" ] || [ -f "../pnpm-lock.yaml" ]; then
   echo -e "  ${GREEN}✓${NC} pnpm lockfile exists"
-elif [ -f "package-lock.json" ]; then
-  echo -e "  ${YELLOW}⚠${NC} Using npm (consider migrating to pnpm)"
-  ((WARNINGS++))
+elif [ -f "package-lock.json" ] || [ -f "../package-lock.json" ]; then
+  echo -e "  ${RED}✗${NC} package-lock.json found — this repo uses pnpm (pnpm-lock.yaml at monorepo root)"
+  ((ERRORS++))
 else
   echo -e "  ${RED}✗${NC} No lockfile found"
   ((ERRORS++))
@@ -182,7 +182,7 @@ if command -v vercel &> /dev/null; then
   fi
 else
   echo -e "  ${YELLOW}⚠${NC} Vercel CLI not installed"
-  echo -e "    Run: npm install -g vercel"
+  echo -e "    Run: pnpm add -g vercel"
   ((WARNINGS++))
 fi
 

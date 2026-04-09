@@ -103,7 +103,7 @@ echo "PHASE 3: LIVE DATABASE TEST"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 if [ -f "scripts/live-db-test.ts" ]; then
-  npx ts-node scripts/live-db-test.ts 2>&1 | tee /tmp/live-test-result.txt
+  pnpm exec tsx scripts/live-db-test.ts 2>&1 | tee /tmp/live-test-result.txt
   
   if grep -q "FAILED AS EXPECTED.*profiles.email does not exist" /tmp/live-test-result.txt; then
     echo "✅ Live test confirms profiles.email doesn't exist"
@@ -131,7 +131,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "PHASE 4: COMPILATION"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-npx tsc --noEmit --strict 2>&1 | tee /tmp/compile-result.txt
+pnpm exec tsc --noEmit --strict 2>&1 | tee /tmp/compile-result.txt
 errors=$(grep -c "error TS" /tmp/compile-result.txt || echo "0")
 
 # Check specifically for profiles.email errors
@@ -170,7 +170,7 @@ if [ $failed -eq 0 ]; then
   echo "- No profiles.email compilation errors ✅"
   echo ""
   echo "Next: Test login in browser"
-  echo "  npm run dev"
+  echo "  pnpm run dev"
   echo "  Navigate to login"
   echo "  Try: welberribeirodrums@gmail.com"
   exit 0

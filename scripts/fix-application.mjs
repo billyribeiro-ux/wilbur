@@ -186,7 +186,7 @@ async function fixTypeScriptErrors() {
   
   // Run TypeScript check
   try {
-    const { stdout } = await execPromise('npx tsc --noEmit 2>&1 | grep "error TS" | wc -l');
+    const { stdout } = await execPromise('pnpm exec tsc --noEmit 2>&1 | grep "error TS" | wc -l');
     const errorCount = parseInt(stdout.trim());
     console.log(`   📊 TypeScript errors remaining: ${errorCount}`);
     
@@ -209,7 +209,7 @@ async function verifyBuild() {
   
   try {
     console.log('   Building application (this may take a moment)...');
-    const { stderr } = await execPromise('npm run build 2>&1');
+    const { stderr } = await execPromise('pnpm run build 2>&1');
     
     if (stderr && stderr.includes('error')) {
       console.log('   ❌ Build has errors');
@@ -240,7 +240,7 @@ async function startDevServer() {
   }
   
   console.log('   📝 Run this command to start your app:');
-  console.log('\n   npm run dev\n');
+  console.log('\n   pnpm run dev\n');
   console.log('   Then open: http://localhost:5173');
 }
 
@@ -353,7 +353,7 @@ async function fixEverything() {
   if (allFixed) {
     console.log('\n🎉 YOUR ENTIRE APPLICATION IS NOW WORKING!');
     console.log('\nNext steps:');
-    console.log('1. Run: npm run dev');
+    console.log('1. Run: pnpm run dev');
     console.log('2. Open: http://localhost:5173');
     console.log('3. Your app is ready to use!');
   } else {

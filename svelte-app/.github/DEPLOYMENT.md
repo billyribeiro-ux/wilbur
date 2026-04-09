@@ -53,7 +53,7 @@ POCKETBASE_URL        # PocketBase API URL (e.g., https://api.example.com)
 2. **Get Organization & Project IDs**:
    ```bash
    # Install Vercel CLI
-   npm i -g vercel
+   pnpm add -g vercel
    
    # Login and link project
    vercel login

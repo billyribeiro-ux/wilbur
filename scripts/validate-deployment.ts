@@ -17,7 +17,7 @@ function validateEnv() {
 
 function validateTypeScript() {
   try {
-    execSync('npx tsc --noEmit', { stdio: 'pipe' });
+    execSync('pnpm exec tsc --noEmit', { stdio: 'pipe' });
   } catch (error) {
     const err = error as Error;
     throw new Error(`TypeScript validation failed: ${err.message}`);

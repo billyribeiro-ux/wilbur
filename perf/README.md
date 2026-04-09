@@ -35,15 +35,15 @@
 
 ```bash
 # Performance measurement
-npm run perf:lighthouse      # Lighthouse CI
-npm run perf:trace          # Chrome DevTools trace
-npm run perf:bundle         # Bundle size analysis
-npm run perf:coverage       # Test coverage
-npm run perf:webrtc         # WebRTC stats
+pnpm run perf:lighthouse      # Lighthouse CI
+pnpm run perf:trace          # Chrome DevTools trace
+pnpm run perf:bundle         # Bundle size analysis
+pnpm run perf:coverage       # Test coverage
+pnpm run perf:webrtc         # WebRTC stats
 
 # Performance testing
-npm run perf:test           # Run all perf tests
-npm run perf:smoke          # Quick smoke test
+pnpm run perf:test           # Run all perf tests
+pnpm run perf:smoke          # Quick smoke test
 ```
 
 ## Baseline Files
@@ -126,24 +126,24 @@ perf/reports/
 
 ### Lighthouse
 ```bash
-npm run perf:lighthouse
+pnpm run perf:lighthouse
 ```
 
 ### Bundle Analysis
 ```bash
-npm run perf:bundle
+pnpm run perf:bundle
 open perf/reports/bundle.html
 ```
 
 ### Chrome Trace
 ```bash
-npm run perf:trace
+pnpm run perf:trace
 # Upload to chrome://tracing
 ```
 
 ### WebRTC Stats
 ```bash
-npm run perf:webrtc
+pnpm run perf:webrtc
 # Check perf/reports/webrtc-stats.json
 ```
 

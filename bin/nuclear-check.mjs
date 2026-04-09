@@ -2,7 +2,7 @@
 /**
  * Nuclear E2E Check Runner
  * Microsoft Enterprise Pattern - One-Shot Quality Gate
- * 
+ *
  * Runs: Prettier → ESLint Fix → TypeScript → Playwright
  * Fails fast with actionable guidance
  */
@@ -18,34 +18,34 @@ const projectRoot = join(__dirname, '..');
 const STEPS = [
   {
     name: 'Prettier Format',
-    command: 'npm',
-    args: ['run', 'prettier:write'],
+    command: 'pnpm',
+    args: ['exec', 'prettier', '--write', '.'],
     failureGuidance: 'Fix formatting issues manually or check .prettierrc configuration',
     optional: true,
   },
   {
     name: 'ESLint Fix',
-    command: 'npm',
+    command: 'pnpm',
     args: ['run', 'lint:fix'],
-    failureGuidance: 'Review ESLint errors and fix manually. Check .eslintrc.cjs for rules',
+    failureGuidance: 'Review ESLint errors and fix manually. Check eslint.config.js for rules',
     optional: true,
   },
   {
     name: 'TypeScript Check',
-    command: 'npm',
-    args: ['run', 'typecheck'],
-    failureGuidance: 'Fix TypeScript errors. Run `npx tsc --noEmit` for details',
+    command: 'pnpm',
+    args: ['exec', 'tsc', '--noEmit'],
+    failureGuidance: 'Fix TypeScript errors. Run `pnpm exec tsc --noEmit` for details',
   },
   {
     name: 'Playwright Install',
-    command: 'npx',
-    args: ['playwright', 'install', '--with-deps'],
+    command: 'pnpm',
+    args: ['exec', 'playwright', 'install', '--with-deps'],
     failureGuidance: 'Install Playwright browsers manually',
     optional: true,
   },
   {
     name: 'E2E Tests',
-    command: 'npm',
+    command: 'pnpm',
     args: ['run', 'test:e2e'],
     failureGuidance: 'Check test failures in playwright-report/index.html',
   },
@@ -97,7 +97,7 @@ async function main() {
       console.error(`Error: ${error.message}\n`);
       console.error(`📋 Next Steps:`);
       console.error(`   ${step.failureGuidance}\n`);
-      
+
       failedStep = step.name;
       break;
     }
@@ -113,7 +113,7 @@ async function main() {
   console.log(`\n${'='.repeat(60)}`);
   console.log(`✅ NUCLEAR CHECK PASSED - All quality gates cleared!`);
   console.log(`${'='.repeat(60)}\n`);
-  console.log(`📊 View test report: npx playwright show-report`);
+  console.log(`📊 View test report: pnpm exec playwright show-report`);
   console.log(`📹 View traces: test-results/*/trace.zip\n`);
 }
 

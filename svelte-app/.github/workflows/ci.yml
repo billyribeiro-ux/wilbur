@@ -21,8 +21,8 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
-  NODE_VERSION: '22'
-  PNPM_VERSION: '9'
+  NODE_VERSION: '24.14.1'
+  PNPM_VERSION: '10.28.0'
 
 jobs:
   # ===========================================================================
@@ -36,25 +36,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Run linting
-        run: pnpm run lint
+        run: pnpm --dir svelte-app run lint
 
       - name: Run type check
-        run: pnpm run check
+        run: pnpm --dir svelte-app run check
 
   # ===========================================================================
   # Unit Tests
@@ -67,28 +67,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Run unit tests
-        run: pnpm run test:unit
+        run: pnpm --dir svelte-app run test:unit
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
         if: always()
         with:
-          files: ./coverage/lcov.info
+          files: ./svelte-app/coverage/lcov.info
           fail_ci_if_error: false
 
   # ===========================================================================
@@ -103,25 +103,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm --dir svelte-app exec playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: pnpm run test:e2e
+        run: pnpm --dir svelte-app run test:e2e
         env:
           PUBLIC_POCKETBASE_URL: http://localhost:8090
           CI: true
@@ -131,7 +131,7 @@ jobs:
         if: always()
         with:
           name: playwright-report
-          path: playwright-report/
+          path: svelte-app/playwright-report/
           retention-days: 7
 
   # ===========================================================================
@@ -146,22 +146,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build application
-        run: pnpm run build
+        run: pnpm --dir svelte-app run build
         env:
           PUBLIC_POCKETBASE_URL: ${{ vars.POCKETBASE_URL || 'http://localhost:8090' }}
 
@@ -169,7 +169,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: build/
+          path: svelte-app/build/
           retention-days: 7
 
   # ===========================================================================
@@ -209,6 +209,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: svelte-app/Dockerfile
+          target: runner
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

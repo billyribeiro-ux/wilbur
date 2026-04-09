@@ -147,16 +147,16 @@ if (!limiter.attempt()) {
 ### Build Verification
 ```bash
 # TypeScript check
-npx tsc --noEmit
+pnpm exec tsc --noEmit
 
 # Lint check
-npx eslint . --max-warnings=0
+pnpm exec eslint . --max-warnings=0
 
 # Unit tests
-npm run test:unit
+pnpm run test:unit
 
 # E2E tests (optional in CI)
-npm run test:e2e
+pnpm run test:e2e
 ```
 
 ### CI/CD Pipeline

@@ -256,7 +256,7 @@ async function testTypeSystem() {
   // Test 1: TypeScript compilation check
   await runTest('TypeScript Compilation', async () => {
     try {
-      const { stdout, stderr } = await execPromise('npx tsc --noEmit 2>&1 | grep "error TS" | wc -l');
+      const { stdout, stderr } = await execPromise('pnpm exec tsc --noEmit 2>&1 | grep "error TS" | wc -l');
       const errorCount = parseInt(stdout.trim());
       console.log(`   TypeScript errors: ${errorCount}`);
       
@@ -277,7 +277,7 @@ async function testTypeSystem() {
   await runTest('Build Process', async () => {
     console.log('   Running build (this may take a moment)...');
     try {
-      const { stdout, stderr } = await execPromise('npm run build 2>&1 | tail -5');
+      const { stdout, stderr } = await execPromise('pnpm run build 2>&1 | tail -5');
       if (stderr && stderr.includes('error')) {
         throw new Error('Build failed with errors');
       }

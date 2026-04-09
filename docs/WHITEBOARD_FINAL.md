@@ -84,7 +84,7 @@ import { WhiteboardToolbar } from '../../features/whiteboard/components/Whiteboa
 
 Run the whiteboard tests:
 ```bash
-npm test -- whiteboard
+pnpm test -- whiteboard
 ```
 
 ### 🚀 Deployment

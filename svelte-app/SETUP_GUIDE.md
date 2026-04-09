@@ -6,23 +6,24 @@
 ## Quick Start
 
 ```bash
-# Navigate to the project
-cd wilbur-svelte
+# From monorepo root (installs workspace: React root + svelte-app)
+cd wilbur
+pnpm install
 
-# Install dependencies
-npm install
+# Svelte app directory
+cd svelte-app
 
 # Copy environment file
 cp .env.example .env
 
 # Download Pocketbase (one-time)
-npm run pocketbase:download
+pnpm run pocketbase:download
 
 # Start Pocketbase (in separate terminal)
-npm run pocketbase:start
+pnpm run pocketbase:start
 
 # Start the development server
-npm run dev
+pnpm run dev
 ```
 
 ---
@@ -57,7 +58,7 @@ Pocketbase is a single binary that provides:
 #### Setup:
 ```bash
 # Download Pocketbase
-npm run pocketbase:download
+pnpm run pocketbase:download
 
 # Or download manually from:
 # https://github.com/pocketbase/pocketbase/releases
@@ -213,7 +214,7 @@ You can also self-host LiveKit on your own infrastructure:
 
 ```bash
 # Install Vercel CLI
-npm i -g vercel
+pnpm add -g vercel
 
 # Deploy
 vercel
@@ -251,16 +252,16 @@ This folder is the SvelteKit app in the monorepo (alongside the React app at the
 
 ```bash
 # Run unit tests
-npm run test
+pnpm run test
 
 # Run E2E tests
-npm run test:e2e
+pnpm run test:e2e
 
 # Run E2E tests with UI
-npm run test:e2e:ui
+pnpm run test:e2e:ui
 
 # Type checking
-npm run check
+pnpm run check
 ```
 
 ---
