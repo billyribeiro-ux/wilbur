@@ -20,11 +20,11 @@ use validator::Validate;
 use crate::{
     error::{AppError, AppResult},
     extractors::auth::{AuthUser, Claims},
-    models::{
-        auth::{
-            AuthResponse, ChangePasswordRequest, ForgotPasswordRequest, LoginRequest,
-            RefreshRequest, ResetPasswordRequest,
-        },
+        models::{
+            auth::{
+                AuthResponse, ChangePasswordRequest, ForgotPasswordRequest, LoginRequest,
+                RefreshRequest, ResendVerificationRequest, ResetPasswordRequest,
+            },
         user::{CreateUserRequest, User, UserResponse, UserRole},
     },
     services::email_service::EmailService,
@@ -38,6 +38,7 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/logout", post(logout))
         .route("/refresh", post(refresh))
         .route("/verify-email", post(verify_email))
+        .route("/resend-verification", post(resend_verification))
         .route("/forgot-password", post(forgot_password))
         .route("/reset-password", post(reset_password))
         .route("/me", get(me))
@@ -203,10 +204,16 @@ async fn register(
     let user_id = Uuid::new_v4();
     let now = Utc::now();
 
+    let email_verified_at = if state.config.auth_skip_email_verification {
+        Some(now)
+    } else {
+        None
+    };
+
     sqlx::query(
         r#"
-        INSERT INTO users (id, email, password_hash, display_name, role, tokens, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        INSERT INTO users (id, email, password_hash, display_name, role, tokens, email_verified_at, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         "#,
     )
     .bind(user_id)
@@ -215,10 +222,23 @@ async fn register(
     .bind(&body.display_name)
     .bind(UserRole::Member)
     .bind(0i32)
+    .bind(email_verified_at)
     .bind(now)
     .bind(now)
     .execute(&state.pool)
     .await?;
+
+    if state.config.auth_skip_email_verification {
+        tracing::info!(user_id = %user_id, email = %body.email, "New user registered (AUTH_SKIP_EMAIL_VERIFICATION)");
+        return Ok((
+            StatusCode::CREATED,
+            Json(json!({
+                "message": "Account created. You can sign in now.",
+                "user_id": user_id,
+                "email_verification_skipped": true
+            })),
+        ));
+    }
 
     // Generate email verification token
     let verification_token = Uuid::new_v4().to_string();
@@ -240,7 +260,10 @@ async fn register(
 
     // Send verification email
     if let Ok(email_service) = EmailService::new(&state.config) {
-        if let Err(e) = email_service.send_verification_email(&body.email, &verification_token, "http://localhost:5173").await {
+        if let Err(e) = email_service
+            .send_verification_email(&body.email, &verification_token, &state.config.frontend_base_url)
+            .await
+        {
             tracing::warn!(user_id = %user_id, error = %e, "Failed to send verification email");
         }
     }
@@ -427,6 +450,64 @@ async fn refresh(
     Ok(Json(resp))
 }
 
+/// POST /resend-verification — issue a new verification email (anti-enumeration messaging).
+async fn resend_verification(
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<ResendVerificationRequest>,
+) -> AppResult<Json<Value>> {
+    body.validate()
+        .map_err(|e| AppError::Validation(e.to_string()))?;
+
+    let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE LOWER(email) = LOWER($1)")
+        .bind(&body.email)
+        .fetch_optional(&state.pool)
+        .await?;
+
+    let message = "If an account exists for that email, a verification message has been sent.";
+
+    let Some(user) = user else {
+        return Ok(Json(json!({ "message": message })));
+    };
+
+    if user.email_verified_at.is_some() {
+        return Ok(Json(json!({ "message": message })));
+    }
+
+    sqlx::query("DELETE FROM email_verification_tokens WHERE user_id = $1")
+        .bind(user.id)
+        .execute(&state.pool)
+        .await?;
+
+    let verification_token = Uuid::new_v4().to_string();
+    let now = Utc::now();
+    let verification_expires = now + chrono::Duration::hours(24);
+
+    sqlx::query(
+        r#"
+        INSERT INTO email_verification_tokens (id, user_id, token, expires_at, created_at)
+        VALUES ($1, $2, $3, $4, $5)
+        "#,
+    )
+    .bind(Uuid::new_v4())
+    .bind(user.id)
+    .bind(&verification_token)
+    .bind(verification_expires)
+    .bind(now)
+    .execute(&state.pool)
+    .await?;
+
+    if let Ok(email_service) = EmailService::new(&state.config) {
+        if let Err(e) = email_service
+            .send_verification_email(&user.email, &verification_token, &state.config.frontend_base_url)
+            .await
+        {
+            tracing::warn!(user_id = %user.id, error = %e, "Failed to send verification email (resend)");
+        }
+    }
+
+    Ok(Json(json!({ "message": message })))
+}
+
 /// POST /verify-email -- verify a user's email with a token.
 async fn verify_email(
     State(state): State<Arc<AppState>>,
@@ -501,7 +582,10 @@ async fn forgot_password(
 
         // Send password reset email
         if let Ok(email_service) = EmailService::new(&state.config) {
-            if let Err(e) = email_service.send_password_reset_email(&user.email, &reset_token, "http://localhost:5173").await {
+            if let Err(e) = email_service
+            .send_password_reset_email(&user.email, &reset_token, &state.config.frontend_base_url)
+            .await
+        {
                 tracing::warn!(user_id = %user.id, error = %e, "Failed to send password reset email");
             }
         }

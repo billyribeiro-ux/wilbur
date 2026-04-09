@@ -15,7 +15,46 @@ interface TokenPair {
   expiresIn: number;
 }
 
-let tokens: TokenPair | undefined;
+const TOKEN_STORAGE_KEY = 'wilbur.auth.v1';
+
+function readStoredTokens(): TokenPair | undefined {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    const raw = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (!raw) return undefined;
+    const parsed = JSON.parse(raw) as {
+      accessToken?: string;
+      refreshToken?: string;
+      expiresIn?: number;
+    };
+    if (!parsed.accessToken || !parsed.refreshToken) return undefined;
+    return {
+      accessToken: parsed.accessToken,
+      refreshToken: parsed.refreshToken,
+      expiresIn: parsed.expiresIn ?? 3600,
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+function persistTokens(pair: TokenPair | undefined): void {
+  if (typeof window === 'undefined') return;
+  if (!pair) {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    return;
+  }
+  localStorage.setItem(
+    TOKEN_STORAGE_KEY,
+    JSON.stringify({
+      accessToken: pair.accessToken,
+      refreshToken: pair.refreshToken,
+      expiresIn: pair.expiresIn,
+    })
+  );
+}
+
+let tokens: TokenPair | undefined = readStoredTokens();
 let refreshPromise: Promise<void> | undefined;
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
@@ -32,8 +71,11 @@ function getHeaders(): Record<string, string> {
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    const body = await response.json().catch(() => ({ error: response.statusText }));
-    const err: ApiError = { error: body.error || response.statusText, status: response.status };
+    const body = (await response.json().catch(() => ({}))) as { error?: string };
+    const err: ApiError = {
+      error: typeof body.error === 'string' ? body.error : response.statusText,
+      status: response.status,
+    };
     throw err;
   }
   if (response.status === 204) return undefined as T;
@@ -51,6 +93,7 @@ async function refreshAccessToken(): Promise<void> {
 
   if (!response.ok) {
     tokens = undefined;
+    persistTokens(undefined);
     throw { error: 'Session expired', status: 401 };
   }
 
@@ -60,6 +103,7 @@ async function refreshAccessToken(): Promise<void> {
     refreshToken: data.refresh_token || tokens.refreshToken,
     expiresIn: data.expires_in,
   };
+  persistTokens(tokens);
 }
 
 async function fetchWithAuth<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -150,10 +194,12 @@ export const api = {
 
   setTokens(t: TokenPair) {
     tokens = t;
+    persistTokens(t);
   },
 
   clearTokens() {
     tokens = undefined;
+    persistTokens(undefined);
   },
 
   getAccessToken(): string | undefined {

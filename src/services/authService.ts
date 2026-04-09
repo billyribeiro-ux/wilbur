@@ -19,6 +19,8 @@ export interface AuthResponse {
   user: { id: string; email: string; display_name?: string; role: string } | undefined;
   session: { access_token: string } | undefined;
   error: Error | undefined;
+  /** Present after successful registration (no session until login). */
+  signupMessage?: string;
 }
 
 export interface ProfileResponse {
@@ -140,17 +142,11 @@ class AuthService {
         return await authApi.register(email, password, displayName);
       });
 
-      const user = {
-        id: data.user.id,
-        email: data.user.email,
-        display_name: data.user.display_name || displayName,
-        role: data.user.role,
-      };
-
       return {
-        user,
-        session: { access_token: data.access_token },
+        user: undefined,
+        session: undefined,
         error: undefined,
+        signupMessage: data.message,
       };
     } catch (error) {
       reportError(error instanceof Error ? error : new Error(String(error)), ErrorSeverity.HIGH, {

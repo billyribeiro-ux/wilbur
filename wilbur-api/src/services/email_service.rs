@@ -35,7 +35,7 @@ impl EmailService {
         token: &str,
         base_url: &str,
     ) -> Result<(), String> {
-        let verify_url = format!("{base_url}/api/v1/auth/verify-email?token={token}");
+        let verify_url = format!("{base_url}/verify-email?token={token}");
         let body = format!(
             "Welcome to Wilbur!\n\nPlease verify your email by clicking the link below:\n\n{verify_url}\n\nThis link expires in 24 hours."
         );

@@ -1,0 +1,20 @@
+# Local PostgreSQL for wilbur-api (migrations run on `cargo run`).
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: wilbur
+      POSTGRES_PASSWORD: wilbur
+      POSTGRES_DB: wilbur
+    ports:
+      - '5432:5432'
+    volumes:
+      - wilbur_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U wilbur -d wilbur']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  wilbur_pgdata:

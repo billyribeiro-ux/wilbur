@@ -14,6 +14,11 @@ pub struct AppConfig {
     // Server
     pub port: u16,
     pub allowed_origins: Vec<String>,
+    /// Public web app origin (verification and reset links in emails).
+    pub frontend_base_url: String,
+    /// When true, new accounts are created with `email_verified_at` set and no verification email is sent.
+    /// Use only for local development.
+    pub auth_skip_email_verification: bool,
 
     // S3/R2
     pub s3_bucket: String,
@@ -60,10 +65,20 @@ impl AppConfig {
                 .parse()
                 .unwrap_or(3000),
             allowed_origins: env::var("ALLOWED_ORIGINS")
-                .unwrap_or_else(|_| "http://localhost:5173".to_string())
+                .unwrap_or_else(|_| "http://localhost:5173,http://localhost:5174".to_string())
                 .split(',')
                 .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
                 .collect(),
+
+            frontend_base_url: env::var("FRONTEND_BASE_URL")
+                .unwrap_or_else(|_| "http://localhost:5173".to_string())
+                .trim_end_matches('/')
+                .to_string(),
+
+            auth_skip_email_verification: env::var("AUTH_SKIP_EMAIL_VERIFICATION")
+                .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+                .unwrap_or(false),
 
             s3_bucket: env::var("S3_BUCKET").unwrap_or_else(|_| "wilbur-storage".to_string()),
             s3_region: env::var("S3_REGION").unwrap_or_else(|_| "auto".to_string()),

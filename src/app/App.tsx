@@ -19,6 +19,12 @@ const NotesView = lazy(() => import('../components/trading/NotesView').then(m =>
 const TestTradingRoomShell = lazy(() => import('../components/trading/TestTradingRoomShell').then(m => ({ default: m.TestTradingRoomShell })));
 const ToastContainer = lazy(() => import('../components/ToastContainer').then(m => ({ default: m.ToastContainer })));
 const EnhancedAuthPage = lazy(() => import('../components/icons/EnhancedAuthPage').then(m => ({ default: m.EnhancedAuthPage })));
+const VerifyEmailPage = lazy(() =>
+  import('../components/auth/VerifyEmailPage').then((m) => ({ default: m.VerifyEmailPage }))
+);
+const ResetPasswordPage = lazy(() =>
+  import('../components/auth/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage }))
+);
 const ImageModal = lazy(() => import('../components/modals/ImageModal').then(m => ({ default: m.ImageModal })));
 const RoomSelector = lazy(() => import('../components/rooms/RoomSelector').then(m => ({ default: m.RoomSelector })));
 const TradingRoomWrapper = lazy(() => import('../components/trading/TradingRoomWrapper').then(m => ({ default: m.TradingRoomWrapper })));
@@ -129,6 +135,8 @@ const AppRoutes: FC = () => {
           path="/auth" 
           element={!isAuthenticated ? <EnhancedAuthPage /> : <Navigate to="/" replace />} 
         />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* Protected routes */}
         <Route

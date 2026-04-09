@@ -22,6 +22,12 @@ pub struct RefreshRequest {
 }
 
 #[derive(Debug, Deserialize, Validate)]
+pub struct ResendVerificationRequest {
+    #[validate(email)]
+    pub email: String,
+}
+
+#[derive(Debug, Deserialize, Validate)]
 pub struct ForgotPasswordRequest {
     #[validate(email)]
     pub email: String,

@@ -1,10 +1,10 @@
 /**
- * Auth API module.
+ * Auth API — Wilbur API (`/api/v1/auth/*`): register, login, JWT refresh, profile.
  */
 
 import { api } from './client';
 
-interface UserResponse {
+export interface UserResponse {
   id: string;
   email: string;
   display_name: string | undefined;
@@ -14,26 +14,30 @@ interface UserResponse {
   created_at: string;
 }
 
-interface AuthResponse {
+export interface AuthResponse {
   access_token: string;
   refresh_token: string;
   expires_in: number;
   user: UserResponse;
 }
 
+export interface RegisterResponse {
+  message: string;
+  user_id: string;
+  email_verification_skipped?: boolean;
+}
+
 export const authApi = {
-  async register(email: string, password: string, displayName?: string): Promise<AuthResponse> {
-    const data = await api.post<AuthResponse>('/api/v1/auth/register', {
+  async register(
+    email: string,
+    password: string,
+    displayName?: string
+  ): Promise<RegisterResponse> {
+    return api.post<RegisterResponse>('/api/v1/auth/register', {
       email,
       password,
       display_name: displayName,
     });
-    api.setTokens({
-      accessToken: data.access_token,
-      refreshToken: data.refresh_token,
-      expiresIn: data.expires_in,
-    });
-    return data;
   },
 
   async login(email: string, password: string): Promise<AuthResponse> {
@@ -47,12 +51,23 @@ export const authApi = {
   },
 
   async logout(): Promise<void> {
-    await api.post('/api/v1/auth/logout');
-    api.clearTokens();
+    try {
+      await api.post('/api/v1/auth/logout');
+    } finally {
+      api.clearTokens();
+    }
   },
 
   async me(): Promise<UserResponse> {
     return api.get<UserResponse>('/api/v1/auth/me');
+  },
+
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    return api.post<{ message: string }>('/api/v1/auth/verify-email', { token });
+  },
+
+  async resendVerification(email: string): Promise<{ message: string }> {
+    return api.post<{ message: string }>('/api/v1/auth/resend-verification', { email });
   },
 
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {

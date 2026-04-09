@@ -10,10 +10,8 @@ import { useState, useEffect } from 'react';
 
 import {
   registerUser,
-  requestOTP,
-  verifyOTP,
   validateEmail,
-  validatePassword,
+  validateSignupPassword,
   validateDisplayName,
   validatePasswordMatch,
   requestPasswordReset,
@@ -26,19 +24,14 @@ import { useToastStore } from '../../store/toastStore';
 import { EmailVerificationStatus } from './EmailVerificationStatus';
 
 type AuthMode = 'login' | 'register' | 'forgot-password' | 'verify-email';
-type LoginMethod = 'password' | 'pin';
-type LoginStep = 'credentials' | 'pin-verify';
 
 export function EnhancedAuthPage() {
   const [authMode, setAuthMode] = useState<AuthMode>('login');
-  const [loginMethod, setLoginMethod] = useState<LoginMethod>('password');
-  const [loginStep, setLoginStep] = useState<LoginStep>('credentials');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [pin, setPin] = useState('');
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -54,8 +47,6 @@ export function EnhancedAuthPage() {
     setPassword('');
     setConfirmPassword('');
     setDisplayName('');
-    setPin('');
-    setLoginStep('credentials');
   };
 
   useEffect(() => {
@@ -71,13 +62,6 @@ export function EnhancedAuthPage() {
       }
     }
   }, [password, confirmPassword, authMode, error]);
-
-  // PIN verify step only applies to PIN method; avoid empty login UI if state ever desyncs
-  useEffect(() => {
-    if (loginMethod === 'password' && loginStep === 'pin-verify') {
-      setLoginStep('credentials');
-    }
-  }, [loginMethod, loginStep]);
 
   // ========================================================================
   // PASSWORD LOGIN
@@ -100,82 +84,6 @@ export function EnhancedAuthPage() {
       addToast('Login successful!', 'success');
       setLoading(false);
       // Session is automatically set by auth store
-    }
-  };
-
-  // ========================================================================
-  // PIN LOGIN
-  // ========================================================================
-
-  const handlePINRequest = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    if (!email) {
-      setError('Email is required');
-      return;
-    }
-    setLoading(true);
-
-    const result = await requestOTP(email);
-
-    if (result.success) {
-      setLoginStep('pin-verify');
-      addToast('Check your email for your 6-digit PIN code!', 'success');
-    } else {
-      // Use the detailed service error if available, otherwise fall back to error display info
-      const errorMessage = result.serviceError || getErrorDisplayInfo(result.error || 'An unknown error occurred').message;
-      setError(errorMessage);
-
-      // Show helpful toast for common issues
-      if (result.error === 'EMAIL_SERVICE_UNAVAILABLE') {
-        addToast('Email service not configured. Use password login.', 'error');
-      } else if (result.error === 'RATE_LIMIT_EXCEEDED') {
-        addToast('Too many requests. Please wait before trying again.', 'error');
-      } else if (result.error === 'USER_NOT_FOUND') {
-        addToast('Account not found. Please register or use password login.', 'error');
-      }
-    }
-
-    setLoading(false);
-  };
-
-  const handlePINVerify = async (e?: React.FormEvent, pinValue?: string) => {
-    if (e) e.preventDefault();
-    if (!email) {
-      setError('Email is required');
-      return;
-    }
-    setError('');
-    setLoading(true);
-
-    const pinToVerify = pinValue || pin;
-    const result = await verifyOTP(email, pinToVerify);
-
-    if (result.success && result.user) {
-      // Microsoft Enterprise pattern: Set session in auth store after OTP verification
-      const { setSession } = useAuthStore.getState();
-      setSession({ 
-        user: result.user as unknown as Parameters<typeof setSession>[0] extends undefined ? never : NonNullable<Parameters<typeof setSession>[0]>['user'],
-        access_token: '', 
-        refresh_token: '',
-        expires_in: 3600,
-      });
-      addToast('Login successful!', 'success');
-      resetForm();
-    } else {
-      const errorInfo = getErrorDisplayInfo(result.error || 'An unknown error occurred');
-      setError(errorInfo.message);
-    }
-
-    setLoading(false);
-  };
-
-  const handlePinChange = (value: string) => {
-    const numericValue = value.replace(/\D/g, '').slice(0, 6);
-    setPin(numericValue);
-
-    if (numericValue.length === 6 && !loading) {
-      handlePINVerify(undefined, numericValue);
     }
   };
 
@@ -229,7 +137,7 @@ export function EnhancedAuthPage() {
       return;
     }
 
-    const passwordValidation = validatePassword(password);
+    const passwordValidation = validateSignupPassword(password);
     if (!passwordValidation.valid) {
       setError(passwordValidation.errors[0] || 'Invalid password');
       return;
@@ -305,256 +213,98 @@ export function EnhancedAuthPage() {
 
           {authMode === 'login' && (
             <>
-              {loginMethod === 'password' ? (
-                loginStep === 'credentials' ? (
-                  <form onSubmit={handlePasswordLogin} className="space-y-5">
-                    <div>
-                      <label htmlFor="password-login-email" className="block text-sm font-medium text-slate-200 mb-2">
-                        Email Address
-                      </label>
-                      <div className="relative">
-                        <Envelope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
-                        <input
-                          id="password-login-email"
-                          name="password-login-email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="w-full pl-11 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="your@email.com"
-                          required
-                          disabled={loading}
-                          autoComplete="email"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label htmlFor="password-login-password" className="block text-sm font-medium text-slate-200 mb-2">
-                        Password
-                      </label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
-                        <input
-                          id="password-login-password"
-                          name="password-login-password"
-                          type={showPassword ? 'text' : 'password'}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="w-full pl-11 pr-11 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Enter your password"
-                          required
-                          disabled={loading}
-                          autoComplete="current-password"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                        >
-                          {showPassword ? <EyeSlash className="w-5 h-5" weight="regular"/> : <Eye className="w-5 h-5" weight="regular"/>}
-                        </button>
-                      </div>
-                    </div>
-
-                    {error && (
-                      <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 text-sm text-red-200">
-                        {error}
-                      </div>
-                    )}
-
-                    <button
-                      type="submit"
+              <form onSubmit={handlePasswordLogin} className="space-y-5">
+                <div>
+                  <label htmlFor="password-login-email" className="block text-sm font-medium text-slate-200 mb-2">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <Envelope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
+                    <input
+                      id="password-login-email"
+                      name="password-login-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full pl-11 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="your@email.com"
+                      required
                       disabled={loading}
-                      className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-semibold py-3 rounded-lg transition-colors duration-200"
-                    >
-                      {loading ? 'Signing In...' : 'Sign In with Password'}
-                    </button>
-
-                    <div className="text-center">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          resetForm();
-                          setAuthMode('forgot-password');
-                        }}
-                        className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-                      >
-                        Forgot password?
-                      </button>
-                    </div>
-                  </form>
-                ) : undefined
-              ) : (
-                loginStep === 'credentials' ? (
-                  <form onSubmit={handlePINRequest} className="space-y-5">
-                    <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg mb-4">
-                      <p className="text-blue-200 text-xs text-center">
-                        💡 We'll send a 6-digit PIN code to your email. Make sure to check your spam folder!
-                      </p>
-                    </div>
-
-                    <div>
-                      <label htmlFor="pin-request-email" className="block text-sm font-medium text-slate-200 mb-2">
-                        Email Address
-                      </label>
-                      <div className="relative">
-                        <Envelope className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
-                        <input
-                          id="pin-request-email"
-                          name="pin-request-email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="w-full pl-11 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="your@email.com"
-                          required
-                          disabled={loading}
-                          autoComplete="email"
-                        />
-                      </div>
-                    </div>
-
-                    {error && (
-                      <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 text-sm text-red-200">
-                        {error}
-                      </div>
-                    )}
-
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-semibold py-3 rounded-lg transition-colors duration-200"
-                    >
-                      {loading ? 'Sending PIN...' : 'Send PIN to Email'}
-                    </button>
-                  </form>
-                ) : (
-                  <form onSubmit={handlePINVerify} className="space-y-5">
-                    <div className="p-4 bg-blue-500/20 border border-blue-500/50 rounded-lg space-y-2">
-                      <p className="text-blue-200 text-sm text-center">
-                        📧 Check your email <span className="font-semibold">{email}</span> for your 6-digit PIN code
-                      </p>
-                      <p className="text-blue-300/70 text-xs text-center">
-                        💡 Don't forget to check your spam/junk folder
-                      </p>
-                    </div>
-
-                    <div>
-                      <label htmlFor="pin-code" className="block text-sm font-medium text-slate-200 mb-2">
-                        Enter PIN from Email
-                      </label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
-                        <input
-                          id="pin-code"
-                          name="pin-code"
-                          type="text"
-                          inputMode="numeric"
-                          value={pin}
-                          onChange={(e) => handlePinChange(e.target.value)}
-                          className="w-full pl-11 pr-4 py-4 bg-white/10 border-2 border-white/20 rounded-lg text-white placeholder-slate-400 text-center text-3xl tracking-[0.5em] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                          placeholder="______"
-                          maxLength={6}
-                          required
-                          disabled={loading}
-                          autoFocus
-                          autoComplete="one-time-code"
-                        />
-                      </div>
-                      <p className="text-xs text-slate-400 mt-2 text-center">
-                        {pin.length}/6 digits • Auto-submits when complete
-                      </p>
-                    </div>
-
-                    {error && (
-                      <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 text-sm text-red-200">
-                        {error}
-                      </div>
-                    )}
-
-                    <div className="flex gap-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setLoginStep('credentials');
-                          setPin('');
-                          setError('');
-                        }}
-                        disabled={loading}
-                        className="flex-1 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700 text-white font-semibold py-3 rounded-lg transition-colors duration-200"
-                      >
-                        Back
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={loading || pin.length !== 6}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-semibold py-3 rounded-lg transition-colors duration-200"
-                      >
-                        {loading ? 'Verifying...' : 'Verify PIN'}
-                      </button>
-                    </div>
-
-                    <div className="text-center">
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          setPin('');
-                          setError('');
-                          setLoading(true);
-                          const result = await requestOTP(email);
-                          if (result.success) {
-                            addToast('New PIN code sent to your email!', 'success');
-                          } else {
-                            const errorMessage = result.serviceError || 'Failed to resend PIN';
-                            setError(errorMessage);
-                          }
-                          setLoading(false);
-                        }}
-                        disabled={loading}
-                        className="text-sm text-blue-400 hover:text-blue-300 transition-colors disabled:text-slate-500"
-                      >
-                        Didn't receive the code? Resend PIN
-                      </button>
-                    </div>
-                  </form>
-                )
-              )}
-
-              <div className="mt-6 space-y-3">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-600"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-slate-700/50 text-slate-400">Or</span>
+                      autoComplete="email"
+                    />
                   </div>
                 </div>
+
+                <div>
+                  <label htmlFor="password-login-password" className="block text-sm font-medium text-slate-200 mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" weight="regular"/>
+                    <input
+                      id="password-login-password"
+                      name="password-login-password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full pl-11 pr-11 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter your password"
+                      required
+                      disabled={loading}
+                      autoComplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                    >
+                      {showPassword ? <EyeSlash className="w-5 h-5" weight="regular"/> : <Eye className="w-5 h-5" weight="regular"/>}
+                    </button>
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 text-sm text-red-200">
+                    {error}
+                  </div>
+                )}
 
                 <button
-                  onClick={() => {
-                    resetForm();
-                    setLoginMethod(loginMethod === 'password' ? 'pin' : 'password');
-                  }}
-                  className="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 rounded-lg transition-colors duration-200"
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-semibold py-3 rounded-lg transition-colors duration-200"
                 >
-                  {loginMethod === 'password' ? 'Sign In with PIN Code' : 'Sign In with Password'}
+                  {loading ? 'Signing In...' : 'Sign In'}
                 </button>
 
-                <div className="text-center pt-2">
-                  <p className="text-sm text-slate-400">
-                    Don't have an account?{' '}
-                    <button
-                      onClick={() => {
-                        resetForm();
-                        setAuthMode('register');
-                      }}
-                      className="text-blue-400 hover:text-blue-300 font-semibold"
-                    >
-                      Create Account
-                    </button>
-                  </p>
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetForm();
+                      setAuthMode('forgot-password');
+                    }}
+                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    Forgot password?
+                  </button>
                 </div>
+              </form>
+
+              <div className="mt-6 text-center pt-2">
+                <p className="text-sm text-slate-400">
+                  Don&apos;t have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetForm();
+                      setAuthMode('register');
+                    }}
+                    className="text-blue-400 hover:text-blue-300 font-semibold"
+                  >
+                    Create Account
+                  </button>
+                </p>
               </div>
             </>
           )}
@@ -577,7 +327,7 @@ export function EnhancedAuthPage() {
                     placeholder="How should we call you?"
                     required
                     disabled={loading}
-                    maxLength={50}
+                    maxLength={100}
                     autoComplete="name"
                   />
                 </div>
@@ -631,7 +381,7 @@ export function EnhancedAuthPage() {
                   </button>
                 </div>
                 <p className="text-xs text-slate-400 mt-1">
-                  8+ chars with uppercase, lowercase, and numbers
+                  12+ characters with uppercase, lowercase, and numbers
                 </p>
               </div>
 
@@ -751,7 +501,7 @@ export function EnhancedAuthPage() {
         </div>
 
         <div className="mt-6 text-center text-sm text-slate-400">
-          <p>Check your email for verification links and PIN codes</p>
+          <p>Check your email for verification and password-reset links</p>
         </div>
       </div>
       </div>
