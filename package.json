@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:react": "vite",
+    "dev:svelte": "pnpm --dir svelte-app run dev",
     "dev:host": "vite --host",
     "dev:network": "vite --host",
     "dev:port": "vite --port",

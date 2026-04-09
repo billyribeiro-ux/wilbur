@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: [['list'], ['html', { outputFolder: 'playwright-report-whiteboard' }]],
   
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:5174',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
@@ -27,7 +27,7 @@ export default defineConfig({
 
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:5173',
+    url: 'http://localhost:5174',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },

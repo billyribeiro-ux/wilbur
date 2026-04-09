@@ -46,12 +46,21 @@ npm install
 cp .env.example .env
 # Edit .env with your credentials
 
-# Run frontend dev server
-npm run dev
+# Run frontend dev server (React on http://localhost:5174)
+pnpm run dev
 
 # Run Rust backend
 cd wilbur-api && cargo run
 ```
+
+### React + SvelteKit at the same time
+
+This repo includes a separate SvelteKit app under `svelte-app/`. Ports are fixed so both dev servers can run together:
+
+| App | Port | Command (from repo root) |
+|-----|------|---------------------------|
+| React (Vite) | **5174** | `pnpm run dev` or `pnpm run dev:react` |
+| SvelteKit | **5173** | `pnpm run dev:svelte` |
 
 ## Environment Variables
 

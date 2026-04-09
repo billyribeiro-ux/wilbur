@@ -10,13 +10,14 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // Port 5174 so SvelteKit (svelte-app) can own 5173; run both dev servers in parallel.
   server: {
-    port: 5173,
-    strictPort: true, // Prevent automatic port switching - fixes WebSocket connection
+    port: 5174,
+    strictPort: true,
     host: true,
     hmr: {
       overlay: true,
-      port: 5173, // Ensure HMR WebSocket uses same port
+      port: 5174,
     },
   },
   build: {

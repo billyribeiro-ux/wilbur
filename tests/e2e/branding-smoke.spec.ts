@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Branding System - E2E Smoke', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to deterministic test trading route with injected session
-    await page.goto('http://localhost:5173/__test_trading/test-room');
+    await page.goto('http://localhost:5174/__test_trading/test-room');
     // Avoid waiting for full networkidle due to external iframes; the test route is deterministic
     await page.waitForLoadState('domcontentloaded');
     await page.waitForSelector('[data-trading-room]', { timeout: 15000 });

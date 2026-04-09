@@ -4,7 +4,7 @@ import { test, expect, type Page } from '@playwright/test';
 
 test.describe('Editor Rename Dialog - edge cases', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:5173/__test_notes');
+    await page.goto('http://localhost:5174/__test_notes');
     await page.getByTestId('notes-view').waitFor({ state: 'visible' });
     await page.getByTestId('notes-editor').waitFor({ state: 'visible' });
   });

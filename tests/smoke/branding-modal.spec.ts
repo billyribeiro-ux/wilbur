@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Branding Modal - Smoke Tests', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to app (adjust URL as needed)
-    await page.goto('http://localhost:5173');
+    await page.goto('http://localhost:5174');
     
     // Wait for app to be ready
     await page.waitForLoadState('networkidle');

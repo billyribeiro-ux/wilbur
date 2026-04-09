@@ -247,7 +247,7 @@ The project includes adapters for:
 
 ## Testing
 
-This folder is the SvelteKit app in the monorepo (alongside the React app at the repo root). Run lint and tests **from `svelte-app/`** so you use this project’s ESLint config, not the root React config.
+This folder is the SvelteKit app in the monorepo (alongside the React app at the repo root). **SvelteKit dev server uses port 5173**; the React app at the repo root uses **5174** so both can run at once (`pnpm run dev:svelte` vs `pnpm run dev:react` from the monorepo root). Run lint and tests **from `svelte-app/`** so you use this project’s ESLint config, not the root React config.
 
 ```bash
 # Run unit tests
