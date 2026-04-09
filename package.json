@@ -80,5 +80,12 @@
     "typescript-eslint": "^8.58.1",
     "vite": "^8.0.8",
     "vitest": "^4.1.4"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "eslint": ">=10.0.0"
+      }
+    }
   }
 }
