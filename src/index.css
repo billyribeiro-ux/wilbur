@@ -1,16 +1,8 @@
 @import './styles/theme-variables.css';
 
-/* -------------------------------------------------------------------------
-  Tailwind layer directives restored for E2E build compatibility.
-  We suppress stylelint's unknown at-rule warnings locally. The project
-  previously removed these to silence lint errors, but Playwright/Vite
-  postcss pipeline expects them when encountering `@layer components`.
-  ---------------------------------------------------------------------- */
-/* stylelint-disable at-rule-no-unknown */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-/* stylelint-enable at-rule-no-unknown */
+/* Tailwind v4 via @tailwindcss/vite — generates utility classes from tailwind.config.js */
+@import 'tailwindcss';
+@config '../tailwind.config.js';
 
 /* ============================================================
   🎨 Revolution Trading Room — Fluent Hybrid Global Stylesheet
