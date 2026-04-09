@@ -20,7 +20,7 @@ echo "2. Verifying all critical files exist..."
 
 # Service files
 echo "   Service files:"
-services=("audioService" "cameraService" "recordingService" "livekitToken" "trackCleanupJob")
+services=("audioService" "cameraService" "recordingService" "roomTransport" "trackCleanupJob")
 for service in "${services[@]}"; do
   if [ -f "src/services/${service}.ts" ]; then
     lines=$(wc -l < "src/services/${service}.ts")

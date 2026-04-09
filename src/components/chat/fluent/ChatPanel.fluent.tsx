@@ -71,7 +71,7 @@ export function ChatPanel() {
   const [input, setInput] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   
-  const isSpeaking = false; // Placeholder until LiveKit hooks are available
+  const isSpeaking = false;
   
   // Refs
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);

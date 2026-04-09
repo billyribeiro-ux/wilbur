@@ -271,22 +271,16 @@ export interface AnimationConfig {
 }
 
 // ============================================================================
-// LIVEKIT TYPES
+// RTC / room transport (future backend-owned media — not vendor-specific)
 // ============================================================================
 
-/**
- * LiveKit Connection Configuration
- */
-export interface LiveKitConnectionConfig {
+export interface RtcConnectionConfig {
   url: string
   token: string
   roomName: string
 }
 
-/**
- * LiveKit Participant
- */
-export interface LiveKitParticipant {
+export interface RtcParticipant {
   identity: string
   name: string
   isSpeaking: boolean
@@ -301,14 +295,11 @@ export interface LiveKitParticipant {
   }
 }
 
-/**
- * LiveKit Room State
- */
-export interface LiveKitRoomState {
+export interface RtcRoomState {
   name: string
   isConnected: boolean
-  participants: LiveKitParticipant[]
-  localParticipant: LiveKitParticipant | null
+  participants: RtcParticipant[]
+  localParticipant: RtcParticipant | null
   metadata?: Record<string, unknown>
 }
 

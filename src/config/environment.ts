@@ -4,7 +4,6 @@
 
 export const environment = {
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '',
-  livekitUrl: import.meta.env.VITE_LIVEKIT_URL || '',
   appEnv: import.meta.env.MODE || 'development',
 };
 
@@ -12,7 +11,6 @@ export function logEnvironmentConfig() {
   if (import.meta.env.DEV) {
     console.log('[Environment] Config loaded:', {
       apiBaseUrl: environment.apiBaseUrl ? 'Set' : 'Missing',
-      livekitUrl: environment.livekitUrl ? 'Set' : 'Missing',
       mode: environment.appEnv,
     });
   }

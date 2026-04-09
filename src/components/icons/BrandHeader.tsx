@@ -6,7 +6,6 @@ import { SpotifyButton } from '../../SpotifyButton';
 import { MicVolumeIndicator } from '../../features/Mic/MicVolumeIndicator';
 import { VolumeControl } from '../../features/audio/VolumeControl';
 import { roomsApi } from '../../api/rooms';
-import { liveKitService } from '../../services/livekit';
 import { shareService } from '../../sharing/shareService';
 import { useThemeStore } from '../../store/themeStore';
 import { useToastStore } from '../../store/toastStore';
@@ -199,24 +198,6 @@ export function BrandHeader({
 
   useEffect(() => {
     const updateParticipantCount = async () => {
-      const connectionState = liveKitService.getConnectionState();
-      
-      if (connectionState.isConnected) {
-        const count = connectionState.participants.length + (connectionState.localParticipant ? 1 : 0);
-        
-        if (import.meta.env.DEV) {
-          const participants = connectionState.participants;
-          console.debug('[BrandHeader] LiveKit participants:', {
-            total: participants.length,
-            identities: participants.map(p => p.identity)
-          });
-        }
-        
-        setParticipantCount(count);
-        return;
-      }
-
-      // Fallback to database
       if (room?.id) {
         try {
           const members = await roomsApi.listMembers(room.id);
@@ -229,8 +210,8 @@ export function BrandHeader({
       }
     };
 
-    updateParticipantCount();
-    const interval = setInterval(updateParticipantCount, PARTICIPANT_POLL_INTERVAL_MS);
+    void updateParticipantCount();
+    const interval = setInterval(() => void updateParticipantCount(), PARTICIPANT_POLL_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [room?.id]);
 

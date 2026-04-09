@@ -21,7 +21,6 @@ const STORAGE_KEY = 'tradingRoom.layout.v1';
 
 import { usePanelResizer } from '../../hooks/usePanelResizer';
 import { useResizeObserver } from '../../hooks/useResizeObserver';
-import { liveKitService } from '../../services/livekit';
 import { useAuthStore } from '../../store/authStore';
 import { useRoomStore } from '../../store/roomStore';
 import { useThemeStore } from '../../store/themeStore';
@@ -205,15 +204,6 @@ export function useTradingRoomState(): UseTradingRoomStateReturn {
   // Handle whiteboard events
   const handleWhiteboardEvent = useCallback((event: WhiteboardEvent) => {
     if (!canManageRoom) return;
-    
-    // Broadcast to other participants via LiveKit data channel
-    const room = liveKitService.getRoom();
-    if (room) {
-      room.localParticipant.publishData(
-        new TextEncoder().encode(JSON.stringify(event)),
-        { reliable: true }
-      );
-    }
     
     // Update local state with bounded array (prevent memory leak)
     setWhiteboardEvents(prev => {

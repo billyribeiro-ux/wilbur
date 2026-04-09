@@ -1,7 +1,7 @@
 // ============================================================================
 // WHITEBOARD COLLABORATION - Real-time Sync
 // ============================================================================
-// Collaboration adapter for LiveKit/WebSocket
+// Collaboration adapter for shared real-time transport (WebSocket / future SFU)
 // ============================================================================
 
 import type { WhiteboardEvent, WhiteboardShape, RemoteCursor } from '../types';

@@ -32,9 +32,6 @@ export default defineConfig({
           if (id.includes('node_modules/@fluentui/react-components') || id.includes('node_modules/@fluentui/react-icons')) {
             return 'vendor-fluent';
           }
-          if (id.includes('node_modules/livekit-client')) {
-            return 'vendor-livekit';
-          }
           if (id.includes('node_modules/framer-motion')) {
             return 'vendor-framer';
           }

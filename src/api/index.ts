@@ -10,7 +10,6 @@ export { messagesApi } from './messages';
 export { alertsApi } from './alerts';
 export { pollsApi } from './polls';
 export { storageApi } from './storage';
-export { livekitApi } from './livekit';
 export { integrationsApi } from './integrations';
 export { themesApi } from './themes';
 export { tenantsApi } from './tenants';

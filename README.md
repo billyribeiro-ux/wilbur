@@ -1,11 +1,11 @@
 # Wilbur - Trading Room Platform
 
-A real-time trading room platform built with React, TypeScript, Rust (Axum), and LiveKit.
+A real-time trading room platform built with React, TypeScript, and Rust (Axum).
 
 ## Features
 
 ### Core Functionality
-- **Real-time Video/Audio** - LiveKit integration for high-quality streaming
+- **Real-time Video/Audio** - Browser capture; relay/SFU will plug into `src/services/roomTransport.ts` when the backend provides it
 - **Trading Rooms** - Create and join trading rooms with role-based permissions
 - **Live Chat** - Real-time messaging with emoji support
 - **Alerts System** - Post and view trading alerts with media support
@@ -31,7 +31,7 @@ A real-time trading room platform built with React, TypeScript, Rust (Axum), and
 - **Styling**: TailwindCSS
 - **State Management**: Zustand
 - **Backend**: Rust (Axum), SQLx, PostgreSQL
-- **Real-time**: Native WebSocket, LiveKit
+- **Real-time**: Native WebSocket to the Rust API
 - **Authentication**: JWT (Rust backend)
 - **Storage**: Rust backend file API
 - **Rate Limiting**: Governor (GCRA)
@@ -72,12 +72,9 @@ This repo includes a **separate** SvelteKit app under `svelte-app/`. It does **n
 
 ## Environment Variables
 
-Required in `.env`:
+Required in `.env` (see [`.env.example`](./.env.example)):
 ```
 VITE_API_BASE_URL=http://localhost:3001
-VITE_LIVEKIT_URL=your_livekit_url
-VITE_LIVEKIT_API_KEY=your_livekit_api_key
-VITE_LIVEKIT_API_SECRET=your_livekit_api_secret
 ```
 
 ## Database

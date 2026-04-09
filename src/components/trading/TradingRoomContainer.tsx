@@ -27,8 +27,7 @@ import {
   getUserIntegration,
   disconnectUserIntegration,
 } from '../../services/integrationsApi';
-import { liveKitService } from '../../services/livekit';
-import { getLiveKitToken } from '../../services/livekitToken';
+import { roomTransportService } from '../../services/roomTransport';
 import {
   subscribeToRoomChat,
   subscribeToRoomAlerts,
@@ -234,21 +233,10 @@ export function TradingRoomContainer({
           subscribeToRoomTracks(room.id);
         } catch { /* no-op */ }
 
-        // LiveKit connect
         try {
-          const token = await getLiveKitToken(
-            room.id,
-            user.id,
-            user.email || user.id
-          );
-          if (cancelled) return;
-          // LiveKit connect expects just the token; participant identity is embedded in the token
-          await liveKitService.connect(token);
+          await roomTransportService.connect('');
         } catch {
-          if (cancelled) return;
-          addToast(
-            'Real-time features unavailable. Chat and alerts will still work.'
-          );
+          /* no-op — SFU not configured */
         }
 
         if (cancelled) return;
@@ -276,7 +264,7 @@ export function TradingRoomContainer({
       } catch { /* no-op */ }
 
       try {
-        liveKitService.disconnect();
+        roomTransportService.disconnect();
       } catch { /* no-op */ }
     };
     // Intentionally minimal deps: only user/room IDs trigger re-init
@@ -320,7 +308,7 @@ export function TradingRoomContainer({
   // =========================================================
   const handleLeave = useCallback(async () => {
     logger.info('Leaving TradingRoom');
-    try { await liveKitService.disconnect(); } catch { /* no-op */ }
+    try { roomTransportService.disconnect(); } catch { /* no-op */ }
     try { audioVideoCleanup(); } catch { /* no-op */ }
     try { screenShareCleanup(); } catch { /* no-op */ }
     try { clearMicrosoftCache('all', { resetStores: true }); } catch { /* no-op */ }

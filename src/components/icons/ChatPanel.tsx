@@ -82,12 +82,11 @@ export function ChatPanel() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fi = useFluentIcons();
   
-  // LiveKit audio activity detection - shows speaking indicator in chat
-  // TODO: Enable when @livekit/components-react is installed
+  // Speaking indicator when media transport exposes audio levels (future)
   // const participants = useParticipants();
   // const currentUserParticipant = participants.find((p) => p.identity === user?.id);
   // const isSpeaking = useIsSpeaking(currentUserParticipant);
-  const isSpeaking = false; // Placeholder until LiveKit hooks are available
+  const isSpeaking = false;
   
   // Refs - Microsoft Pattern: Proper typing and initialization
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);

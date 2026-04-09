@@ -17,13 +17,6 @@ export const FEATURES = {
    * Enable experimental chat features
    */
   EXPERIMENTAL_CHAT: false,
-  
-  /**
-   * Enable LiveKit video/audio features
-   * - false: Disable LiveKit (saves quota, app works without it)
-   * - true: Enable LiveKit video/audio
-   */
-  ENABLE_LIVEKIT: false,
 } as const;
 
 // Helper functions

@@ -45,12 +45,8 @@
           ws://localhost:*
           ws://127.0.0.1:*
           wss://localhost:*
-          https://*.supabase.co
-          wss://*.supabase.co
           https://api.spotify.com
-          https://accounts.spotify.com
-          wss://*.livekit.cloud
-          https://*.livekit.cloud;
+          https://accounts.spotify.com;
         media-src blob: data: mediastream:;
         frame-src 'self' https://sdk.scdn.co https://open.spotify.com;
       "
@@ -74,9 +70,7 @@
     <!-- ==========================================================
          🚀 Preconnects & DNS Prefetch
          ========================================================== -->
-    <link rel="preconnect" href="https://ngknerhbcrcwjlxquzsf.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="https://api.spotify.com" />
-    <link rel="dns-prefetch" href="https://livekit.cloud" />
 
     <!-- ==========================================================
          🎨 Font Awesome Icons — Using @fortawesome/react-fontawesome (SVG)
