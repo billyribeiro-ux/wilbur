@@ -42,6 +42,7 @@
     "check:nulls": "grep -r '\\bnull\\b' src/ --include='*.ts' --include='*.tsx' | wc -l",
     "check:isolation": "node scripts/check-app-isolation.mjs",
     "check:pe7": "node scripts/check-react-pe7.mjs",
+    "check:pe7:svelte": "node scripts/check-svelte-pe7.mjs",
     "test:ui": "vitest --ui"
   },
   "dependencies": {

@@ -26,6 +26,21 @@ export default tseslint.config(
 			globals: { ...globals.browser, ...globals.node }
 		},
 		rules: {
+			'no-restricted-imports': [
+				'error',
+				{
+					paths: [
+						{ name: 'react', message: 'PE7: SvelteKit app must not use React — use Svelte 5 only.' },
+						{ name: 'react-dom', message: 'PE7: SvelteKit app must not use react-dom.' },
+						{ name: 'react-dom/client', message: 'PE7: SvelteKit app must not use react-dom.' },
+						{ name: 'zustand', message: 'PE7: Use Svelte runes / $lib/stores — not Zustand.' },
+						{
+							name: '@supabase/supabase-js',
+							message: 'PE7: Use PocketBase / wilbur-api — not @supabase/supabase-js in svelte-app.'
+						}
+					]
+				}
+			],
 			'@typescript-eslint/no-unused-vars': [
 				'error',
 				{ argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' }

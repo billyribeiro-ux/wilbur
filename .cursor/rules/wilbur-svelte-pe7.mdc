@@ -1,0 +1,32 @@
+---
+description: Principal-engineer standards for the SvelteKit app (svelte-app/)
+globs: svelte-app/**/*.{ts,svelte}
+alwaysApply: false
+---
+
+# Wilbur SvelteKit — PE7 standards
+
+## App isolation
+- **Never import the Vite/React tree** (`src/api`, `src/store`, `src/components` from repo root). ESLint `no-restricted-imports` + `pnpm run check:pe7:svelte`.
+- The React app must not import `svelte-app/` (`pnpm run check:isolation` from repo root).
+
+## Data & server
+- **PocketBase**: Browser/server access via `$lib/services/pocketbase` and `hooks.server.ts` — do not spawn ad-hoc `PocketBase` clients in random components.
+- **Private env**: Server-only secrets (`TURSO_*`, etc.) only in `+server.ts`, `hooks.server.ts`, or `$lib/server/*` — use `$env/dynamic/private` / `$env/static/private`.
+- **Public env**: `PUBLIC_*` via `$env/dynamic/public` or `import.meta.env` where appropriate; avoid scattering undocumented env reads.
+
+## Realtime / media
+- **LiveKit** (`livekit-client`) is allowed in this app where used for rooms; keep usage behind `$lib` modules, not scattered in routes.
+- Prefer SvelteKit `+server.ts` for token minting; keep secrets server-side.
+
+## TypeScript & Svelte 5
+- Prefer `interface` for object shapes; use `type` for unions. Avoid `any` — tighten `@typescript-eslint/no-explicit-any` over time (warn today).
+- Use runes (`$state`, `$derived`, …) and `.svelte.ts` stores per project conventions.
+
+## UI & content safety
+- Do not use `{@html ...}` unless content is sanitized (e.g. DOMPurify). ESLint `svelte/no-at-html-tags` is **error** by default; explicit file overrides only with a comment.
+
+## Tooling — Svelte MCP (required for agents)
+- The repo configures **Cursor MCP** in `.cursor/mcp.json`: server id `svelte` runs `pnpm --dir svelte-app exec svelte-mcp` (`@sveltejs/mcp`, name `dev.svelte/mcp`).
+- When implementing or reviewing SvelteKit features, **use the MCP** to pull current Svelte 5 / SvelteKit docs (`list-sections`, `get-documentation`) and optional `svelte-autofixer` for code issues — do not rely on stale training data alone.
+- **Gates**: `pnpm run check:pe7:svelte`, `pnpm --dir svelte-app run lint`, `pnpm --dir svelte-app run check`.

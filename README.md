@@ -67,7 +67,10 @@ This repo includes a **separate** SvelteKit app under `svelte-app/`. It does **n
 **Boundaries**
 
 - Do not import `svelte-app/` from `src/` (enforced by ESLint and `pnpm run check:isolation`).
-- **PE7 gates**: `pnpm run check:pe7` scans `src/` for forbidden imports (e.g. Supabase client, `livekit-client`, `svelte-app`). Pair with `pnpm run check:isolation` in CI.
+- **PE7 gates (React)**: `pnpm run check:pe7` scans `src/` for forbidden imports (e.g. Supabase client, `livekit-client`, `svelte-app`). Pair with `pnpm run check:isolation` in CI.
+- **PE7 gates (SvelteKit)**: `pnpm run check:pe7:svelte` scans `svelte-app/` for forbidden imports (React, Zustand, Supabase client, cross-imports of the React `src/api|store|components` tree). Pair with `pnpm --dir svelte-app run lint` and `pnpm --dir svelte-app run check`.
+- **Svelte MCP**: Cursor loads `@sveltejs/mcp` via `.cursor/mcp.json` (`svelte` server → `pnpm --dir svelte-app exec svelte-mcp`) so agents can query current Svelte 5 / Kit docs — use it when editing `svelte-app/`.
+- **CI**: GitHub Actions `.github/workflows/ci.yml` runs a **frontend** job: `check:isolation`, `check:pe7`, `check:pe7:svelte`, ESLint on React `src/` (`--max-warnings 0`), SvelteKit `lint`, and `svelte-check`.
 - Lint React from the repo root: `pnpm run lint`. Lint SvelteKit from its app: `pnpm --dir svelte-app run lint`.
 - Build React: `pnpm run build`. Build SvelteKit: `pnpm --dir svelte-app run build`.
 
