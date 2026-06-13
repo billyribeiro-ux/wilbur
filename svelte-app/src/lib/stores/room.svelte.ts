@@ -378,7 +378,23 @@ class RoomStore {
 		try {
 			const userId = pb.authStore.model?.id;
 			if (!userId) throw new Error('Not authenticated');
-			await pb.collection(Collections.POLL_VOTES).create({ poll: pollId, userId, optionIndex });
+
+			// One vote per user per poll — update the existing vote instead of stacking new ones.
+			let existing: { id: string } | null = null;
+			try {
+				existing = await pb
+					.collection(Collections.POLL_VOTES)
+					.getFirstListItem(`poll = "${pollId}" && userId = "${userId}"`);
+			} catch {
+				existing = null; // no prior vote (404)
+			}
+
+			if (existing) {
+				await pb.collection(Collections.POLL_VOTES).update(existing.id, { optionIndex });
+			} else {
+				await pb.collection(Collections.POLL_VOTES).create({ poll: pollId, userId, optionIndex });
+			}
+
 			if (this.currentRoomId) await this.fetchPolls(this.currentRoomId);
 			return true;
 		} catch (err) {
