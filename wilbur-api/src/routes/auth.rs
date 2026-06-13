@@ -20,11 +20,11 @@ use validator::Validate;
 use crate::{
     error::{AppError, AppResult},
     extractors::auth::{AuthUser, Claims},
-        models::{
-            auth::{
-                AuthResponse, ChangePasswordRequest, ForgotPasswordRequest, LoginRequest,
-                RefreshRequest, ResendVerificationRequest, ResetPasswordRequest,
-            },
+    models::{
+        auth::{
+            AuthResponse, ChangePasswordRequest, ForgotPasswordRequest, LoginRequest,
+            RefreshRequest, ResendVerificationRequest, ResetPasswordRequest,
+        },
         user::{CreateUserRequest, User, UserResponse, UserRole},
     },
     services::email_service::EmailService,
@@ -261,7 +261,11 @@ async fn register(
     // Send verification email
     if let Ok(email_service) = EmailService::new(&state.config) {
         if let Err(e) = email_service
-            .send_verification_email(&body.email, &verification_token, &state.config.frontend_base_url)
+            .send_verification_email(
+                &body.email,
+                &verification_token,
+                &state.config.frontend_base_url,
+            )
             .await
         {
             tracing::warn!(user_id = %user_id, error = %e, "Failed to send verification email");
@@ -498,7 +502,11 @@ async fn resend_verification(
 
     if let Ok(email_service) = EmailService::new(&state.config) {
         if let Err(e) = email_service
-            .send_verification_email(&user.email, &verification_token, &state.config.frontend_base_url)
+            .send_verification_email(
+                &user.email,
+                &verification_token,
+                &state.config.frontend_base_url,
+            )
             .await
         {
             tracing::warn!(user_id = %user.id, error = %e, "Failed to send verification email (resend)");
@@ -583,9 +591,13 @@ async fn forgot_password(
         // Send password reset email
         if let Ok(email_service) = EmailService::new(&state.config) {
             if let Err(e) = email_service
-            .send_password_reset_email(&user.email, &reset_token, &state.config.frontend_base_url)
-            .await
-        {
+                .send_password_reset_email(
+                    &user.email,
+                    &reset_token,
+                    &state.config.frontend_base_url,
+                )
+                .await
+            {
                 tracing::warn!(user_id = %user.id, error = %e, "Failed to send password reset email");
             }
         }
