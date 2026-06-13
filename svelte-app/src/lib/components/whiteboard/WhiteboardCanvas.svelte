@@ -20,11 +20,16 @@
 		draw(ctx);
 	});
 
-	// Window resize isn't reactive state, so redraw (and re-fit) explicitly.
-	function handleResize() {
-		if (!canvas) return;
-		const ctx = canvas.getContext('2d');
-		if (ctx) draw(ctx);
+	// Redraw + re-fit whenever the canvas element's own size changes (window resize,
+	// container/side-panel layout changes, etc.). ResizeObserver is the correct API
+	// for observing element size and is more robust than a window 'resize' listener.
+	function trackSize(node: HTMLCanvasElement) {
+		const observer = new ResizeObserver(() => {
+			const ctx = node.getContext('2d');
+			if (ctx) draw(ctx);
+		});
+		observer.observe(node);
+		return () => observer.disconnect();
 	}
 
 	function getPoint(e: PointerEvent): WBPoint {
@@ -295,11 +300,12 @@
 	}
 </script>
 
-<svelte:window onresize={handleResize} onkeydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 <div class="wb-wrap">
 	<canvas
 		bind:this={canvas}
+		{@attach trackSize}
 		class="wb-canvas"
 		style:cursor={cursorForTool(whiteboardStore.tool)}
 		onpointerdown={handlePointerDown}
