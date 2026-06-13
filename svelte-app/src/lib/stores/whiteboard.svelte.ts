@@ -27,6 +27,33 @@ export interface WBViewport { panX: number; panY: number; zoom: number; }
 
 interface HistoryEntry { shapes: SvelteMap<string, WBShape>; timestamp: number; action: string; }
 
+export interface WBBounds { minX: number; minY: number; maxX: number; maxY: number; }
+
+/**
+ * Axis-aligned bounding box of a shape in world coordinates. Pure function so it
+ * can be unit-tested and reused for hit-testing and selection rendering.
+ */
+export function shapeBounds(s: WBShape): WBBounds {
+	if (s.points && s.points.length > 0) {
+		let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+		for (const p of s.points) {
+			minX = Math.min(minX, p.x); minY = Math.min(minY, p.y);
+			maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y);
+		}
+		return { minX, minY, maxX, maxY };
+	}
+	if (s.type === 'text') {
+		const fs = s.fontSize ?? 16;
+		const w = Math.max(1, (s.content?.length ?? 1)) * fs * 0.6;
+		return { minX: s.x, minY: s.y - fs, maxX: s.x + w, maxY: s.y };
+	}
+	if (s.type === 'emoji') {
+		const sz = s.size ?? 32;
+		return { minX: s.x, minY: s.y - sz, maxX: s.x + sz, maxY: s.y };
+	}
+	return { minX: s.x, minY: s.y, maxX: s.x, maxY: s.y };
+}
+
 // ============================================================================
 // STORE
 // ============================================================================
@@ -57,6 +84,9 @@ class WhiteboardStore {
 	laserVisible = $state(false);
 	laserColor = $state('#FF0000');
 
+	// Emoji currently selected for the emoji tool
+	currentEmoji = $state('⭐');
+
 	// Derived
 	get shapeCount(): number { return this.shapes.size; }
 	get canUndo(): boolean { return this.historyIndex > 0; }
@@ -75,6 +105,7 @@ class WhiteboardStore {
 	setColor(c: string): void { this.color = c; }
 	setSize(s: number): void { this.size = Math.max(1, Math.min(100, s)); }
 	setOpacity(o: number): void { this.opacity = Math.max(0, Math.min(1, o)); }
+	setEmoji(e: string): void { this.currentEmoji = e; }
 
 	// ============================================================================
 	// SHAPE ACTIONS
@@ -102,6 +133,61 @@ class WhiteboardStore {
 		this.shapes.clear();
 		this.selectedIds.clear();
 		this.pushHistory('clear');
+	}
+
+	/** Place a text shape at world (x, y). No-op for blank content. Returns the id (or null). */
+	addText(x: number, y: number, content: string): string | null {
+		if (!content.trim()) return null;
+		const now = Date.now();
+		const id = crypto.randomUUID();
+		this.addShape({
+			id, type: 'text', x, y, content,
+			color: this.color, opacity: this.opacity,
+			fontSize: Math.max(12, this.size * 6), fontFamily: 'sans-serif',
+			createdAt: now, updatedAt: now
+		});
+		return id;
+	}
+
+	/** Place an emoji shape at world (x, y). Returns the id. */
+	addEmoji(x: number, y: number, emoji = this.currentEmoji): string {
+		const now = Date.now();
+		const id = crypto.randomUUID();
+		this.addShape({
+			id, type: 'emoji', x, y, emoji,
+			size: Math.max(24, this.size * 8),
+			createdAt: now, updatedAt: now
+		});
+		return id;
+	}
+
+	/** Translate a shape (and its points) by (dx, dy) without pushing history. */
+	moveShape(id: string, dx: number, dy: number): void {
+		const s = this.shapes.get(id);
+		if (!s) return;
+		const moved: WBShape = { ...s, x: s.x + dx, y: s.y + dy, updatedAt: Date.now() };
+		if (s.points) moved.points = s.points.map((p) => ({ ...p, x: p.x + dx, y: p.y + dy }));
+		this.shapes.set(id, moved);
+	}
+
+	/** Delete every selected shape in a single history step. */
+	deleteSelected(): void {
+		if (this.selectedIds.size === 0) return;
+		for (const id of this.selectedIds) this.shapes.delete(id);
+		this.selectedIds.clear();
+		this.pushHistory('delete-selected');
+	}
+
+	/** Topmost shape id whose padded bounds contain world (x, y), or null. */
+	hitTest(x: number, y: number, pad = 6): string | null {
+		const arr = this.shapesArray;
+		for (let i = arr.length - 1; i >= 0; i--) {
+			const b = shapeBounds(arr[i]);
+			if (x >= b.minX - pad && x <= b.maxX + pad && y >= b.minY - pad && y <= b.maxY + pad) {
+				return arr[i].id;
+			}
+		}
+		return null;
 	}
 
 	// ============================================================================

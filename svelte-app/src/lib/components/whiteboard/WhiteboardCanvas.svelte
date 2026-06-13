@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { whiteboardStore, type WBPoint, type WBShape } from '$lib/stores';
+	import { whiteboardStore, shapeBounds, type WBPoint, type WBShape } from '$lib/stores';
 
 	let canvas: HTMLCanvasElement | undefined = $state();
 	let ctx: CanvasRenderingContext2D | null = $state(null);
@@ -8,26 +8,34 @@
 	let currentPoints: WBPoint[] = $state([]);
 	let animId = 0;
 
+	// Select-tool drag state (world coords of last pointer position).
+	let selectDrag: { lastX: number; lastY: number; moved: boolean } | null = null;
+	// Inline text-entry overlay state (world position + screen position for the input).
+	let textInput = $state<{ wx: number; wy: number; left: number; top: number; value: string } | null>(null);
+
 	onMount(() => {
 		if (!canvas) return;
 		ctx = canvas.getContext('2d');
 		resizeCanvas();
 		window.addEventListener('resize', resizeCanvas);
+		window.addEventListener('keydown', handleKeydown);
 		render();
 	});
 
 	onDestroy(() => {
 		window.removeEventListener('resize', resizeCanvas);
+		window.removeEventListener('keydown', handleKeydown);
 		cancelAnimationFrame(animId);
 	});
 
 	function resizeCanvas() {
-		if (!canvas) return;
+		if (!canvas || !ctx) return;
 		const dpr = window.devicePixelRatio || 1;
 		const rect = canvas.getBoundingClientRect();
 		canvas.width = rect.width * dpr;
 		canvas.height = rect.height * dpr;
-		ctx?.scale(dpr, dpr);
+		// Assigning width/height resets the transform; re-apply the DPR scale once.
+		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 	}
 
 	function getPoint(e: PointerEvent): WBPoint {
@@ -36,40 +44,101 @@
 		return { x: (e.clientX - rect.left - panX) / zoom, y: (e.clientY - rect.top - panY) / zoom, pressure: e.pressure };
 	}
 
+	function cursorForTool(tool: string): string {
+		if (tool === 'hand') return 'grab';
+		if (tool === 'text') return 'text';
+		if (tool === 'select') return 'default';
+		return 'crosshair';
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (textInput) return; // typing into the text overlay
+		if ((e.key === 'Delete' || e.key === 'Backspace') && whiteboardStore.selectedIds.size > 0) {
+			e.preventDefault();
+			whiteboardStore.deleteSelected();
+		} else if (e.key === 'Escape') {
+			whiteboardStore.clearSelection();
+		}
+	}
+
 	function handlePointerDown(e: PointerEvent) {
 		if (!canvas) return;
-		canvas.setPointerCapture(e.pointerId);
 		const tool = whiteboardStore.tool;
+		const pt = getPoint(e);
+
 		if (tool === 'hand') return;
-		if (tool === 'laser') { whiteboardStore.laserVisible = true; return; }
+		if (tool === 'laser') { canvas.setPointerCapture(e.pointerId); whiteboardStore.laserVisible = true; return; }
+
+		if (tool === 'select') {
+			const hit = whiteboardStore.hitTest(pt.x, pt.y);
+			if (hit) {
+				if (!e.shiftKey && !whiteboardStore.selectedIds.has(hit)) whiteboardStore.clearSelection();
+				whiteboardStore.select(hit);
+				selectDrag = { lastX: pt.x, lastY: pt.y, moved: false };
+				canvas.setPointerCapture(e.pointerId);
+			} else {
+				whiteboardStore.clearSelection();
+			}
+			return;
+		}
+
+		if (tool === 'text') {
+			const rect = canvas.getBoundingClientRect();
+			textInput = { wx: pt.x, wy: pt.y, left: e.clientX - rect.left, top: e.clientY - rect.top, value: '' };
+			return;
+		}
+
+		if (tool === 'emoji') {
+			whiteboardStore.addEmoji(pt.x, pt.y);
+			return;
+		}
+
+		// Freehand / shape drawing tools
+		canvas.setPointerCapture(e.pointerId);
 		isDrawing = true;
-		currentPoints = [getPoint(e)];
+		currentPoints = [pt];
 	}
 
 	function handlePointerMove(e: PointerEvent) {
 		if (!canvas) return;
 		const tool = whiteboardStore.tool;
-		if (tool === 'laser') { whiteboardStore.updateLaser(getPoint(e)); return; }
+
+		if (tool === 'laser') { if (whiteboardStore.laserVisible) whiteboardStore.updateLaser(getPoint(e)); return; }
 		if (tool === 'hand' && e.buttons === 1) {
 			whiteboardStore.setPan(whiteboardStore.viewport.panX + e.movementX, whiteboardStore.viewport.panY + e.movementY);
 			return;
 		}
+		if (tool === 'select' && selectDrag) {
+			const pt = getPoint(e);
+			const dx = pt.x - selectDrag.lastX, dy = pt.y - selectDrag.lastY;
+			if (dx !== 0 || dy !== 0) {
+				for (const id of whiteboardStore.selectedIds) whiteboardStore.moveShape(id, dx, dy);
+				selectDrag = { lastX: pt.x, lastY: pt.y, moved: true };
+			}
+			return;
+		}
 		if (!isDrawing) return;
-		currentPoints = [...currentPoints, getPoint(e)];
+		currentPoints.push(getPoint(e));
 	}
 
-	function handlePointerUp(_e: PointerEvent) {
-		if (whiteboardStore.tool === 'laser') { whiteboardStore.laserVisible = false; whiteboardStore.clearLaser(); return; }
-		if (!isDrawing || currentPoints.length < 2) { isDrawing = false; return; }
+	function handlePointerUp() {
 		const tool = whiteboardStore.tool;
-		const id = crypto.randomUUID();
+		if (tool === 'laser') { whiteboardStore.laserVisible = false; whiteboardStore.clearLaser(); return; }
+		if (tool === 'select') {
+			if (selectDrag?.moved) whiteboardStore.pushHistory('move');
+			selectDrag = null;
+			return;
+		}
+		if (!isDrawing) return;
+
+		const pts = currentPoints;
 		const now = Date.now();
-		const base = { id, x: 0, y: 0, createdAt: now, updatedAt: now, color: whiteboardStore.color, size: whiteboardStore.size, opacity: whiteboardStore.opacity };
+		const base = { id: crypto.randomUUID(), x: 0, y: 0, createdAt: now, updatedAt: now, color: whiteboardStore.color, size: whiteboardStore.size, opacity: whiteboardStore.opacity };
 
 		if (tool === 'pen' || tool === 'highlighter' || tool === 'eraser') {
-			whiteboardStore.addShape({ ...base, type: tool, points: currentPoints });
-		} else if (tool === 'rectangle' || tool === 'circle' || tool === 'line' || tool === 'arrow') {
-			const p0 = currentPoints[0], pN = currentPoints[currentPoints.length - 1];
+			if (pts.length >= 1) whiteboardStore.addShape({ ...base, type: tool, points: [...pts] });
+		} else if ((tool === 'rectangle' || tool === 'circle' || tool === 'line' || tool === 'arrow') && pts.length >= 2) {
+			const p0 = pts[0], pN = pts[pts.length - 1];
 			whiteboardStore.addShape({ ...base, type: tool, points: [p0, pN], width: Math.abs(pN.x - p0.x), height: Math.abs(pN.y - p0.y), stroke: whiteboardStore.color, strokeWidth: whiteboardStore.size });
 		}
 		isDrawing = false;
@@ -78,8 +147,27 @@
 
 	function handleWheel(e: WheelEvent) {
 		e.preventDefault();
-		const delta = e.deltaY > 0 ? 0.9 : 1.1;
-		whiteboardStore.setZoom(whiteboardStore.viewport.zoom * delta);
+		if (!canvas) return;
+		const rect = canvas.getBoundingClientRect();
+		const { panX, panY, zoom } = whiteboardStore.viewport;
+		const factor = e.deltaY > 0 ? 0.9 : 1.1;
+		const newZoom = Math.max(0.1, Math.min(10, zoom * factor));
+		// Keep the world point under the cursor fixed while zooming.
+		const cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+		const wx = (cx - panX) / zoom, wy = (cy - panY) / zoom;
+		whiteboardStore.setZoom(newZoom);
+		whiteboardStore.setPan(cx - wx * newZoom, cy - wy * newZoom);
+	}
+
+	function commitText() {
+		if (!textInput) return;
+		whiteboardStore.addText(textInput.wx, textInput.wy, textInput.value);
+		textInput = null;
+	}
+
+	function handleTextKey(e: KeyboardEvent) {
+		if (e.key === 'Enter') { e.preventDefault(); commitText(); }
+		else if (e.key === 'Escape') { e.preventDefault(); textInput = null; }
 	}
 
 	function render() {
@@ -91,22 +179,36 @@
 		ctx.translate(panX, panY);
 		ctx.scale(zoom, zoom);
 
-		// Draw committed shapes
-		for (const shape of whiteboardStore.shapesArray) drawShape(ctx!, shape);
+		for (const shape of whiteboardStore.shapesArray) drawShape(ctx, shape);
 
-		// Draw current stroke in progress
-		if (isDrawing && currentPoints.length > 1) {
-			drawStroke(ctx!, currentPoints, whiteboardStore.color, whiteboardStore.size, whiteboardStore.opacity, whiteboardStore.tool === 'highlighter');
+		if (isDrawing && currentPoints.length > 0) {
+			drawStroke(ctx, currentPoints, whiteboardStore.color, whiteboardStore.size, whiteboardStore.opacity, whiteboardStore.tool === 'highlighter');
+		}
+
+		// Selection outlines (world space)
+		if (whiteboardStore.selectedIds.size > 0) {
+			ctx.save();
+			ctx.strokeStyle = '#3b82f6';
+			ctx.lineWidth = 1 / zoom;
+			ctx.setLineDash([6 / zoom, 4 / zoom]);
+			for (const id of whiteboardStore.selectedIds) {
+				const s = whiteboardStore.shapes.get(id);
+				if (!s) continue;
+				const b = shapeBounds(s);
+				ctx.strokeRect(b.minX - 4, b.minY - 4, b.maxX - b.minX + 8, b.maxY - b.minY + 8);
+			}
+			ctx.restore();
 		}
 
 		ctx.restore();
 
-		// Draw laser overlay (in screen space)
+		// Laser overlay (screen space)
 		if (whiteboardStore.laserVisible && whiteboardStore.laserTrail.length > 1) {
 			ctx.save();
 			ctx.strokeStyle = whiteboardStore.laserColor;
 			ctx.lineWidth = 3;
 			ctx.globalAlpha = 0.8;
+			ctx.lineCap = 'round';
 			ctx.beginPath();
 			const trail = whiteboardStore.laserTrail;
 			ctx.moveTo(trail[0].x * zoom + panX, trail[0].y * zoom + panY);
@@ -147,27 +249,40 @@
 			c.globalAlpha = s.opacity ?? 1;
 			c.font = `${s.fontSize ?? 16}px ${s.fontFamily ?? 'sans-serif'}`;
 			c.fillStyle = s.color ?? '#000';
+			c.textBaseline = 'alphabetic';
 			c.fillText(s.content ?? '', s.x, s.y);
 			c.globalAlpha = 1;
 		} else if (s.type === 'emoji') {
+			c.globalAlpha = s.opacity ?? 1;
 			c.font = `${s.size ?? 32}px serif`;
+			c.textBaseline = 'alphabetic';
 			c.fillText(s.emoji ?? '', s.x, s.y);
+			c.globalAlpha = 1;
 		}
 	}
 
 	function drawStroke(c: CanvasRenderingContext2D, pts: WBPoint[], color: string, size: number, opacity: number, isHighlighter: boolean) {
-		if (pts.length < 2) return;
+		if (pts.length === 0) return;
 		c.save();
 		c.globalAlpha = isHighlighter ? 0.35 : opacity;
 		c.globalCompositeOperation = isHighlighter ? 'multiply' : 'source-over';
 		c.strokeStyle = color;
-		c.lineWidth = isHighlighter ? size * 3 : size;
+		c.fillStyle = color;
+		const lw = isHighlighter ? size * 3 : size;
+		c.lineWidth = lw;
 		c.lineCap = 'round';
 		c.lineJoin = 'round';
-		c.beginPath();
-		c.moveTo(pts[0].x, pts[0].y);
-		for (let i = 1; i < pts.length; i++) c.lineTo(pts[i].x, pts[i].y);
-		c.stroke();
+		if (pts.length === 1) {
+			// Single tap → a dot.
+			c.beginPath();
+			c.arc(pts[0].x, pts[0].y, Math.max(0.5, lw / 2), 0, Math.PI * 2);
+			c.fill();
+		} else {
+			c.beginPath();
+			c.moveTo(pts[0].x, pts[0].y);
+			for (let i = 1; i < pts.length; i++) c.lineTo(pts[i].x, pts[i].y);
+			c.stroke();
+		}
 		c.restore();
 	}
 
@@ -181,15 +296,45 @@
 		c.stroke();
 	}
 </script>
-<canvas
-	bind:this={canvas}
-	class="wb-canvas"
-	onpointerdown={handlePointerDown}
-	onpointermove={handlePointerMove}
-	onpointerup={handlePointerUp}
-	onwheel={handleWheel}
-></canvas>
+
+<div class="wb-wrap">
+	<canvas
+		bind:this={canvas}
+		class="wb-canvas"
+		style:cursor={cursorForTool(whiteboardStore.tool)}
+		onpointerdown={handlePointerDown}
+		onpointermove={handlePointerMove}
+		onpointerup={handlePointerUp}
+		onpointercancel={handlePointerUp}
+		onwheel={handleWheel}
+	></canvas>
+
+	{#if textInput}
+		<input
+			class="wb-text-input"
+			style:left="{textInput.left}px"
+			style:top="{textInput.top}px"
+			style:color={whiteboardStore.color}
+			bind:value={textInput.value}
+			onkeydown={handleTextKey}
+			onblur={commitText}
+			{@attach (node) => node.focus()}
+			placeholder="Type…"
+		/>
+	{/if}
+</div>
 
 <style>
-	.wb-canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; background: white; border-radius: 8px; }
+	.wb-wrap { position: relative; width: 100%; height: 100%; }
+	.wb-canvas { width: 100%; height: 100%; display: block; touch-action: none; background: white; border-radius: 8px; }
+	.wb-text-input {
+		position: absolute;
+		transform: translateY(-1em);
+		min-width: 80px;
+		background: transparent;
+		border: 1px dashed #3b82f6;
+		outline: none;
+		font-size: 1rem;
+		padding: 0 2px;
+	}
 </style>
