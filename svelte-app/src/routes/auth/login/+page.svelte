@@ -1,18 +1,29 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { authStore, toastStore } from '$lib/stores';
+	import { loginSchema, validateWithSchema } from '$lib/validation/schemas';
 	import { EnvelopeIcon, LockIcon, EyeIcon, EyeSlashIcon, TrendUpIcon } from 'phosphor-svelte';
 
 	let email = $state('');
 	let password = $state('');
 	let showPassword = $state(false);
 	let isSubmitting = $state(false);
+	let errors = $state<Record<string, string>>({});
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
+		errors = {};
+
+		const result = validateWithSchema(loginSchema, { email, password });
+
+		if (!result.success) {
+			errors = result.errors;
+			return;
+		}
+
 		isSubmitting = true;
 
-		const success = await authStore.login(email, password);
+		const success = await authStore.login(result.data.email, result.data.password);
 
 		if (success) {
 			toastStore.success('Welcome back!', 'Login successful');
@@ -50,11 +61,15 @@
 							id="email"
 							type="email"
 							bind:value={email}
+							oninput={() => (errors.email = '')}
 							required
-							class="w-full rounded-lg border border-surface-600 bg-surface-800 py-3 pl-10 pr-4 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+							class="w-full rounded-lg border {errors.email ? 'border-red-500' : 'border-surface-600'} bg-surface-800 py-3 pl-10 pr-4 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
 							placeholder="you@example.com"
 						/>
 					</div>
+					{#if errors.email}
+						<p class="mt-1 text-sm text-red-400">{errors.email}</p>
+					{/if}
 				</div>
 
 				<div>
@@ -67,8 +82,9 @@
 							id="password"
 							type={showPassword ? 'text' : 'password'}
 							bind:value={password}
+							oninput={() => (errors.password = '')}
 							required
-							class="w-full rounded-lg border border-surface-600 bg-surface-800 py-3 pl-10 pr-12 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+							class="w-full rounded-lg border {errors.password ? 'border-red-500' : 'border-surface-600'} bg-surface-800 py-3 pl-10 pr-12 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
 							placeholder="Enter your password"
 						/>
 						<button
@@ -83,6 +99,9 @@
 							{/if}
 						</button>
 					</div>
+					{#if errors.password}
+						<p class="mt-1 text-sm text-red-400">{errors.password}</p>
+					{/if}
 				</div>
 
 				<div class="flex items-center justify-between">

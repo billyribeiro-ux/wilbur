@@ -6,8 +6,8 @@ services:
   # ==========================================================================
   app:
     build:
-      context: ..
-      dockerfile: svelte-app/Dockerfile
+      context: .
+      dockerfile: Dockerfile
       target: development
     ports:
       - "5173:5173"
@@ -22,9 +22,8 @@ services:
       - LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
       - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
     volumes:
-      - .:/app/svelte-app
+      - .:/app
       - /app/node_modules
-      - /app/svelte-app/node_modules
     depends_on:
       - pocketbase
     networks:

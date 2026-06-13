@@ -1,0 +1,14 @@
+node_modules
+.svelte-kit
+build
+dist
+.git
+.env
+.env.*
+!.env.example
+coverage
+playwright-report
+test-results
+pocketbase
+pocketbase.zip
+pb_data

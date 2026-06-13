@@ -7,8 +7,8 @@ alwaysApply: false
 # Wilbur SvelteKit — PE7 standards
 
 ## App isolation
-- **Never import the Vite/React tree** (`src/api`, `src/store`, `src/components` from repo root). ESLint `no-restricted-imports` + `pnpm run check:pe7:svelte`.
-- The React app must not import `svelte-app/` (`pnpm run check:isolation` from repo root).
+- **Never import the Vite/React tree** (`react-app/src/api`, `react-app/src/store`, `react-app/src/components`). ESLint `no-restricted-imports` + `pnpm run check:pe7` (run from `svelte-app/`).
+- The React app must not import `svelte-app/` (`pnpm run check:isolation` run from `react-app/`).
 
 ## Data & server
 - **PocketBase**: Browser/server access via `$lib/services/pocketbase` and `hooks.server.ts` — do not spawn ad-hoc `PocketBase` clients in random components.
@@ -29,4 +29,4 @@ alwaysApply: false
 ## Tooling — Svelte MCP (required for agents)
 - The repo configures **Cursor MCP** in `.cursor/mcp.json`: server id `svelte` runs `pnpm --dir svelte-app exec svelte-mcp` (`@sveltejs/mcp`, name `dev.svelte/mcp`).
 - When implementing or reviewing SvelteKit features, **use the MCP** to pull current Svelte 5 / SvelteKit docs (`list-sections`, `get-documentation`) and optional `svelte-autofixer` for code issues — do not rely on stale training data alone.
-- **Gates**: `pnpm run check:pe7:svelte`, `pnpm --dir svelte-app run lint`, `pnpm --dir svelte-app run check`.
+- **Gates** (run from `svelte-app/`): `pnpm run check:pe7`, `pnpm run lint`, `pnpm run check`.

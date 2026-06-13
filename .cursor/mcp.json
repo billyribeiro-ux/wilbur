@@ -3,6 +3,10 @@
 		"svelte": {
 			"command": "pnpm",
 			"args": ["--dir", "svelte-app", "exec", "svelte-mcp"]
+		},
+		"rust": {
+			"command": "rust-mcp-server",
+			"args": ["--workspace", "wilbur-api"]
 		}
 	}
 }

@@ -1,21 +1,21 @@
 # =============================================================================
-# Wilbur Trading Room - SvelteKit (pnpm workspace: repo root + svelte-app)
-# Build from monorepo root: docker build -f svelte-app/Dockerfile ..
+# Wilbur Trading Room — SvelteKit (self-contained; build context = svelte-app/)
+# Build:  docker build -t wilbur-svelte svelte-app/
+#   or via svelte-app/docker-compose.yml (context: .)
 # =============================================================================
 
 FROM node:24.14.1-alpine AS base
-RUN corepack enable && corepack prepare pnpm@10.28.0 --activate
+RUN corepack enable && corepack prepare pnpm@11.6.0 --activate
 WORKDIR /app
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY svelte-app/package.json ./svelte-app/
 RUN pnpm install --frozen-lockfile
 
 # -----------------------------------------------------------------------------
 # Production build
 # -----------------------------------------------------------------------------
 FROM base AS builder
-COPY svelte-app ./svelte-app
-RUN pnpm --filter wilbur-trading-room run build
+COPY . .
+RUN pnpm run build
 
 # -----------------------------------------------------------------------------
 # Runner (production)
@@ -25,8 +25,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 sveltekit
-COPY --from=builder /app/svelte-app/build ./build
-COPY --from=builder /app/svelte-app/package.json ./
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
 RUN chown -R sveltekit:nodejs /app
 USER sveltekit
@@ -39,7 +39,6 @@ CMD ["node", "build"]
 # Development (default image target — matches local docker-compose)
 # -----------------------------------------------------------------------------
 FROM base AS development
-COPY svelte-app ./svelte-app
-WORKDIR /app/svelte-app
+COPY . .
 EXPOSE 5173
 CMD ["pnpm", "run", "dev", "--", "--host"]

@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "svelte": {
+      "type": "http",
+      "url": "https://mcp.svelte.dev/mcp"
+    },
+    "rust": {
+      "command": "rust-mcp-server",
+      "args": ["--workspace", "wilbur-api"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--headless", "--browser", "chromium"]
+    }
+  }
+}

@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+playwright-report-whiteboard/
+blob-report/
+artifacts/
+
+# Source maps (generated at build time)
+*.map
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Debug logs
+*-debug.log*
+pnpm-debug.log*
+
+# Deploy
+.vercel

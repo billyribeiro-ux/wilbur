@@ -57,13 +57,6 @@ export default tseslint.config(
 		}
 	},
 	{
-		files: ['**/chat/ChatPanel.svelte'],
-		rules: {
-			// Body HTML is sanitized with DOMPurify in sanitizeContent() before render.
-			'svelte/no-at-html-tags': 'off'
-		}
-	},
-	{
 		files: ['**/*.svelte.ts'],
 		languageOptions: {
 			parser: tseslint.parser

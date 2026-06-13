@@ -18,6 +18,7 @@
 
 	const colors = ['#000000', '#ffffff', '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'];
 	const sizes = [1, 2, 3, 5, 8, 12, 20];
+	const emojis = ['⭐', '🔥', '🚀', '📈', '📉', '💰', '✅', '❌', '⚠️', '👀', '💡', '🎯'];
 
 	let { onexport, onclear }: { onexport?: () => void; onclear?: () => void } = $props();
 </script>
@@ -33,6 +34,20 @@
 			>{t.icon}</button>
 		{/each}
 	</div>
+
+	{#if whiteboardStore.tool === 'emoji'}
+		<div class="divider"></div>
+		<div class="emoji-group">
+			{#each emojis as em (em)}
+				<button
+					class="emoji-btn"
+					class:active={whiteboardStore.currentEmoji === em}
+					onclick={() => whiteboardStore.setEmoji(em)}
+					title="Place {em}"
+				>{em}</button>
+			{/each}
+		</div>
+	{/if}
 
 	<div class="divider"></div>
 
@@ -75,7 +90,11 @@
 
 <style>
 	.toolbar { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: var(--surface-2, #1e1e2e); border-radius: 10px; flex-wrap: wrap; }
-	.tool-group, .color-group, .size-group, .action-group { display: flex; align-items: center; gap: 0.25rem; }
+	.tool-group, .color-group, .size-group, .action-group, .emoji-group { display: flex; align-items: center; gap: 0.25rem; }
+	.emoji-group { flex-wrap: wrap; }
+	.emoji-btn { background: none; border: 1px solid transparent; border-radius: 6px; padding: 0.2rem 0.35rem; cursor: pointer; font-size: 1rem; }
+	.emoji-btn.active { background: var(--color-primary, #3b82f6); border-color: var(--color-primary, #3b82f6); }
+	.emoji-btn:hover:not(.active) { background: var(--surface-3, #2a2a3e); }
 	.divider { width: 1px; height: 28px; background: var(--border, #444); margin: 0 0.25rem; }
 	.tool-btn { background: none; border: 1px solid transparent; border-radius: 6px; padding: 0.3rem 0.45rem; cursor: pointer; font-size: 1rem; transition: all 0.15s; }
 	.tool-btn.active { background: var(--color-primary, #3b82f6); border-color: var(--color-primary, #3b82f6); }

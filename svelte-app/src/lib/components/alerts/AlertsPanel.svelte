@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { roomStore, authStore, toastStore } from '$lib/stores';
+	import { createAlertSchema, validateWithSchema } from '$lib/validation/schemas';
 	import { BellIcon, PlusIcon, TrendUpIcon, TrendDownIcon, MinusIcon, WarningIcon, XIcon } from 'phosphor-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 
@@ -11,21 +12,28 @@
 	let hasLegalDisclosure = $state(false);
 	let legalDisclosureText = $state('');
 	let isSubmitting = $state(false);
+	let errors = $state<Record<string, string>>({});
 
 	async function handleCreateAlert(e: Event) {
 		e.preventDefault();
-		if (!alertBody.trim() || isSubmitting) return;
+		if (isSubmitting) return;
+		errors = {};
 
-		isSubmitting = true;
-
-		const success = await roomStore.createAlert({
+		const result = validateWithSchema(createAlertSchema, {
 			title: alertTitle.trim() || undefined,
-			body: alertBody.trim(),
+			body: alertBody,
 			type: alertType,
 			isNonTrade,
 			hasLegalDisclosure,
 			legalDisclosureText: hasLegalDisclosure ? legalDisclosureText : undefined
 		});
+		if (!result.success) {
+			errors = result.errors;
+			return;
+		}
+
+		isSubmitting = true;
+		const success = await roomStore.createAlert(result.data);
 
 		if (success) {
 			toastStore.success('Alert posted!');
@@ -45,6 +53,7 @@
 		isNonTrade = false;
 		hasLegalDisclosure = false;
 		legalDisclosureText = '';
+		errors = {};
 	}
 
 	function formatTime(dateString: string): string {
@@ -62,10 +71,6 @@
 		return { icon: MinusIcon, class: 'text-yellow-400 bg-yellow-500/20' };
 	}
 
-	function canPostAlerts(): boolean {
-		const role = authStore.user?.role;
-		return role === 'admin' || role === 'host' || role === 'moderator';
-	}
 </script>
 
 <div class="flex h-full flex-col">
@@ -79,7 +84,7 @@
 			</span>
 		</div>
 
-		{#if canPostAlerts()}
+		{#if authStore.canModerate}
 			<button
 				onclick={() => (showCreateModal = true)}
 				class="flex items-center gap-1 rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-600 transition"
@@ -99,7 +104,7 @@
 				</div>
 				<h3 class="mt-4 font-medium">No alerts yet</h3>
 				<p class="mt-1 text-sm text-surface-400">
-					{canPostAlerts() ? 'Post your first trading alert' : 'Alerts will appear here'}
+					{authStore.canModerate ? 'Post your first trading alert' : 'Alerts will appear here'}
 				</p>
 			</div>
 		{:else}
@@ -186,8 +191,11 @@
 						required
 						rows="4"
 						placeholder="Enter your trading alert..."
-						class="w-full rounded-lg border border-surface-600 bg-surface-700 px-4 py-3 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none resize-none"
+						class="w-full rounded-lg border {errors.body ? 'border-red-500' : 'border-surface-600'} bg-surface-700 px-4 py-3 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none resize-none"
 					></textarea>
+					{#if errors.body}
+						<p class="mt-1 text-sm text-red-400">{errors.body}</p>
+					{/if}
 				</div>
 
 				<div class="flex items-center gap-4">
@@ -220,8 +228,11 @@
 							bind:value={legalDisclosureText}
 							rows="2"
 							placeholder="e.g., I have a position in this stock..."
-							class="w-full rounded-lg border border-surface-600 bg-surface-700 px-4 py-3 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none resize-none"
+							class="w-full rounded-lg border {errors.legalDisclosureText ? 'border-red-500' : 'border-surface-600'} bg-surface-700 px-4 py-3 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none resize-none"
 						></textarea>
+						{#if errors.legalDisclosureText}
+							<p class="mt-1 text-sm text-red-400">{errors.legalDisclosureText}</p>
+						{/if}
 					</div>
 				{/if}
 

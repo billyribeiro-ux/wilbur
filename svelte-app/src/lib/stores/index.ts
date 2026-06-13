@@ -11,4 +11,4 @@ export { themeStore, type ThemeConfig } from './theme.svelte';
 export { presenceStore, type UserPresence, type TypingUser } from './presence.svelte';
 export { privateChatStore } from './privateChat.svelte';
 export { notificationStore } from './notification.svelte';
-export { whiteboardStore, type WhiteboardTool, type WBShape, type WBPoint, type WBViewport } from './whiteboard.svelte';
+export { whiteboardStore, shapeBounds, type WhiteboardTool, type WBShape, type WBPoint, type WBViewport, type WBBounds } from './whiteboard.svelte';

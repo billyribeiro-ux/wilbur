@@ -4,7 +4,8 @@
  */
 
 import { pb, Collections, subscribeToCollection, unsubscribe } from '$lib/services/pocketbase';
-import type { PrivateChat, PrivateMessage, User } from '$lib/types';
+import { mapUser } from '$lib/services/mappers';
+import type { PrivateChat, PrivateMessage } from '$lib/types';
 
 class PrivateChatStore {
 	chats = $state<PrivateChat[]>([]);
@@ -73,7 +74,7 @@ class PrivateChatStore {
 			this.messages = records.items.reverse().map(r => ({
 				id: r.id, chatId: r.chat as string, senderId: r.sender as string,
 				content: r.content as string, createdAt: r.created as string,
-				sender: r.expand?.sender ? this.mapUser(r.expand.sender as Record<string, unknown>) : undefined
+				sender: r.expand?.sender ? mapUser(r.expand.sender as Record<string, unknown>) : undefined
 			}));
 		} catch (err) {
 			console.error('Failed to fetch private messages:', err);
@@ -120,15 +121,7 @@ class PrivateChatStore {
 		return {
 			id: r.id as string, user1Id: r.user1 as string, user2Id: r.user2 as string,
 			createdAt: r.created as string, updatedAt: r.updated as string,
-			otherUser: otherUserData ? this.mapUser(otherUserData) : undefined
-		};
-	}
-
-	private mapUser(u: Record<string, unknown>): User {
-		return {
-			id: u.id as string, email: u.email as string, displayName: u.displayName as string,
-			avatarUrl: u.avatarUrl as string | undefined, role: u.role as User['role'],
-			createdAt: u.created as string, updatedAt: u.updated as string
+			otherUser: otherUserData ? mapUser(otherUserData) : undefined
 		};
 	}
 

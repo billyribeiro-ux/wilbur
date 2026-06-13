@@ -21,7 +21,7 @@
 	type PanelType = 'chat' | 'alerts' | 'members' | 'polls' | 'dms' | 'notes';
 	let activePanel = $state<PanelType>('chat');
 	let showMobileMenu = $state(false);
-	const isAdmin = $derived(authStore.user?.role === 'admin' || authStore.user?.role === 'host');
+	const isAdmin = $derived(authStore.isAdmin);
 
 	function setPanel(id: string) { activePanel = id as PanelType; showMobileMenu = false; }
 
@@ -193,7 +193,7 @@
 			</div>
 		{:else if activePanel === 'members'}
 			<div class="flex-1 lg:w-80 lg:flex-none lg:border-l lg:border-surface-700 overflow-hidden">
-				<MembersPanel />
+				<MembersPanel onmessage={() => (activePanel = 'dms')} />
 			</div>
 		{:else if activePanel === 'dms'}
 			<div class="flex-1 lg:w-96 lg:flex-none lg:border-l lg:border-surface-700 overflow-hidden">

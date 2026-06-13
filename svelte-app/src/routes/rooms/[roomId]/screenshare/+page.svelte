@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores';
+	import { liveKitRoom } from '$lib/services/livekit.svelte';
 	import { ArrowLeftIcon } from 'phosphor-svelte';
 	import ScreenShare from '$lib/components/media/ScreenShare.svelte';
 	import CameraPreview from '$lib/components/media/CameraPreview.svelte';
@@ -12,6 +14,9 @@
 	$effect(() => {
 		if (!authStore.isLoading && !authStore.isAuthenticated) goto('/auth/login');
 	});
+
+	// Tear down the LiveKit connection when leaving the screen-share page.
+	onDestroy(() => { liveKitRoom.disconnect(); });
 </script>
 
 <div class="flex h-screen flex-col bg-surface-900">
@@ -26,7 +31,7 @@
 		<div class="grid gap-6 lg:grid-cols-2 max-w-5xl mx-auto">
 			<div>
 				<h2 class="text-lg font-semibold mb-3">Screen Share</h2>
-				<ScreenShare />
+				<ScreenShare roomName={roomId} participantName={authStore.user?.displayName ?? 'Guest'} />
 			</div>
 			<div>
 				<div class="flex items-center justify-between mb-3">
