@@ -4,8 +4,6 @@
 	let canvas: HTMLCanvasElement | undefined = $state();
 	let isDrawing = $state(false);
 	let currentPoints: WBPoint[] = $state([]);
-	// Bumped on window resize so the render effect re-runs and re-fits the canvas.
-	let resizeTick = $state(0);
 
 	// Select-tool drag state (world coords of last pointer position).
 	let selectDrag: { lastX: number; lastY: number; moved: boolean } | null = null;
@@ -16,12 +14,18 @@
 	// (viewport, shapes, selection, in-progress stroke, laser, resizeTick) changes —
 	// no perpetual requestAnimationFrame loop.
 	$effect(() => {
-		resizeTick; // track window resizes
 		if (!canvas) return;
 		const ctx = canvas.getContext('2d');
 		if (!ctx) return;
 		draw(ctx);
 	});
+
+	// Window resize isn't reactive state, so redraw (and re-fit) explicitly.
+	function handleResize() {
+		if (!canvas) return;
+		const ctx = canvas.getContext('2d');
+		if (ctx) draw(ctx);
+	}
 
 	function getPoint(e: PointerEvent): WBPoint {
 		const rect = canvas!.getBoundingClientRect();
@@ -291,7 +295,7 @@
 	}
 </script>
 
-<svelte:window onresize={() => resizeTick++} onkeydown={handleKeydown} />
+<svelte:window onresize={handleResize} onkeydown={handleKeydown} />
 
 <div class="wb-wrap">
 	<canvas
