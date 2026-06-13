@@ -191,8 +191,8 @@
 
 		for (const shape of whiteboardStore.shapesArray) drawShape(ctx, shape);
 
-		if (isDrawing && currentPoints.length > 0) {
-			drawStroke(ctx, currentPoints, whiteboardStore.color, whiteboardStore.size, whiteboardStore.opacity, whiteboardStore.tool === 'highlighter');
+		if (isDrawing && (whiteboardStore.tool === 'pen' || whiteboardStore.tool === 'highlighter' || whiteboardStore.tool === 'eraser') && currentPoints.length > 0) {
+			drawStroke(ctx, currentPoints, whiteboardStore.color, whiteboardStore.size, whiteboardStore.opacity, whiteboardStore.tool);
 		}
 
 		// Selection outlines (world space)
@@ -230,7 +230,7 @@
 
 	function drawShape(c: CanvasRenderingContext2D, s: WBShape) {
 		if (s.type === 'pen' || s.type === 'highlighter' || s.type === 'eraser') {
-			drawStroke(c, s.points ?? [], s.color ?? '#000', s.size ?? 3, s.opacity ?? 1, s.type === 'highlighter');
+			drawStroke(c, s.points ?? [], s.color ?? '#000', s.size ?? 3, s.opacity ?? 1, s.type);
 		} else if (s.type === 'rectangle') {
 			c.strokeStyle = s.stroke ?? s.color ?? '#000';
 			c.lineWidth = s.strokeWidth ?? s.size ?? 2;
@@ -269,14 +269,26 @@
 		}
 	}
 
-	function drawStroke(c: CanvasRenderingContext2D, pts: WBPoint[], color: string, size: number, opacity: number, isHighlighter: boolean) {
+	/**
+	 * Draw a freehand stroke. `mode` selects the brush behaviour:
+	 *  - pen:         opaque source-over line at the chosen opacity.
+	 *  - highlighter: wide, semi-transparent source-over (lets ink underneath show).
+	 *  - eraser:      destination-out — removes previously-drawn pixels (true erase),
+	 *                 since the canvas is fully re-rendered from shapes each frame.
+	 */
+	function drawStroke(c: CanvasRenderingContext2D, pts: WBPoint[], color: string, size: number, opacity: number, mode: 'pen' | 'highlighter' | 'eraser') {
 		if (pts.length === 0) return;
 		c.save();
-		c.globalAlpha = isHighlighter ? 0.35 : opacity;
-		c.globalCompositeOperation = isHighlighter ? 'multiply' : 'source-over';
-		c.strokeStyle = color;
-		c.fillStyle = color;
-		const lw = isHighlighter ? size * 3 : size;
+		if (mode === 'eraser') {
+			c.globalCompositeOperation = 'destination-out';
+			c.globalAlpha = 1;
+			c.strokeStyle = c.fillStyle = 'rgba(0,0,0,1)'; // color is irrelevant for destination-out
+		} else {
+			c.globalCompositeOperation = 'source-over';
+			c.globalAlpha = mode === 'highlighter' ? 0.3 : opacity;
+			c.strokeStyle = c.fillStyle = color;
+		}
+		const lw = mode === 'highlighter' ? size * 3 : mode === 'eraser' ? Math.max(size * 2, 10) : size;
 		c.lineWidth = lw;
 		c.lineCap = 'round';
 		c.lineJoin = 'round';
