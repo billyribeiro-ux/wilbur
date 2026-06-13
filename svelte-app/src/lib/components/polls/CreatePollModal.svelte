@@ -1,21 +1,32 @@
 <script lang="ts">
 	import { roomStore } from '$lib/stores';
+	import { createPollSchema, validateWithSchema } from '$lib/validation/schemas';
 
 	let { onclose }: { onclose: () => void } = $props();
 	let title = $state('');
 	let description = $state('');
 	let options = $state(['', '']);
 	let isSubmitting = $state(false);
+	let errors = $state<Record<string, string>>({});
 
 	function addOption() { if (options.length < 10) options = [...options, '']; }
 	function removeOption(i: number) { if (options.length > 2) options = options.filter((_, idx) => idx !== i); }
 	function updateOption(i: number, val: string) { options = options.map((o, idx) => idx === i ? val : o); }
 
 	async function handleSubmit() {
-		const validOptions = options.filter(o => o.trim());
-		if (!title.trim() || validOptions.length < 2) return;
+		errors = {};
+		const validOptions = options.filter((o) => o.trim());
+		const result = validateWithSchema(createPollSchema, {
+			title,
+			description: description.trim() || undefined,
+			options: validOptions
+		});
+		if (!result.success) {
+			errors = result.errors;
+			return;
+		}
 		isSubmitting = true;
-		const ok = await roomStore.createPoll({ title: title.trim(), description: description.trim(), options: validOptions });
+		const ok = await roomStore.createPoll(result.data);
 		isSubmitting = false;
 		if (ok) onclose();
 	}
@@ -33,6 +44,7 @@
 				<span>Question</span>
 				<input type="text" bind:value={title} placeholder="What do you want to ask?" required />
 			</label>
+			{#if errors.title}<p class="err">{errors.title}</p>{/if}
 			<label>
 				<span>Description (optional)</span>
 				<input type="text" bind:value={description} placeholder="Add context..." />
@@ -51,6 +63,7 @@
 					<button type="button" class="add-btn" onclick={addOption}>+ Add option</button>
 				{/if}
 			</fieldset>
+			{#if errors.options}<p class="err">{errors.options}</p>{/if}
 			<div class="actions">
 				<button type="button" onclick={onclose}>Cancel</button>
 				<button type="submit" class="primary" disabled={isSubmitting}>{isSubmitting ? 'Creating...' : 'Create Poll'}</button>
@@ -78,4 +91,5 @@
 	.actions button { padding: 0.45rem 1rem; border-radius: 6px; border: 1px solid var(--border, #444); background: transparent; color: inherit; cursor: pointer; font-size: 0.85rem; }
 	.actions .primary { background: var(--color-primary, #3b82f6); color: white; border: none; }
 	.actions .primary:disabled { opacity: 0.5; cursor: not-allowed; }
+	.err { margin: 0; color: #ef4444; font-size: 0.78rem; }
 </style>

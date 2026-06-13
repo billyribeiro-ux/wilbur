@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { roomStore, authStore, toastStore } from '$lib/stores';
+	import { createAlertSchema, validateWithSchema } from '$lib/validation/schemas';
 	import { BellIcon, PlusIcon, TrendUpIcon, TrendDownIcon, MinusIcon, WarningIcon, XIcon } from 'phosphor-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 
@@ -11,21 +12,28 @@
 	let hasLegalDisclosure = $state(false);
 	let legalDisclosureText = $state('');
 	let isSubmitting = $state(false);
+	let errors = $state<Record<string, string>>({});
 
 	async function handleCreateAlert(e: Event) {
 		e.preventDefault();
-		if (!alertBody.trim() || isSubmitting) return;
+		if (isSubmitting) return;
+		errors = {};
 
-		isSubmitting = true;
-
-		const success = await roomStore.createAlert({
+		const result = validateWithSchema(createAlertSchema, {
 			title: alertTitle.trim() || undefined,
-			body: alertBody.trim(),
+			body: alertBody,
 			type: alertType,
 			isNonTrade,
 			hasLegalDisclosure,
 			legalDisclosureText: hasLegalDisclosure ? legalDisclosureText : undefined
 		});
+		if (!result.success) {
+			errors = result.errors;
+			return;
+		}
+
+		isSubmitting = true;
+		const success = await roomStore.createAlert(result.data);
 
 		if (success) {
 			toastStore.success('Alert posted!');
@@ -45,6 +53,7 @@
 		isNonTrade = false;
 		hasLegalDisclosure = false;
 		legalDisclosureText = '';
+		errors = {};
 	}
 
 	function formatTime(dateString: string): string {
@@ -182,8 +191,11 @@
 						required
 						rows="4"
 						placeholder="Enter your trading alert..."
-						class="w-full rounded-lg border border-surface-600 bg-surface-700 px-4 py-3 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none resize-none"
+						class="w-full rounded-lg border {errors.body ? 'border-red-500' : 'border-surface-600'} bg-surface-700 px-4 py-3 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none resize-none"
 					></textarea>
+					{#if errors.body}
+						<p class="mt-1 text-sm text-red-400">{errors.body}</p>
+					{/if}
 				</div>
 
 				<div class="flex items-center gap-4">
@@ -216,8 +228,11 @@
 							bind:value={legalDisclosureText}
 							rows="2"
 							placeholder="e.g., I have a position in this stock..."
-							class="w-full rounded-lg border border-surface-600 bg-surface-700 px-4 py-3 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none resize-none"
+							class="w-full rounded-lg border {errors.legalDisclosureText ? 'border-red-500' : 'border-surface-600'} bg-surface-700 px-4 py-3 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none resize-none"
 						></textarea>
+						{#if errors.legalDisclosureText}
+							<p class="mt-1 text-sm text-red-400">{errors.legalDisclosureText}</p>
+						{/if}
 					</div>
 				{/if}
 

@@ -4,6 +4,7 @@
 	import { PaperPlaneRightIcon, ImageIcon, PaperclipIcon, SmileyIcon, PushPinIcon, TrashIcon } from 'phosphor-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import DOMPurify from 'dompurify';
+	import { chatMessageSchema, validateWithSchema } from '$lib/validation/schemas';
 	import TypingIndicator from './TypingIndicator.svelte';
 	import EmojiPicker from '$lib/components/ui/EmojiPicker.svelte';
 
@@ -74,8 +75,15 @@
 		e.preventDefault();
 		if (!messageInput.trim() || isSubmitting) return;
 
+		// Validate against the shared chat-message schema (length/content rules).
+		const validation = validateWithSchema(chatMessageSchema, { content: messageInput });
+		if (!validation.success) {
+			toastStore.error(validation.errors.content ?? 'Invalid message');
+			return;
+		}
+
 		isSubmitting = true;
-		const content = messageInput.trim();
+		const content = validation.data.content;
 		messageInput = '';
 
 		// Stop typing indicator

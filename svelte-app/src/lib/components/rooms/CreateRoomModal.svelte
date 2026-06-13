@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { roomStore, toastStore } from '$lib/stores';
+	import { createRoomSchema, validateWithSchema } from '$lib/validation/schemas';
 	import { XIcon, TrendUpIcon } from 'phosphor-svelte';
 	import { goto } from '$app/navigation';
 
@@ -16,43 +17,32 @@
 	let isSubmitting = $state(false);
 	let errors = $state<Record<string, string>>({});
 
-	function validate(): boolean {
-		errors = {};
-
-		if (!name.trim()) {
-			errors.name = 'Room name is required';
-		} else if (name.length < 2) {
-			errors.name = 'Room name must be at least 2 characters';
-		} else if (!/^[a-zA-Z0-9-_]+$/.test(name)) {
-			errors.name = 'Room name can only contain letters, numbers, hyphens, and underscores';
-		}
-
-		if (!title.trim()) {
-			errors.title = 'Room title is required';
-		}
-
-		return Object.keys(errors).length === 0;
-	}
-
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
-
-		if (!validate()) return;
-
-		isSubmitting = true;
+		errors = {};
 
 		const tags = tagsInput
 			.split(',')
-			.map(t => t.trim())
-			.filter(t => t.length > 0);
+			.map((t) => t.trim())
+			.filter((t) => t.length > 0);
+
+		const result = validateWithSchema(createRoomSchema, {
+			name,
+			title,
+			description: description.trim() || undefined,
+			tags
+		});
+		if (!result.success) {
+			errors = result.errors;
+			return;
+		}
+
+		isSubmitting = true;
 
 		// TODO: Get actual tenant ID from context
 		const room = await roomStore.createRoom({
-			name: name.trim(),
-			title: title.trim(),
-			description: description.trim() || undefined,
-			tenantId: 'default-tenant', // This should come from user's tenant
-			tags
+			...result.data,
+			tenantId: 'default-tenant' // This should come from user's tenant
 		});
 
 		if (room) {
@@ -138,8 +128,11 @@
 					bind:value={description}
 					rows="3"
 					placeholder="What's this room about?"
-					class="w-full rounded-lg border border-surface-600 bg-surface-700 px-4 py-3 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none resize-none"
+					class="w-full rounded-lg border {errors.description ? 'border-red-500' : 'border-surface-600'} bg-surface-700 px-4 py-3 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none resize-none"
 				></textarea>
+				{#if errors.description}
+					<p class="mt-1 text-sm text-red-400">{errors.description}</p>
+				{/if}
 			</div>
 
 			<div>
@@ -151,9 +144,13 @@
 					type="text"
 					bind:value={tagsInput}
 					placeholder="e.g., crypto, bitcoin, day-trading"
-					class="w-full rounded-lg border border-surface-600 bg-surface-700 px-4 py-3 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none"
+					class="w-full rounded-lg border {errors.tags ? 'border-red-500' : 'border-surface-600'} bg-surface-700 px-4 py-3 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none"
 				/>
-				<p class="mt-1 text-xs text-surface-500">Separate tags with commas</p>
+				{#if errors.tags}
+					<p class="mt-1 text-sm text-red-400">{errors.tags}</p>
+				{:else}
+					<p class="mt-1 text-xs text-surface-500">Separate tags with commas</p>
+				{/if}
 			</div>
 
 			<!-- Preview -->
