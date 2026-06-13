@@ -17,9 +17,9 @@
 </script>
 
 {#if notificationStore.isOpen}
-	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-	<div class="overlay" onclick={() => notificationStore.close()}>
-		<div class="panel" onclick={(e) => e.stopPropagation()}>
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<div class="overlay" role="presentation" onclick={() => notificationStore.close()}>
+		<div class="panel" role="dialog" aria-modal="true" tabindex="-1" onclick={(e) => e.stopPropagation()}>
 			<div class="panel-header">
 				<h3>🔔 Notifications</h3>
 				<div class="header-actions">
