@@ -30,3 +30,6 @@ pnpm-debug.log*
 # Legacy/archived code
 legacy/
 .vercel
+
+# Playwright MCP session artifacts
+.playwright-mcp/
