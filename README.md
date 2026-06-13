@@ -69,6 +69,21 @@ docker compose -f ../docker-compose.yml up -d   # local PostgreSQL
 sqlx migrate run                                 # run migrations
 ```
 
+## Editor / agent MCP servers
+
+Both Claude Code (`.mcp.json`) and Cursor (`.cursor/mcp.json`) are configured with
+two Model Context Protocol servers:
+
+- **svelte** — the official Svelte MCP (Svelte 5 / SvelteKit docs + autofixer).
+  Claude Code uses the hosted server (`https://mcp.svelte.dev/mcp`); Cursor runs the
+  local `svelte-mcp` from the SvelteKit app. `svelte-app/CLAUDE.md` documents the tools.
+- **rust** — [`rust-mcp-server`](https://github.com/Vaiz/rust-mcp-server) scoped to the
+  `wilbur-api` backend. It is a Rust binary, so install it once per machine:
+
+  ```bash
+  cargo install rust-mcp-server
+  ```
+
 ## License
 
 MIT
