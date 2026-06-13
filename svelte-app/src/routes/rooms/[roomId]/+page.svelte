@@ -193,7 +193,7 @@
 			</div>
 		{:else if activePanel === 'members'}
 			<div class="flex-1 lg:w-80 lg:flex-none lg:border-l lg:border-surface-700 overflow-hidden">
-				<MembersPanel />
+				<MembersPanel onmessage={() => (activePanel = 'dms')} />
 			</div>
 		{:else if activePanel === 'dms'}
 			<div class="flex-1 lg:w-96 lg:flex-none lg:border-l lg:border-surface-700 overflow-hidden">

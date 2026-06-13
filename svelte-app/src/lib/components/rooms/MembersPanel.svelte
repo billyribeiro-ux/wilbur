@@ -1,7 +1,9 @@
 <script lang="ts">
 	import type { Component } from 'svelte';
-	import { roomStore, authStore, toastStore } from '$lib/stores';
+	import { roomStore, authStore, toastStore, privateChatStore } from '$lib/stores';
 	import { UsersIcon, CrownIcon, ShieldIcon, UserIcon, DotsThreeIcon, ProhibitIcon, ChatCircleIcon, UserMinusIcon } from 'phosphor-svelte';
+
+	let { onmessage }: { onmessage?: (userId: string) => void } = $props();
 
 	let showActionsFor = $state<string | null>(null);
 
@@ -52,10 +54,14 @@
 		showActionsFor = null;
 	}
 
-	async function handleDirectMessage(_userId: string) {
-		// TODO: Implement DM functionality
-		toastStore.info('Direct messaging coming soon');
+	async function handleDirectMessage(userId: string) {
 		showActionsFor = null;
+		const chat = await privateChatStore.openChat(userId);
+		if (chat) {
+			onmessage?.(userId); // let the room page switch to the DMs panel
+		} else {
+			toastStore.error('Could not open conversation');
+		}
 	}
 
 	// Sort members by role importance
