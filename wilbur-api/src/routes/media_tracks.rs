@@ -122,7 +122,7 @@ async fn update_track(
         RETURNING *
         "#,
     )
-    .bind(&new_metadata)
+    .bind(new_metadata)
     .bind(body.muted)
     .bind(id)
     .bind(room_id)
