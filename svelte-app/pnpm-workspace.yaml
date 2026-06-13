@@ -1,0 +1,18 @@
+# pnpm 11 project settings live here (the package.json "pnpm" field is no longer read).
+# This is a single-app project — there is no monorepo `packages:` list; the file exists
+# only to hold pnpm settings. The Svelte app stays fully independent of the React app.
+
+# Supply-chain hardening: only install package versions at least 24h old (1440 min),
+# matching the managed build environment's pnpm supply-chain policy so installs are
+# reproducible and `--frozen-lockfile` verification passes.
+minimumReleaseAge: 1440
+
+# Approve build (postinstall) scripts only for vetted native dependencies.
+allowBuilds:
+  esbuild: true
+
+# Hold transitive packages whose newest release is < 24h old at the newest vetted
+# version (the supply-chain policy would otherwise reject the lockfile). Revisit and
+# remove once these versions age past the policy window.
+overrides:
+  baseline-browser-mapping: 2.10.36
