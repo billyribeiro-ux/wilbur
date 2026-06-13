@@ -76,11 +76,9 @@
 			return;
 		}
 
-		if (tool === 'text') {
-			const rect = canvas.getBoundingClientRect();
-			textInput = { wx: pt.x, wy: pt.y, left: e.clientX - rect.left, top: e.clientY - rect.top, value: '' };
-			return;
-		}
+		// Text: open the entry overlay on pointerup (below), after the click settles —
+		// creating it on pointerdown lets the trailing click blur/cancel it instantly.
+		if (tool === 'text') return;
 
 		if (tool === 'emoji') {
 			whiteboardStore.addEmoji(pt.x, pt.y);
@@ -116,12 +114,19 @@
 		currentPoints = [...currentPoints, getPoint(e)];
 	}
 
-	function handlePointerUp() {
+	function handlePointerUp(e: PointerEvent) {
 		const tool = whiteboardStore.tool;
 		if (tool === 'laser') { whiteboardStore.laserVisible = false; whiteboardStore.clearLaser(); return; }
 		if (tool === 'select') {
 			if (selectDrag?.moved) whiteboardStore.pushHistory('move');
 			selectDrag = null;
+			return;
+		}
+		if (tool === 'text') {
+			if (!canvas) return;
+			const pt = getPoint(e);
+			const rect = canvas.getBoundingClientRect();
+			textInput = { wx: pt.x, wy: pt.y, left: e.clientX - rect.left, top: e.clientY - rect.top, value: '' };
 			return;
 		}
 		if (!isDrawing) return;

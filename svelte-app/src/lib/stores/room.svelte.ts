@@ -360,6 +360,8 @@ class RoomStore {
 				title: data.title, description: data.description || '',
 				options: data.options, isActive: true, expiresAt: data.expiresAt || ''
 			});
+			// No realtime subscription for polls — refresh so the new poll shows immediately.
+			await this.fetchPolls(this.currentRoomId);
 			return true;
 		} catch (err) {
 			this.error = err instanceof Error ? err.message : 'Failed to create poll';
