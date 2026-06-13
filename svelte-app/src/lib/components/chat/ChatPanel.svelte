@@ -136,11 +136,6 @@
 	function isOwnMessage(userId: string): boolean {
 		return userId === authStore.user?.id;
 	}
-
-	function canModerate(): boolean {
-		const role = authStore.user?.role;
-		return role === 'admin' || role === 'host' || role === 'moderator';
-	}
 </script>
 
 <div class="flex h-full flex-col">
@@ -240,7 +235,7 @@
 
 						<!-- Actions -->
 						<div class="mt-1 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition {isOwn ? 'justify-end' : ''}">
-							{#if !message.isPinned && canModerate()}
+							{#if !message.isPinned && authStore.canModerate}
 								<button
 									onclick={() => handlePinMessage(message.id)}
 									class="rounded p-1 text-surface-500 hover:bg-surface-700 hover:text-surface-300"
@@ -249,7 +244,7 @@
 									<PushPinIcon class="h-3.5 w-3.5" />
 								</button>
 							{/if}
-							{#if isOwn || canModerate()}
+							{#if isOwn || authStore.canModerate}
 								<button
 									onclick={() => handleDeleteMessage(message.id)}
 									class="rounded p-1 text-surface-500 hover:bg-red-500/20 hover:text-red-400"

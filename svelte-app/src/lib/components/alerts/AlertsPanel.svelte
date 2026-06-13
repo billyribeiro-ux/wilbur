@@ -62,10 +62,6 @@
 		return { icon: MinusIcon, class: 'text-yellow-400 bg-yellow-500/20' };
 	}
 
-	function canPostAlerts(): boolean {
-		const role = authStore.user?.role;
-		return role === 'admin' || role === 'host' || role === 'moderator';
-	}
 </script>
 
 <div class="flex h-full flex-col">
@@ -79,7 +75,7 @@
 			</span>
 		</div>
 
-		{#if canPostAlerts()}
+		{#if authStore.canModerate}
 			<button
 				onclick={() => (showCreateModal = true)}
 				class="flex items-center gap-1 rounded-lg bg-primary-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-600 transition"
@@ -99,7 +95,7 @@
 				</div>
 				<h3 class="mt-4 font-medium">No alerts yet</h3>
 				<p class="mt-1 text-sm text-surface-400">
-					{canPostAlerts() ? 'Post your first trading alert' : 'Alerts will appear here'}
+					{authStore.canModerate ? 'Post your first trading alert' : 'Alerts will appear here'}
 				</p>
 			</div>
 		{:else}

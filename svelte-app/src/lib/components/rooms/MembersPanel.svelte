@@ -33,11 +33,6 @@
 		}
 	}
 
-	function canModerate(): boolean {
-		const role = authStore.user?.role;
-		return role === 'admin' || role === 'host' || role === 'moderator';
-	}
-
 	function isCurrentUser(userId: string): boolean {
 		return userId === authStore.user?.id;
 	}
@@ -109,7 +104,7 @@
 						Admins & Hosts - {admins.length}
 					</h3>
 					{#each admins as member (member.id)}
-						{@render MemberItem({ member, showActionsFor, canModerate, isCurrentUser, getRoleIcon, getRoleBadgeClass, handleKickUser, handleBanUser, handleDirectMessage })}
+						{@render MemberItem({ member, showActionsFor, isCurrentUser, getRoleIcon, getRoleBadgeClass, handleKickUser, handleBanUser, handleDirectMessage })}
 					{/each}
 				</div>
 			{/if}
@@ -120,7 +115,7 @@
 						Moderators - {moderators.length}
 					</h3>
 					{#each moderators as member (member.id)}
-						{@render MemberItem({ member, showActionsFor, canModerate, isCurrentUser, getRoleIcon, getRoleBadgeClass, handleKickUser, handleBanUser, handleDirectMessage })}
+						{@render MemberItem({ member, showActionsFor, isCurrentUser, getRoleIcon, getRoleBadgeClass, handleKickUser, handleBanUser, handleDirectMessage })}
 					{/each}
 				</div>
 			{/if}
@@ -131,7 +126,7 @@
 						Members - {members.length}
 					</h3>
 					{#each members as member (member.id)}
-						{@render MemberItem({ member, showActionsFor, canModerate, isCurrentUser, getRoleIcon, getRoleBadgeClass, handleKickUser, handleBanUser, handleDirectMessage })}
+						{@render MemberItem({ member, showActionsFor, isCurrentUser, getRoleIcon, getRoleBadgeClass, handleKickUser, handleBanUser, handleDirectMessage })}
 					{/each}
 				</div>
 			{/if}
@@ -139,7 +134,7 @@
 	</div>
 </div>
 
-{#snippet MemberItem(props: { member: typeof sortedMembers[0], showActionsFor: string | null, canModerate: () => boolean, isCurrentUser: (id: string) => boolean, getRoleIcon: (role: string) => { icon: Component; class: string }, getRoleBadgeClass: (role: string) => string, handleKickUser: (id: string, name: string) => void, handleBanUser: (id: string, name: string) => void, handleDirectMessage: (id: string) => void })}
+{#snippet MemberItem(props: { member: typeof sortedMembers[0], showActionsFor: string | null, isCurrentUser: (id: string) => boolean, getRoleIcon: (role: string) => { icon: Component; class: string }, getRoleBadgeClass: (role: string) => string, handleKickUser: (id: string, name: string) => void, handleBanUser: (id: string, name: string) => void, handleDirectMessage: (id: string) => void })}
 	{@const member = props.member}
 	{@const roleStyle = props.getRoleIcon(member.role)}
 	<div class="group relative flex items-center gap-3 rounded-lg p-2 hover:bg-surface-800 transition">
@@ -200,7 +195,7 @@
 							<ChatCircleIcon class="h-4 w-4" />
 							Message
 						</button>
-						{#if props.canModerate() && member.role === 'member'}
+						{#if authStore.canModerate && member.role === 'member'}
 							<button
 								onclick={() => props.handleKickUser(member.userId, member.user?.displayName || 'User')}
 								class="flex w-full items-center gap-2 px-3 py-2 text-sm text-yellow-400 hover:bg-surface-700"

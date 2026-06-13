@@ -4,6 +4,7 @@
  */
 
 import { pb, Collections, subscribeToCollection, unsubscribe } from '$lib/services/pocketbase';
+import { mapUser } from '$lib/services/mappers';
 import type { Room, RoomWithContext, RoomMembership, ChatMessage, Alert, User, Poll, PollWithVotes } from '$lib/types';
 
 // ============================================================================
@@ -186,15 +187,7 @@ class RoomStore {
 				role: r.role,
 				joinedAt: r.created,
 				location: r.location,
-				user: r.expand?.user ? {
-					id: r.expand.user.id,
-					email: r.expand.user.email,
-					displayName: r.expand.user.displayName,
-					avatarUrl: r.expand.user.avatarUrl,
-					role: r.expand.user.role,
-					createdAt: r.expand.user.created,
-					updatedAt: r.expand.user.updated
-				} : undefined
+				user: r.expand?.user ? mapUser(r.expand.user as Record<string, unknown>) : undefined
 			})) as (RoomMembership & { user: User })[];
 		} catch (err) {
 			console.error('Failed to fetch members:', err);
@@ -539,16 +532,14 @@ class RoomStore {
 			deletedBy: record.deletedBy as string | undefined,
 			deletedAt: record.deletedAt as string | undefined,
 			createdAt: record.created as string,
-			user: (record.expand as Record<string, Record<string, unknown>> | undefined)?.user ? {
-				id: (record.expand as Record<string, Record<string, unknown>>).user.id as string,
-				email: (record.expand as Record<string, Record<string, unknown>>).user.email as string,
-				displayName: (record.expand as Record<string, Record<string, unknown>>).user.displayName as string,
-				avatarUrl: (record.expand as Record<string, Record<string, unknown>>).user.avatarUrl as string | undefined,
-				role: (record.expand as Record<string, Record<string, unknown>>).user.role as User['role'],
-				createdAt: (record.expand as Record<string, Record<string, unknown>>).user.created as string,
-				updatedAt: (record.expand as Record<string, Record<string, unknown>>).user.updated as string
-			} : undefined
+			user: this.expandedUser(record, 'user')
 		};
+	}
+
+	/** Map an expanded relation (e.g. expand.user / expand.author) to a User, if present. */
+	private expandedUser(record: Record<string, unknown>, key: string): User | undefined {
+		const expanded = (record.expand as Record<string, Record<string, unknown>> | undefined)?.[key];
+		return expanded ? mapUser(expanded) : undefined;
 	}
 
 	private mapToPoll(record: Record<string, unknown>): Poll {
@@ -578,15 +569,7 @@ class RoomStore {
 			hasLegalDisclosure: record.hasLegalDisclosure as boolean,
 			legalDisclosureText: record.legalDisclosureText as string | undefined,
 			createdAt: record.created as string,
-			author: (record.expand as Record<string, Record<string, unknown>> | undefined)?.author ? {
-				id: (record.expand as Record<string, Record<string, unknown>>).author.id as string,
-				email: (record.expand as Record<string, Record<string, unknown>>).author.email as string,
-				displayName: (record.expand as Record<string, Record<string, unknown>>).author.displayName as string,
-				avatarUrl: (record.expand as Record<string, Record<string, unknown>>).author.avatarUrl as string | undefined,
-				role: (record.expand as Record<string, Record<string, unknown>>).author.role as User['role'],
-				createdAt: (record.expand as Record<string, Record<string, unknown>>).author.created as string,
-				updatedAt: (record.expand as Record<string, Record<string, unknown>>).author.updated as string
-			} : undefined
+			author: this.expandedUser(record, 'author')
 		};
 	}
 

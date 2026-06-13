@@ -21,7 +21,7 @@
 	type PanelType = 'chat' | 'alerts' | 'members' | 'polls' | 'dms' | 'notes';
 	let activePanel = $state<PanelType>('chat');
 	let showMobileMenu = $state(false);
-	const isAdmin = $derived(authStore.user?.role === 'admin' || authStore.user?.role === 'host');
+	const isAdmin = $derived(authStore.isAdmin);
 
 	function setPanel(id: string) { activePanel = id as PanelType; showMobileMenu = false; }
 

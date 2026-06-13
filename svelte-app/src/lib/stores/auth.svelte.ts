@@ -4,6 +4,7 @@
  */
 
 import { pb, login as pbLogin, register as pbRegister, logout as pbLogout, refreshAuth } from '$lib/services/pocketbase';
+import { mapUser } from '$lib/services/mappers';
 import type { User } from '$lib/types';
 
 // ============================================================================
@@ -17,6 +18,16 @@ class AuthStore {
 	isAuthenticated = $state(false);
 	error = $state<string | null>(null);
 
+	/** True for admins and hosts. Single source of truth for the role rules. */
+	get isAdmin(): boolean {
+		return this.user?.role === 'admin' || this.user?.role === 'host';
+	}
+
+	/** True for anyone who can moderate (admin, host, or moderator). */
+	get canModerate(): boolean {
+		return this.isAdmin || this.user?.role === 'moderator';
+	}
+
 	constructor() {
 		// Initialize from PocketBase auth store
 		this.initializeFromAuthStore();
@@ -24,7 +35,7 @@ class AuthStore {
 
 	private initializeFromAuthStore() {
 		if (pb.authStore.isValid && pb.authStore.model) {
-			this.user = this.mapPbUserToUser(pb.authStore.model);
+			this.user = mapUser(pb.authStore.model);
 			this.isAuthenticated = true;
 		}
 		this.isLoading = false;
@@ -32,7 +43,7 @@ class AuthStore {
 		// Listen for auth changes
 		pb.authStore.onChange((token, model) => {
 			if (token && model) {
-				this.user = this.mapPbUserToUser(model);
+				this.user = mapUser(model);
 				this.isAuthenticated = true;
 			} else {
 				this.user = null;
@@ -41,25 +52,13 @@ class AuthStore {
 		});
 	}
 
-	private mapPbUserToUser(model: Record<string, unknown>): User {
-		return {
-			id: model.id as string,
-			email: model.email as string,
-			displayName: (model.displayName as string) || (model.email as string).split('@')[0],
-			avatarUrl: model.avatarUrl as string | undefined,
-			role: (model.role as User['role']) || 'member',
-			createdAt: model.created as string,
-			updatedAt: model.updated as string
-		};
-	}
-
 	async login(email: string, password: string): Promise<boolean> {
 		this.isLoading = true;
 		this.error = null;
 
 		try {
 			const authData = await pbLogin(email, password);
-			this.user = this.mapPbUserToUser(authData.record);
+			this.user = mapUser(authData.record);
 			this.isAuthenticated = true;
 			return true;
 		} catch (err) {
@@ -78,7 +77,7 @@ class AuthStore {
 			await pbRegister(email, password, passwordConfirm, displayName);
 			// pbRegister auto-logs in
 			if (pb.authStore.model) {
-				this.user = this.mapPbUserToUser(pb.authStore.model);
+				this.user = mapUser(pb.authStore.model);
 				this.isAuthenticated = true;
 			}
 			return true;
@@ -102,7 +101,7 @@ class AuthStore {
 		try {
 			const success = await refreshAuth();
 			if (success && pb.authStore.model) {
-				this.user = this.mapPbUserToUser(pb.authStore.model);
+				this.user = mapUser(pb.authStore.model);
 				this.isAuthenticated = true;
 			} else {
 				this.user = null;

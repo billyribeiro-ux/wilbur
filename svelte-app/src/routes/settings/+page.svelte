@@ -9,7 +9,7 @@
 	type SettingsTab = 'theme' | 'branding' | 'integrations';
 	let activeTab = $state<SettingsTab>('theme');
 
-	const isAdmin = $derived(authStore.user?.role === 'admin' || authStore.user?.role === 'host');
+	const isAdmin = $derived(authStore.isAdmin);
 
 	$effect(() => {
 		if (!authStore.isLoading && !authStore.isAuthenticated) goto('/auth/login');
