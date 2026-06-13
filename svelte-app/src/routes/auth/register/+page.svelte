@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { authStore, toastStore } from '$lib/stores';
+	import { registerSchema, validateWithSchema } from '$lib/validation/schemas';
 	import { EnvelopeIcon, LockIcon, EyeIcon, EyeSlashIcon, UserIcon, TrendUpIcon } from 'phosphor-svelte';
 
 	let email = $state('');
@@ -11,42 +12,30 @@
 	let isSubmitting = $state(false);
 	let errors = $state<Record<string, string>>({});
 
-	function validate(): boolean {
-		errors = {};
-
-		if (!displayName.trim()) {
-			errors.displayName = 'Display name is required';
-		} else if (displayName.length < 2) {
-			errors.displayName = 'Display name must be at least 2 characters';
-		}
-
-		if (!email.trim()) {
-			errors.email = 'Email is required';
-		} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-			errors.email = 'Please enter a valid email address';
-		}
-
-		if (!password) {
-			errors.password = 'Password is required';
-		} else if (password.length < 8) {
-			errors.password = 'Password must be at least 8 characters';
-		}
-
-		if (password !== passwordConfirm) {
-			errors.passwordConfirm = 'Passwords do not match';
-		}
-
-		return Object.keys(errors).length === 0;
-	}
-
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
+		errors = {};
 
-		if (!validate()) return;
+		const result = validateWithSchema(registerSchema, {
+			email,
+			password,
+			passwordConfirm,
+			displayName
+		});
+
+		if (!result.success) {
+			errors = result.errors;
+			return;
+		}
 
 		isSubmitting = true;
 
-		const success = await authStore.register(email, password, passwordConfirm, displayName);
+		const success = await authStore.register(
+			result.data.email,
+			result.data.password,
+			result.data.passwordConfirm,
+			result.data.displayName
+		);
 
 		if (success) {
 			toastStore.success('Welcome to Wilbur!', 'Account created successfully');
@@ -111,6 +100,7 @@
 							id="displayName"
 							type="text"
 							bind:value={displayName}
+							oninput={() => (errors.displayName = '')}
 							required
 							class="w-full rounded-lg border {errors.displayName ? 'border-red-500' : 'border-surface-600'} bg-surface-800 py-3 pl-10 pr-4 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
 							placeholder="Your display name"
@@ -131,6 +121,7 @@
 							id="email"
 							type="email"
 							bind:value={email}
+							oninput={() => (errors.email = '')}
 							required
 							class="w-full rounded-lg border {errors.email ? 'border-red-500' : 'border-surface-600'} bg-surface-800 py-3 pl-10 pr-4 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
 							placeholder="you@example.com"
@@ -151,6 +142,7 @@
 							id="password"
 							type={showPassword ? 'text' : 'password'}
 							bind:value={password}
+							oninput={() => (errors.password = '')}
 							required
 							class="w-full rounded-lg border {errors.password ? 'border-red-500' : 'border-surface-600'} bg-surface-800 py-3 pl-10 pr-12 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
 							placeholder="At least 8 characters"
@@ -182,6 +174,7 @@
 							id="passwordConfirm"
 							type={showPassword ? 'text' : 'password'}
 							bind:value={passwordConfirm}
+							oninput={() => (errors.passwordConfirm = '')}
 							required
 							class="w-full rounded-lg border {errors.passwordConfirm ? 'border-red-500' : 'border-surface-600'} bg-surface-800 py-3 pl-10 pr-4 text-white placeholder-surface-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
 							placeholder="Confirm your password"
