@@ -1,107 +1,74 @@
-# Wilbur - Trading Room Platform
+# Wilbur — Trading Room Platform
 
-A real-time trading room platform built with React, TypeScript, and Rust (Axum).
+This repository hosts **three independent projects** that share no source code,
+no dependencies, and no lockfile. Each lives in its own self-contained folder and
+can be built, linted, tested, and deployed on its own — and could be split into a
+separate repository with no cross-coupling.
 
-## Features
+| Project | Folder | Stack | Dev port |
+|---------|--------|-------|----------|
+| React app | [`react-app/`](./react-app) | React 19 + TypeScript + Vite, Zustand, Tailwind | **5174** |
+| Svelte app | [`svelte-app/`](./svelte-app) | SvelteKit 2 + Svelte 5, Skeleton UI, PocketBase | **5173** |
+| Backend API | [`wilbur-api/`](./wilbur-api) | Rust (Axum), SQLx, PostgreSQL | 3000 |
 
-### Core Functionality
-- **Real-time Video/Audio** - Browser capture; relay/SFU will plug into `src/services/roomTransport.ts` when the backend provides it
-- **Trading Rooms** - Create and join trading rooms with role-based permissions
-- **Live Chat** - Real-time messaging with emoji support
-- **Alerts System** - Post and view trading alerts with media support
-- **Polls** - Create and vote on polls within rooms
-- **Screen Sharing** - Share your screen with room participants
-- **Recording** - Record room sessions (host/moderator only)
+> The React and Svelte apps are two parallel implementations of the same product.
+> They are deliberately kept separate — see **Independence boundaries** below.
 
-### User Features
-- **Single Session Enforcement** - Auto-logout when logging in from another device
-- **Member Location Tracking** - See where members are joining from (city/state)
-- **Custom Themes** - Fully customizable room themes and branding
-- **Profile Management** - Avatar, display name, and bio
-- **Responsive Design** - Works on desktop, tablet, and mobile
+## Getting started
 
-### Integrations
-- **Spotify** - Connect and control Spotify playback (Web Player + API)
-- **LinkedIn** - Connect your LinkedIn profile
-- **X (Twitter)** - Connect your X/Twitter account
-
-## Tech Stack
-
-- **Frontend**: React 19, TypeScript, Vite
-- **Styling**: TailwindCSS
-- **State Management**: Zustand
-- **Backend**: Rust (Axum), SQLx, PostgreSQL
-- **Real-time**: Native WebSocket to the Rust API
-- **Authentication**: JWT (Rust backend)
-- **Storage**: Rust backend file API
-- **Rate Limiting**: Governor (GCRA)
-
-## Installation
-
-Use **Node.js 24.14.1** (current LTS line). The repo includes [`.nvmrc`](./.nvmrc) for `nvm use` / `fnm use`.
+Each project is independent. Pick a folder and follow its own README; there is **no
+root install** and **no root `package.json`**.
 
 ```bash
-# Install frontend dependencies
-pnpm install
+# React app
+cd react-app && pnpm install && pnpm run dev      # http://localhost:5174
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your credentials
+# Svelte app
+cd svelte-app && pnpm install && pnpm run dev      # http://localhost:5173
 
-# Run frontend dev server (React on http://localhost:5174)
-pnpm run dev
-
-# Run Rust backend
-cd wilbur-api && cargo run
+# Backend API (Rust)
+cd wilbur-api && cargo run                          # http://localhost:3000
 ```
 
-### React + SvelteKit at the same time
+The two front-end dev servers use fixed, distinct ports (5174 and 5173) so they can
+run at the same time against the same backend.
 
-This repo includes a **separate** SvelteKit app under `svelte-app/`. It does **not** share source code with the React app: different entrypoints, configs, ESLint, and TypeScript project. Ports are fixed so both dev servers can run together:
+Use **Node.js 24.14.1** for the front-end apps (each folder has its own `.nvmrc`).
 
-| App | Port | Command (from repo root) |
-|-----|------|---------------------------|
-| React (Vite) | **5174** | `pnpm run dev` or `pnpm run dev:react` |
-| SvelteKit | **5173** | `pnpm run dev:svelte` |
+## Independence boundaries
 
-**Boundaries**
+The apps are isolated structurally (separate folders, separate installs, separate
+lockfiles) and by automated gates:
 
-- Do not import `svelte-app/` from `src/` (enforced by ESLint and `pnpm run check:isolation`).
-- **PE7 gates (React)**: `pnpm run check:pe7` scans `src/` for forbidden imports (e.g. Supabase client, `livekit-client`, `svelte-app`). Pair with `pnpm run check:isolation` in CI.
-- **PE7 gates (SvelteKit)**: `pnpm run check:pe7:svelte` scans `svelte-app/` for forbidden imports (React, Zustand, Supabase client, cross-imports of the React `src/api|store|components` tree). Pair with `pnpm --dir svelte-app run lint` and `pnpm --dir svelte-app run check`.
-- **Svelte MCP**: Cursor loads `@sveltejs/mcp` via `.cursor/mcp.json` (`svelte` server → `pnpm --dir svelte-app exec svelte-mcp`) so agents can query current Svelte 5 / Kit docs — use it when editing `svelte-app/`.
-- **CI**: GitHub Actions `.github/workflows/ci.yml` runs a **frontend** job: `check:isolation`, `check:pe7`, `check:pe7:svelte`, ESLint on React `src/` (`--max-warnings 0`), SvelteKit `lint`, and `svelte-check`.
-- Lint React from the repo root: `pnpm run lint`. Lint SvelteKit from its app: `pnpm --dir svelte-app run lint`.
-- Build React: `pnpm run build`. Build SvelteKit: `pnpm --dir svelte-app run build`.
+- **React** must not import `svelte-app/`. Enforced by ESLint `no-restricted-imports`
+  plus `pnpm run check:isolation` and `pnpm run check:pe7` (run from `react-app/`).
+- **Svelte** must not import React, Zustand, the Supabase client, or the React
+  `src/` tree. Enforced by `pnpm run check:pe7` (run from `svelte-app/`) plus its
+  own ESLint config and `svelte-check`.
+- Neither app reaches into the other's folder for scripts or config — each ships its
+  own copy.
 
-## Environment Variables
+## CI
 
-Required in `.env` (see [`.env.example`](./.env.example)):
-```
-VITE_API_BASE_URL=http://localhost:3001
-```
+GitHub Actions runs one **path-filtered** workflow per project, so a change to one
+project never triggers another's pipeline:
 
-## Database
+- [`.github/workflows/react.yml`](./.github/workflows/react.yml) — `react-app/**`
+- [`.github/workflows/svelte.yml`](./.github/workflows/svelte.yml) — `svelte-app/**`
+- [`.github/workflows/api.yml`](./.github/workflows/api.yml) — `wilbur-api/**`
+- [`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml) — deploys the API
 
-Run migrations via SQLx:
-```bash
-cd wilbur-api && sqlx migrate run
-```
+Each front-end app also carries its own self-contained workflow under
+`<app>/.github/` so it stays buildable if extracted into a standalone repository.
 
-## Deployment
+## Backend database
 
 ```bash
-# Build frontend for production
-pnpm run build
-
-# Build Rust backend for production
-cd wilbur-api && cargo build --release
+cd wilbur-api
+docker compose -f ../docker-compose.yml up -d   # local PostgreSQL
+sqlx migrate run                                 # run migrations
 ```
 
 ## License
 
 MIT
-
-## Contributing
-
-Contributions welcome! Please open an issue or PR.

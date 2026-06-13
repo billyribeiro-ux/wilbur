@@ -1,24 +1,33 @@
-name: CI
+name: API (wilbur-api)
 
 on:
   push:
     branches: [main]
+    paths:
+      - "wilbur-api/**"
+      - ".github/workflows/api.yml"
   pull_request:
     branches: [main]
+    paths:
+      - "wilbur-api/**"
+      - ".github/workflows/api.yml"
+
+concurrency:
+  group: api-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
   CARGO_TERM_COLOR: always
   RUST_TOOLCHAIN: "1.82"
-  NODE_VERSION: "24.14.1"
-  PNPM_VERSION: "10.28.0"
+
+defaults:
+  run:
+    working-directory: wilbur-api
 
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: wilbur-api
     steps:
       - uses: actions/checkout@v4
 
@@ -47,50 +56,9 @@ jobs:
         env:
           SQLX_OFFLINE: "true"
 
-  frontend:
-    name: Frontend (PE7 + lint + Svelte check)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: App isolation (React must not import svelte-app)
-        run: pnpm run check:isolation
-
-      - name: PE7 gates (React src/)
-        run: pnpm run check:pe7
-
-      - name: PE7 gates (SvelteKit svelte-app/)
-        run: pnpm run check:pe7:svelte
-
-      - name: ESLint (React app — src/ only, zero warnings)
-        run: pnpm exec eslint src --ext .ts,.tsx,.js,.mjs --max-warnings 0
-
-      - name: ESLint (SvelteKit)
-        run: pnpm --dir svelte-app run lint
-
-      - name: svelte-check
-        run: pnpm --dir svelte-app run check
-        env:
-          PUBLIC_POCKETBASE_URL: http://127.0.0.1:8090
-
   test:
     name: Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: wilbur-api
     services:
       postgres:
         image: postgres:17
@@ -141,9 +109,6 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: wilbur-api
     steps:
       - uses: actions/checkout@v4
 

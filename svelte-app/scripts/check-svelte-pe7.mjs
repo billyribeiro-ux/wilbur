@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 /**
  * PE7-style gates for the SvelteKit app (`svelte-app/`): architecture boundaries and banned deps.
- * Run: pnpm run check:pe7:svelte
+ * Run: pnpm run check:pe7  (from svelte-app/)
  *
- * Pairs with: `pnpm --dir svelte-app run lint`, `pnpm --dir svelte-app run check`, and Cursor rule `.cursor/rules/wilbur-svelte-pe7.mdc`.
+ * Pairs with: `pnpm run lint`, `pnpm run check`, and Cursor rule `.cursor/rules/wilbur-svelte-pe7.mdc`.
+ * Lives inside svelte-app/ so the app is fully self-contained (no reach into the React tree).
  */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const appRoot = join(root, 'svelte-app');
+// This script lives in svelte-app/scripts/, so `..` is the app root.
+const appRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const srcRoots = [
 	join(appRoot, 'src'),
 	join(appRoot, 'e2e'),
@@ -67,7 +68,7 @@ const failures = [];
 
 for (const file of files) {
 	const text = readFileSync(file, 'utf8');
-	const rel = relative(root, file);
+	const rel = relative(appRoot, file);
 	for (const { id, pattern, message } of checks) {
 		if (pattern.test(text)) {
 			failures.push({ file: rel, id, message });

@@ -1,6 +1,6 @@
 ---
-description: Principal-engineer standards for the Vite/React app (src/)
-globs: src/**/*.{ts,tsx}
+description: Principal-engineer standards for the Vite/React app (react-app/src/)
+globs: react-app/src/**/*.{ts,tsx}
 alwaysApply: false
 ---
 
@@ -10,7 +10,7 @@ alwaysApply: false
 - **API**: HTTP only via `src/api/*` + `src/api/client.ts` (tokens, refresh). No ad-hoc `fetch` to the backend outside the client unless justified (upload streams).
 - **State**: Domain state in Zustand `src/store/*`; keep stores thin — call `src/api` / repositories, not raw env.
 - **Config**: Read `import.meta.env` through `src/config/environment.ts` (or `environment`) — avoid scattering `VITE_*` across components.
-- **Isolation**: Never import `svelte-app/**`. ESLint `no-restricted-imports` + `pnpm run check:isolation` + `pnpm run check:pe7`.
+- **Isolation**: Never import `svelte-app/**`. ESLint `no-restricted-imports` + `pnpm run check:isolation` + `pnpm run check:pe7` (run from `react-app/`).
 
 ## Security
 - No secrets in client code. JWT access/refresh live in memory + `localStorage` via `api/client` only — do not log tokens.

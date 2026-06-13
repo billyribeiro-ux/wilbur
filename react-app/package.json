@@ -1,5 +1,5 @@
 {
-  "name": "revolution-app",
+  "name": "wilbur-react",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -11,7 +11,6 @@
   "scripts": {
     "dev": "vite",
     "dev:react": "vite",
-    "dev:svelte": "pnpm --dir svelte-app run dev",
     "dev:host": "vite --host",
     "dev:network": "vite --host",
     "dev:port": "vite --port",
@@ -42,7 +41,6 @@
     "check:nulls": "grep -r '\\bnull\\b' src/ --include='*.ts' --include='*.tsx' | wc -l",
     "check:isolation": "node scripts/check-app-isolation.mjs",
     "check:pe7": "node scripts/check-react-pe7.mjs",
-    "check:pe7:svelte": "node scripts/check-svelte-pe7.mjs",
     "test:ui": "vitest --ui"
   },
   "dependencies": {

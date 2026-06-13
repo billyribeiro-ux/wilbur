@@ -10,7 +10,6 @@ export default defineConfig({
       'tests/e2e/**',
       'tests/smoke/**',
       'tests/whiteboard/e2e/**',
-      'svelte-app/**',
       '**/node_modules/**',
     ],
     coverage: {

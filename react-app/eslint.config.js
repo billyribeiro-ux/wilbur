@@ -1,5 +1,5 @@
-// ESLint v9 flat config for TypeScript + React (ESM) — repo root only.
-// SvelteKit lives in `svelte-app/` with its own `eslint.config.js`; never lint both with one config.
+// ESLint v9 flat config for TypeScript + React (ESM) — scoped to this app (react-app/).
+// The SvelteKit app is a fully independent project in ../svelte-app/ with its own eslint.config.js.
 // See: https://typescript-eslint.io/getting-started/typed-linting/
 
 import js from '@eslint/js';
@@ -24,9 +24,6 @@ export default [
       'public/**',
       'artifacts/**',
       'retired_files/**',
-      // SvelteKit is a separate app — use `pnpm --dir svelte-app run lint`
-      'svelte-app/**',
-      'wilbur-api/**',
       // Generated or externalized types; lint lightly later
       'src/types/**'
     ]

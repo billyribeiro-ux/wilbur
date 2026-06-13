@@ -1,10 +1,12 @@
-# Dependencies
+# Root-level ignores. Each app (react-app/, svelte-app/) and the backend
+# (wilbur-api/) manages its own ignores; this file covers only shared/root concerns.
+
+# Dependencies (defensive — apps ignore their own as well)
 node_modules/
 
-# Build output
-dist/
-build/
-.svelte-kit/
+# Rust backend
+wilbur-api/target/
+wilbur-api/.sqlx/
 
 # Environment
 .env
@@ -12,33 +14,17 @@ build/
 .env.*.local
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# Testing
-coverage/
-test-results/
-playwright-report/
-blob-report/
-
-# Source maps (generated at build time)
-*.map
-
 # OS files
 .DS_Store
 Thumbs.db
 
-# Rust backend
-wilbur-api/target/
-wilbur-api/.sqlx/
-
 # Debug logs
 *-debug.log*
-yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 
 # Legacy/archived code
