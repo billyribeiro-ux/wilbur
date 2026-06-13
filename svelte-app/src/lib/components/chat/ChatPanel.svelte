@@ -5,6 +5,7 @@
 	import { formatDistanceToNow } from 'date-fns';
 	import DOMPurify from 'dompurify';
 	import TypingIndicator from './TypingIndicator.svelte';
+	import EmojiPicker from '$lib/components/ui/EmojiPicker.svelte';
 
 	/** Rich snippets use `{@html}` only after `sanitizeContent()` (DOMPurify). */
 
@@ -12,10 +13,48 @@
 	let isSubmitting = $state(false);
 	let messagesContainer = $state<HTMLDivElement | null>(null);
 	let optimisticMessages = $state<Array<{ id: string; content: string; pending: boolean }>>([]);
+	let showEmojiPicker = $state(false);
+	let imageInput = $state<HTMLInputElement | null>(null);
+	let fileInput = $state<HTMLInputElement | null>(null);
 
-	// Auto-scroll to bottom when new messages arrive
+	const MAX_UPLOAD_BYTES = 1024 * 1024; // 1MB — embedded as a data URL, so keep it small
+
+	function insertEmoji(emoji: string) {
+		messageInput += emoji;
+		showEmojiPicker = false;
+	}
+
+	function readAsDataURL(file: File): Promise<string> {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = () => resolve(reader.result as string);
+			reader.onerror = () => reject(reader.error);
+			reader.readAsDataURL(file);
+		});
+	}
+
+	async function handleUpload(e: Event, contentType: 'image' | 'file') {
+		const input = e.currentTarget as HTMLInputElement;
+		const file = input.files?.[0];
+		input.value = ''; // allow re-selecting the same file
+		if (!file) return;
+		if (file.size > MAX_UPLOAD_BYTES) {
+			toastStore.error('File too large (max 1MB)');
+			return;
+		}
+		try {
+			const dataUrl = await readAsDataURL(file);
+			const ok = await roomStore.sendMessage(file.name, contentType, dataUrl);
+			if (!ok) toastStore.error('Failed to send attachment');
+		} catch {
+			toastStore.error('Could not read file');
+		}
+	}
+
+	// Auto-scroll to bottom when new (real or pending) messages arrive
 	$effect(() => {
-		if (messagesContainer && roomStore.messages.length > 0) {
+		const total = roomStore.messages.length + optimisticMessages.length;
+		if (messagesContainer && total > 0) {
 			messagesContainer.scrollTop = messagesContainer.scrollHeight;
 		}
 	});
@@ -128,7 +167,7 @@
 		bind:this={messagesContainer}
 		class="flex-1 overflow-y-auto px-4 py-4 space-y-4"
 	>
-		{#if roomStore.messages.length === 0}
+		{#if roomStore.messages.length === 0 && optimisticMessages.length === 0}
 			<div class="flex h-full flex-col items-center justify-center text-center">
 				<div class="rounded-full bg-surface-800 p-4">
 					<PaperPlaneRightIcon class="h-8 w-8 text-surface-500" />
@@ -181,11 +220,22 @@
 							{#if message.contentType === 'image' && message.fileUrl}
 								<img
 									src={message.fileUrl}
-									alt="Shared content"
+									alt={message.content || 'Shared image'}
 									class="max-w-full rounded-lg"
 								/>
+							{:else if message.contentType === 'file' && message.fileUrl}
+								<a
+									href={message.fileUrl}
+									download={message.content || 'download'}
+									class="flex items-center gap-2 underline"
+								>
+									<PaperclipIcon class="h-4 w-4" />
+									{message.content || 'Download file'}
+								</a>
 							{/if}
-							<p class="whitespace-pre-wrap break-words">{@html sanitizeContent(message.content)}</p>
+							{#if message.contentType !== 'file'}
+								<p class="whitespace-pre-wrap break-words">{@html sanitizeContent(message.content)}</p>
+							{/if}
 						</div>
 
 						<!-- Actions -->
@@ -213,20 +263,51 @@
 				</div>
 			{/each}
 		{/if}
+
+		<!-- Optimistic (pending) messages — shown immediately, replaced by the real one from the realtime subscription -->
+		{#each optimisticMessages as om (om.id)}
+			<div class="group flex gap-3 flex-row-reverse opacity-60">
+				<div class="w-8"></div>
+				<div class="flex-1 max-w-[80%] text-right">
+					<div class="inline-block rounded-2xl bg-primary-500 px-4 py-2 text-white">
+						<p class="whitespace-pre-wrap break-words">{@html sanitizeContent(om.content)}</p>
+					</div>
+					<div class="mt-1 text-xs text-surface-500">Sending…</div>
+				</div>
+			</div>
+		{/each}
 	</div>
 
 	<!-- Typing Indicator -->
 	<TypingIndicator />
 
+	{#if showEmojiPicker}
+		<EmojiPicker onselect={insertEmoji} onclose={() => (showEmojiPicker = false)} />
+	{/if}
+
 	<!-- Input -->
 	<form
 		onsubmit={handleSendMessage}
-		class="border-t border-surface-700 p-4"
+		class="relative border-t border-surface-700 p-4"
 	>
+		<input
+			bind:this={imageInput}
+			type="file"
+			accept="image/*"
+			class="hidden"
+			onchange={(e) => handleUpload(e, 'image')}
+		/>
+		<input
+			bind:this={fileInput}
+			type="file"
+			class="hidden"
+			onchange={(e) => handleUpload(e, 'file')}
+		/>
 		<div class="flex items-end gap-3">
 			<div class="flex gap-1">
 				<button
 					type="button"
+					onclick={() => imageInput?.click()}
 					class="rounded-lg p-2 text-surface-500 hover:bg-surface-700 hover:text-surface-300 transition"
 					title="Add image"
 				>
@@ -234,6 +315,7 @@
 				</button>
 				<button
 					type="button"
+					onclick={() => fileInput?.click()}
 					class="rounded-lg p-2 text-surface-500 hover:bg-surface-700 hover:text-surface-300 transition"
 					title="Attach file"
 				>
@@ -241,6 +323,7 @@
 				</button>
 				<button
 					type="button"
+					onclick={() => (showEmojiPicker = !showEmojiPicker)}
 					class="rounded-lg p-2 text-surface-500 hover:bg-surface-700 hover:text-surface-300 transition"
 					title="Add emoji"
 				>
