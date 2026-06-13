@@ -1,42 +1,27 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import { whiteboardStore, shapeBounds, type WBPoint, type WBShape } from '$lib/stores';
 
 	let canvas: HTMLCanvasElement | undefined = $state();
-	let ctx: CanvasRenderingContext2D | null = $state(null);
 	let isDrawing = $state(false);
 	let currentPoints: WBPoint[] = $state([]);
-	let animId = 0;
+	// Bumped on window resize so the render effect re-runs and re-fits the canvas.
+	let resizeTick = $state(0);
 
 	// Select-tool drag state (world coords of last pointer position).
 	let selectDrag: { lastX: number; lastY: number; moved: boolean } | null = null;
 	// Inline text-entry overlay state (world position + screen position for the input).
 	let textInput = $state<{ wx: number; wy: number; left: number; top: number; value: string } | null>(null);
 
-	onMount(() => {
+	// Render-on-demand: this effect re-runs whenever any reactive state it reads
+	// (viewport, shapes, selection, in-progress stroke, laser, resizeTick) changes —
+	// no perpetual requestAnimationFrame loop.
+	$effect(() => {
+		resizeTick; // track window resizes
 		if (!canvas) return;
-		ctx = canvas.getContext('2d');
-		resizeCanvas();
-		window.addEventListener('resize', resizeCanvas);
-		window.addEventListener('keydown', handleKeydown);
-		render();
+		const ctx = canvas.getContext('2d');
+		if (!ctx) return;
+		draw(ctx);
 	});
-
-	onDestroy(() => {
-		window.removeEventListener('resize', resizeCanvas);
-		window.removeEventListener('keydown', handleKeydown);
-		cancelAnimationFrame(animId);
-	});
-
-	function resizeCanvas() {
-		if (!canvas || !ctx) return;
-		const dpr = window.devicePixelRatio || 1;
-		const rect = canvas.getBoundingClientRect();
-		canvas.width = rect.width * dpr;
-		canvas.height = rect.height * dpr;
-		// Assigning width/height resets the transform; re-apply the DPR scale once.
-		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-	}
 
 	function getPoint(e: PointerEvent): WBPoint {
 		const rect = canvas!.getBoundingClientRect();
@@ -118,7 +103,8 @@
 			return;
 		}
 		if (!isDrawing) return;
-		currentPoints.push(getPoint(e));
+		// Reassign (not push) so the render effect's dependency on currentPoints fires.
+		currentPoints = [...currentPoints, getPoint(e)];
 	}
 
 	function handlePointerUp() {
@@ -170,10 +156,20 @@
 		else if (e.key === 'Escape') { e.preventDefault(); textInput = null; }
 	}
 
-	function render() {
-		if (!ctx || !canvas) { animId = requestAnimationFrame(render); return; }
+	/** Draw the whole scene. Self-fits the backing store to the element + DPR each call. */
+	function draw(ctx: CanvasRenderingContext2D) {
+		if (!canvas) return;
+		const dpr = window.devicePixelRatio || 1;
+		const rect = canvas.getBoundingClientRect();
+		const bw = Math.round(rect.width * dpr), bh = Math.round(rect.height * dpr);
+		if (canvas.width !== bw || canvas.height !== bh) {
+			canvas.width = bw;
+			canvas.height = bh;
+		}
+		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
 		const { panX, panY, zoom } = whiteboardStore.viewport;
-		const w = canvas.clientWidth, h = canvas.clientHeight;
+		const w = rect.width, h = rect.height;
 		ctx.clearRect(0, 0, w, h);
 		ctx.save();
 		ctx.translate(panX, panY);
@@ -216,8 +212,6 @@
 			ctx.stroke();
 			ctx.restore();
 		}
-
-		animId = requestAnimationFrame(render);
 	}
 
 	function drawShape(c: CanvasRenderingContext2D, s: WBShape) {
@@ -296,6 +290,8 @@
 		c.stroke();
 	}
 </script>
+
+<svelte:window onresize={() => resizeTick++} onkeydown={handleKeydown} />
 
 <div class="wb-wrap">
 	<canvas
