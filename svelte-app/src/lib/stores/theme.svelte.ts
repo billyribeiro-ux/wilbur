@@ -13,6 +13,7 @@ export interface ThemeConfig {
 	mode: 'dark' | 'light' | 'system';
 	primaryColor: string;
 	accentColor: string;
+	fontFamily: string;
 	fontSize: 'sm' | 'base' | 'lg';
 	compactMode: boolean;
 	reduceMotion: boolean;
@@ -22,6 +23,7 @@ const DEFAULT_THEME: ThemeConfig = {
 	mode: 'dark',
 	primaryColor: '#3b82f6',
 	accentColor: '#8b5cf6',
+	fontFamily: 'Inter',
 	fontSize: 'base',
 	compactMode: false,
 	reduceMotion: false
@@ -75,6 +77,13 @@ class ThemeStore {
 		root.style.setProperty('--color-primary', this.config.primaryColor);
 		root.style.setProperty('--color-accent', this.config.accentColor);
 
+		// Apply font family (inline on <html> overrides the stylesheet base rule, and
+		// the CSS var is available for components that reference it). Selected fonts fall
+		// back gracefully if not loaded as web fonts.
+		const fontStack = `"${this.config.fontFamily}", system-ui, -apple-system, sans-serif`;
+		root.style.setProperty('--font-family', fontStack);
+		root.style.fontFamily = fontStack;
+
 		// Apply font size
 		const fontSizes = { sm: '14px', base: '16px', lg: '18px' };
 		root.style.setProperty('--font-size-base', fontSizes[this.config.fontSize]);
@@ -93,7 +102,7 @@ class ThemeStore {
 	}
 
 	get primaryColor(): string { return this.config.primaryColor; }
-	get fontFamily(): string | undefined { return undefined; /* font family not stored yet */ }
+	get fontFamily(): string { return this.config.fontFamily; }
 
 	setPrimaryColor(color: string): void {
 		this.config = { ...this.config, primaryColor: color };
@@ -101,8 +110,10 @@ class ThemeStore {
 		this.applyTheme();
 	}
 
-	setFontFamily(_font: string): void {
-		// TODO: persist font preference and apply to theme config
+	setFontFamily(font: string): void {
+		this.config = { ...this.config, fontFamily: font };
+		this.saveToStorage();
+		this.applyTheme();
 	}
 
 	setAccentColor(color: string): void {

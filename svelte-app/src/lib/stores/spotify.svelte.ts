@@ -186,6 +186,8 @@ class SpotifyStore {
 	async setVolume(volume: number): Promise<void> {
 		if (!this.integration?.accessToken) return;
 
+		// Spotify accepts 0–100; clamp defensively.
+		volume = Math.max(0, Math.min(100, Math.round(volume)));
 		try {
 			await fetch(`https://api.spotify.com/v1/me/player/volume?volume_percent=${volume}`, {
 				method: 'PUT',
