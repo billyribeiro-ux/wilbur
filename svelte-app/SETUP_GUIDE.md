@@ -309,6 +309,48 @@ wilbur-svelte/
 
 ---
 
+## Local backend (PocketBase) + end-to-end tests
+
+The app talks to PocketBase (default `http://127.0.0.1:8090`, override with
+`PUBLIC_POCKETBASE_URL`). To run the full app or the **authenticated** E2E flows
+locally, stand up a seeded PocketBase:
+
+```bash
+# 1. Get the PocketBase binary (one-time)
+pnpm pocketbase:download
+
+# 2. Create an admin (superuser) — pick any email/password
+./pocketbase superuser upsert admin@wilbur.local 'AdminPass123!'
+
+# 3. Start it (leave running)
+pnpm pocketbase:start            # serves on 127.0.0.1:8090
+
+# 4. Create the schema + seed a test user/room (in another shell)
+pnpm db:setup                    # scripts/setup-pocketbase.mjs — creates collections
+pnpm db:seed                     # scripts/seed-pocketbase.mjs  — test user + demo room
+```
+
+`db:setup` honors `PB_URL`, `PB_ADMIN_EMAIL`, `PB_ADMIN_PASS` (defaults match the
+example above) and is idempotent. The seed creates test user
+**`trader@wilbur.local` / `TraderPass123!`** plus a "Demo Trading Room".
+
+> Schema note: collections + fields are derived from the stores' create/map calls.
+> The rules are permissive (authenticated-only) for dev/E2E — **tighten them before
+> production**.
+
+### Running E2E
+
+```bash
+pnpm dev          # app on 5173 (Playwright reuses a running server)
+pnpm test:e2e     # runs e2e/*.spec.ts
+```
+
+- `auth.spec`, `chat.spec`, `rooms.spec`, `validation.spec` — smoke + client-side
+  validation; **no backend needed**.
+- `authenticated.spec` — real login → room → send-chat and whiteboard-draw flows;
+  **requires** the seeded PocketBase above. It auto-skips if PocketBase isn't
+  reachable, so a backend-less `pnpm test:e2e` still runs the rest.
+
 ## Support
 
 For questions about:

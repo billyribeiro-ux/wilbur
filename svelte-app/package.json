@@ -24,7 +24,9 @@
 		"test:e2e": "playwright test",
 		"test:e2e:ui": "playwright test --ui",
 		"pocketbase:start": "pocketbase serve --http=127.0.0.1:8090",
-		"pocketbase:download": "curl -L https://github.com/pocketbase/pocketbase/releases/download/v0.26.5/pocketbase_0.26.5_linux_amd64.zip -o pocketbase.zip && unzip pocketbase.zip pocketbase && rm pocketbase.zip"
+		"pocketbase:download": "curl -L https://github.com/pocketbase/pocketbase/releases/download/v0.26.5/pocketbase_0.26.5_linux_amd64.zip -o pocketbase.zip && unzip pocketbase.zip pocketbase && rm pocketbase.zip",
+		"db:setup": "node scripts/setup-pocketbase.mjs",
+		"db:seed": "node scripts/seed-pocketbase.mjs"
 	},
 	"dependencies": {
 		"@libsql/client": "^0.17.3",
